@@ -25,7 +25,7 @@ export default function CTASection() {
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
-                href="/annonspaket"
+                href="/logga-in"
                 className="inline-flex items-center gap-2 px-8 py-4 bg-white text-navy font-semibold rounded-xl hover:bg-gray-100 transition-colors"
               >
                 <Shield className="w-5 h-5" />

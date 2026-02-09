@@ -1,6 +1,7 @@
 import Redis from "ioredis";
+import type { Listing, User, Conversation, Message } from "@/lib/types";
 
-const getRedisClient = () => {
+const getRedisClient = (): Redis => {
   const url = process.env.REDIS_URL || "redis://localhost:6379";
 
   const client = new Redis(url, {
@@ -10,10 +11,20 @@ const getRedisClient = () => {
       return delay;
     },
     lazyConnect: true,
+    enableReadyCheck: true,
+    connectTimeout: 10000,
   });
 
   client.on("error", (err) => {
     console.error("Redis connection error:", err.message);
+  });
+
+  client.on("reconnecting", () => {
+    console.warn("Redis reconnecting...");
+  });
+
+  client.on("connect", () => {
+    console.info("Redis connected");
   });
 
   return client;
@@ -29,26 +40,7 @@ export const getRedis = () => {
   return redisClient;
 };
 
-// Types
-export interface Listing {
-  id: string;
-  title: string;
-  description: string;
-  city: string;
-  address: string;
-  type: "sale" | "rent";
-  category: "butik" | "kontor" | "lager" | "ovrigt";
-  price: number;
-  size: number;
-  imageUrl: string;
-  featured: boolean;
-  createdAt: string;
-  contact: {
-    name: string;
-    email: string;
-    phone: string;
-  };
-}
+export type ListingSort = "date" | "price_asc" | "price_desc" | "size";
 
 export interface ListingFilter {
   city?: string;
@@ -56,13 +48,19 @@ export interface ListingFilter {
   category?: string;
   search?: string;
   featured?: boolean;
+  sort?: ListingSort;
+  priceMin?: number;
+  priceMax?: number;
+  sizeMin?: number;
+  sizeMax?: number;
+  tags?: string[];
 }
 
-// Helper functions
+// ─── Listings ────────────────────────────────────────────────────────
+
 export const getAllListings = async (): Promise<Listing[]> => {
   const redis = getRedis();
   try {
-    await redis.connect().catch(() => {});
     const keys = await redis.keys("listing:*");
     if (keys.length === 0) return [];
 
@@ -116,23 +114,313 @@ export const getFilteredListings = async (
         l.description.toLowerCase().includes(q)
     );
   }
+  if (filters.priceMin != null) {
+    listings = listings.filter((l) => l.price >= filters.priceMin!);
+  }
+  if (filters.priceMax != null) {
+    listings = listings.filter((l) => l.price <= filters.priceMax!);
+  }
+  if (filters.sizeMin != null) {
+    listings = listings.filter((l) => l.size >= filters.sizeMin!);
+  }
+  if (filters.sizeMax != null) {
+    listings = listings.filter((l) => l.size <= filters.sizeMax!);
+  }
+  if (filters.tags && filters.tags.length > 0) {
+    listings = listings.filter((l) =>
+      filters.tags!.every((t) => l.tags?.includes(t))
+    );
+  }
 
-  return listings.sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  );
+  const sort = filters.sort ?? "date";
+  if (sort === "date") {
+    listings.sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+  } else if (sort === "price_asc") {
+    listings.sort((a, b) => a.price - b.price);
+  } else if (sort === "price_desc") {
+    listings.sort((a, b) => b.price - a.price);
+  } else if (sort === "size") {
+    listings.sort((a, b) => b.size - a.size);
+  }
+
+  return listings;
+};
+
+export interface ListingStats {
+  totalListings: number;
+  totalCities: number;
+  byCategory: Record<string, number>;
+}
+
+export const getListingStats = async (): Promise<ListingStats> => {
+  const listings = await getAllListings();
+  const cities = new Set(listings.map((l) => l.city));
+  const byCategory: Record<string, number> = {
+    butik: 0,
+    kontor: 0,
+    lager: 0,
+    ovrigt: 0,
+  };
+  listings.forEach((l) => {
+    byCategory[l.category] = (byCategory[l.category] ?? 0) + 1;
+  });
+  return {
+    totalListings: listings.length,
+    totalCities: cities.size,
+    byCategory,
+  };
+};
+
+export const getListingById = async (
+  id: string
+): Promise<Listing | null> => {
+  const redis = getRedis();
+  try {
+    const val = await redis.get(`listing:${id}`);
+    if (val) {
+      return JSON.parse(val) as Listing;
+    }
+    const all = await getAllListings();
+    return all.find((l) => l.id === id) ?? null;
+  } catch {
+    const all = getSampleListings();
+    return all.find((l) => l.id === id) ?? null;
+  }
 };
 
 export const saveListing = async (listing: Listing): Promise<void> => {
   const redis = getRedis();
   try {
-    await redis.connect().catch(() => {});
     await redis.set(`listing:${listing.id}`, JSON.stringify(listing));
-  } catch {
-    console.error("Could not save listing to Redis");
+  } catch (err) {
+    console.error(
+      "Could not save listing to Redis:",
+      err instanceof Error ? err.message : err
+    );
   }
 };
 
-// Sample data when Redis is not available
+// ─── Users ───────────────────────────────────────────────────────────
+
+export const getUserById = async (id: string): Promise<User | null> => {
+  const redis = getRedis();
+  try {
+    const val = await redis.get(`user:${id}`);
+    if (!val) return null;
+    return JSON.parse(val) as User;
+  } catch {
+    return null;
+  }
+};
+
+export const getUserByEmail = async (
+  email: string
+): Promise<User | null> => {
+  const redis = getRedis();
+  try {
+    const userId = await redis.get(`user:email:${email.toLowerCase()}`);
+    if (!userId) return null;
+    return getUserById(userId);
+  } catch {
+    return null;
+  }
+};
+
+export const saveUser = async (user: User): Promise<void> => {
+  const redis = getRedis();
+  const pipeline = redis.pipeline();
+  pipeline.set(`user:${user.id}`, JSON.stringify(user));
+  pipeline.set(`user:email:${user.email.toLowerCase()}`, user.id);
+  await pipeline.exec();
+};
+
+// ─── Conversations ───────────────────────────────────────────────────
+
+export const getConversationById = async (
+  id: string
+): Promise<Conversation | null> => {
+  const redis = getRedis();
+  try {
+    const val = await redis.get(`conversation:${id}`);
+    if (!val) return null;
+    return JSON.parse(val) as Conversation;
+  } catch {
+    return null;
+  }
+};
+
+export const getConversationsForUser = async (
+  userId: string
+): Promise<Conversation[]> => {
+  const redis = getRedis();
+  try {
+    const ids = await redis.smembers(`conversations:user:${userId}`);
+    if (ids.length === 0) return [];
+    const pipeline = redis.pipeline();
+    ids.forEach((id) => pipeline.get(`conversation:${id}`));
+    const results = await pipeline.exec();
+    if (!results) return [];
+    const convos = results
+      .map(([err, val]) => {
+        if (err || !val) return null;
+        try {
+          return JSON.parse(val as string) as Conversation;
+        } catch {
+          return null;
+        }
+      })
+      .filter(Boolean) as Conversation[];
+    convos.sort(
+      (a, b) =>
+        new Date(b.lastMessageAt).getTime() -
+        new Date(a.lastMessageAt).getTime()
+    );
+    return convos;
+  } catch {
+    return [];
+  }
+};
+
+export const saveConversation = async (
+  conversation: Conversation
+): Promise<void> => {
+  const redis = getRedis();
+  const pipeline = redis.pipeline();
+  pipeline.set(
+    `conversation:${conversation.id}`,
+    JSON.stringify(conversation)
+  );
+  pipeline.sadd(
+    `conversations:user:${conversation.landlordId}`,
+    conversation.id
+  );
+  pipeline.sadd(
+    `conversations:user:${conversation.tenantId}`,
+    conversation.id
+  );
+  await pipeline.exec();
+};
+
+export const findExistingConversation = async (
+  listingId: string,
+  tenantId: string
+): Promise<Conversation | null> => {
+  const convos = await getConversationsForUser(tenantId);
+  return convos.find(
+    (c) => c.listingId === listingId && c.tenantId === tenantId
+  ) ?? null;
+};
+
+// ─── Messages ────────────────────────────────────────────────────────
+
+export const getMessages = async (
+  conversationId: string
+): Promise<Message[]> => {
+  const redis = getRedis();
+  try {
+    const raw = await redis.lrange(
+      `messages:${conversationId}`,
+      0,
+      -1
+    );
+    return raw.map((r) => JSON.parse(r) as Message);
+  } catch {
+    return [];
+  }
+};
+
+export const addMessage = async (message: Message): Promise<void> => {
+  const redis = getRedis();
+  const pipeline = redis.pipeline();
+  pipeline.rpush(
+    `messages:${message.conversationId}`,
+    JSON.stringify(message)
+  );
+  // Update lastMessageAt
+  const convo = await getConversationById(message.conversationId);
+  if (convo) {
+    convo.lastMessageAt = message.createdAt;
+    pipeline.set(
+      `conversation:${convo.id}`,
+      JSON.stringify(convo)
+    );
+  }
+  await pipeline.exec();
+};
+
+export const getUnreadCount = async (userId: string): Promise<number> => {
+  const convos = await getConversationsForUser(userId);
+  let count = 0;
+  for (const convo of convos) {
+    const messages = await getMessages(convo.id);
+    count += messages.filter(
+      (m) => m.senderId !== userId && !m.read
+    ).length;
+  }
+  return count;
+};
+
+export const markMessagesAsRead = async (
+  conversationId: string,
+  userId: string
+): Promise<void> => {
+  const redis = getRedis();
+  const messages = await getMessages(conversationId);
+  const updated = messages.map((m) =>
+    m.senderId !== userId && !m.read ? { ...m, read: true } : m
+  );
+  const pipeline = redis.pipeline();
+  pipeline.del(`messages:${conversationId}`);
+  updated.forEach((m) =>
+    pipeline.rpush(`messages:${conversationId}`, JSON.stringify(m))
+  );
+  await pipeline.exec();
+};
+
+// ─── Favorites ───────────────────────────────────────────────────────
+
+export const getFavorites = async (userId: string): Promise<string[]> => {
+  const redis = getRedis();
+  try {
+    return await redis.smembers(`favorites:${userId}`);
+  } catch {
+    return [];
+  }
+};
+
+export const addFavorite = async (
+  userId: string,
+  listingId: string
+): Promise<void> => {
+  const redis = getRedis();
+  await redis.sadd(`favorites:${userId}`, listingId);
+};
+
+export const removeFavorite = async (
+  userId: string,
+  listingId: string
+): Promise<void> => {
+  const redis = getRedis();
+  await redis.srem(`favorites:${userId}`, listingId);
+};
+
+export const isFavorite = async (
+  userId: string,
+  listingId: string
+): Promise<boolean> => {
+  const redis = getRedis();
+  try {
+    return (await redis.sismember(`favorites:${userId}`, listingId)) === 1;
+  } catch {
+    return false;
+  }
+};
+
+// ─── Sample Data ─────────────────────────────────────────────────────
+
 export const getSampleListings = (): Listing[] => [
   {
     id: "1",
@@ -148,7 +436,14 @@ export const getSampleListings = (): Listing[] => [
     imageUrl: "/images/butik-1.jpg",
     featured: true,
     createdAt: "2026-02-01T10:00:00Z",
-    contact: { name: "Anna Svensson", email: "anna@example.com", phone: "070-123 45 67" },
+    lat: 59.3326,
+    lng: 18.0649,
+    tags: ["Nyrenoverad", "Centralt läge", "Skyltfönster"],
+    contact: {
+      name: "Anna Svensson",
+      email: "kontakt@drottninggatan-fastigheter.se",
+      phone: "08-123 45 00",
+    },
   },
   {
     id: "2",
@@ -164,7 +459,14 @@ export const getSampleListings = (): Listing[] => [
     imageUrl: "/images/kontor-1.jpg",
     featured: true,
     createdAt: "2026-02-03T14:00:00Z",
-    contact: { name: "Erik Johansson", email: "erik@example.com", phone: "070-234 56 78" },
+    lat: 57.7089,
+    lng: 11.9746,
+    tags: ["Fiber", "Klimatanläggning", "Öppen planlösning"],
+    contact: {
+      name: "Erik Johansson",
+      email: "erik.johansson@packhuskontor.se",
+      phone: "031-456 78 00",
+    },
   },
   {
     id: "3",
@@ -180,7 +482,14 @@ export const getSampleListings = (): Listing[] => [
     imageUrl: "/images/lager-1.jpg",
     featured: true,
     createdAt: "2026-02-05T09:00:00Z",
-    contact: { name: "Maria Nilsson", email: "maria@example.com", phone: "070-345 67 89" },
+    lat: 55.5903,
+    lng: 13.0201,
+    tags: ["Lastbrygga", "Parkering"],
+    contact: {
+      name: "Maria Nilsson",
+      email: "lager@industrilogistik.se",
+      phone: "040-789 01 00",
+    },
   },
   {
     id: "4",
@@ -196,7 +505,14 @@ export const getSampleListings = (): Listing[] => [
     imageUrl: "/images/butik-2.jpg",
     featured: true,
     createdAt: "2026-02-06T11:00:00Z",
-    contact: { name: "Karl Berg", email: "karl@example.com", phone: "070-456 78 90" },
+    lat: 59.8586,
+    lng: 17.6389,
+    tags: ["Centralt läge", "Skyltfönster"],
+    contact: {
+      name: "Karl Berg",
+      email: "karl.berg@uppsalafastigheter.se",
+      phone: "018-234 56 00",
+    },
   },
   {
     id: "5",
@@ -212,7 +528,14 @@ export const getSampleListings = (): Listing[] => [
     imageUrl: "/images/kontor-2.jpg",
     featured: false,
     createdAt: "2026-02-07T08:00:00Z",
-    contact: { name: "Lisa Ek", email: "lisa@example.com", phone: "070-567 89 01" },
+    lat: 58.3938,
+    lng: 15.5753,
+    tags: ["Nyrenoverad", "Parkering", "Mötesrum", "Fiber"],
+    contact: {
+      name: "Lisa Ek",
+      email: "kontakt@mjardevi-kontor.se",
+      phone: "013-567 89 00",
+    },
   },
   {
     id: "6",
@@ -228,7 +551,14 @@ export const getSampleListings = (): Listing[] => [
     imageUrl: "/images/lager-2.jpg",
     featured: false,
     createdAt: "2026-01-28T15:00:00Z",
-    contact: { name: "Anders Holm", email: "anders@example.com", phone: "070-678 90 12" },
+    lat: 59.6099,
+    lng: 16.5448,
+    tags: ["Lastbrygga", "Parkering", "Hög takhöjd"],
+    contact: {
+      name: "Anders Holm",
+      email: "anders.holm@vasteraslager.se",
+      phone: "021-890 12 00",
+    },
   },
   {
     id: "7",
@@ -244,7 +574,14 @@ export const getSampleListings = (): Listing[] => [
     imageUrl: "/images/ovrigt-1.jpg",
     featured: true,
     createdAt: "2026-02-08T12:00:00Z",
-    contact: { name: "Sara Lund", email: "sara@example.com", phone: "070-789 01 23" },
+    lat: 59.3182,
+    lng: 18.0544,
+    tags: ["Hög takhöjd", "Centralt läge"],
+    contact: {
+      name: "Sara Lund",
+      email: "sara@hornsgatan-atelje.se",
+      phone: "08-345 67 00",
+    },
   },
   {
     id: "8",
@@ -260,6 +597,13 @@ export const getSampleListings = (): Listing[] => [
     imageUrl: "/images/kontor-3.jpg",
     featured: false,
     createdAt: "2026-02-02T16:00:00Z",
-    contact: { name: "Patrik Olsson", email: "patrik@example.com", phone: "070-890 12 34" },
+    lat: 55.7047,
+    lng: 13.1910,
+    tags: ["Fiber", "Centralt läge", "Klimatanläggning"],
+    contact: {
+      name: "Patrik Olsson",
+      email: "patrik@lundkontorshotell.se",
+      phone: "046-678 90 00",
+    },
   },
 ];

@@ -1,8 +1,10 @@
 "use client";
 
-import { MapPin, Maximize2, Tag } from "lucide-react";
-import { categoryLabels, typeLabels } from "@/lib/types";
+import Link from "next/link";
+import { MapPin, Maximize2 } from "lucide-react";
+import { typeLabels } from "@/lib/types";
 import type { Listing } from "@/lib/types";
+import PlaceholderImage from "./PlaceholderImage";
 
 interface ListingCardProps {
   listing: Listing;
@@ -17,17 +19,11 @@ export default function ListingCard({ listing }: ListingCardProps) {
   };
 
   return (
-    <div className="group bg-white rounded-2xl border border-border overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+    <Link href={`/annonser/${listing.id}`} className="block group">
+    <div className="bg-white rounded-2xl border border-border overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
       {/* Image placeholder */}
-      <div className="relative h-52 bg-gradient-to-br from-muted to-muted-dark overflow-hidden">
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-center">
-            <div className="w-16 h-16 mx-auto mb-2 rounded-xl bg-white/80 flex items-center justify-center">
-              <Tag className="w-7 h-7 text-navy/40" />
-            </div>
-            <span className="text-xs text-gray-400">{categoryLabels[listing.category]}</span>
-          </div>
-        </div>
+      <div className="relative h-52 overflow-hidden">
+        <PlaceholderImage category={listing.category} className="h-full w-full" />
         {/* Badges */}
         <div className="absolute top-3 left-3 flex gap-2">
           <span className={`px-3 py-1 text-xs font-medium rounded-full ${
@@ -71,5 +67,6 @@ export default function ListingCard({ listing }: ListingCardProps) {
         </div>
       </div>
     </div>
+    </Link>
   );
 }

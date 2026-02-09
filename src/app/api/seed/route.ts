@@ -1,10 +1,16 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getRedis, getSampleListings } from "@/lib/redis";
 
-export async function POST() {
+export async function POST(request: NextRequest) {
+  const secret = request.headers.get("x-seed-secret") ?? request.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
+  if (!process.env.SEED_SECRET || secret !== process.env.SEED_SECRET) {
+    return NextResponse.json(
+      { error: "Obehörig" },
+      { status: 401 }
+    );
+  }
   try {
     const redis = getRedis();
-    await redis.connect().catch(() => {});
     const listings = getSampleListings();
 
     const pipeline = redis.pipeline();
@@ -19,7 +25,7 @@ export async function POST() {
     });
   } catch {
     return NextResponse.json(
-      { error: "Failed to seed data. Make sure Redis is running." },
+      { error: "Kunde inte ladda exempeldata. Kontrollera att Redis kör." },
       { status: 500 }
     );
   }

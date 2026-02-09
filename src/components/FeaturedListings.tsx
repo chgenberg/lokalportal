@@ -9,14 +9,21 @@ import { ArrowRight } from "lucide-react";
 export default function FeaturedListings() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchListings = async () => {
       try {
         const res = await fetch("/api/listings?featured=true");
+        if (!res.ok) {
+          setError("Kunde inte ladda utvalda lokaler. Försök igen senare.");
+          setListings([]);
+          return;
+        }
         const data = await res.json();
         setListings(data.slice(0, 4));
       } catch {
+        setError("Ett fel uppstod vid hämtning av lokaler. Försök igen senare.");
         setListings([]);
       } finally {
         setLoading(false);
@@ -61,6 +68,17 @@ export default function FeaturedListings() {
                 </div>
               </div>
             ))}
+          </div>
+        ) : error ? (
+          <div className="py-12 px-6 bg-white rounded-2xl border border-border text-center">
+            <p className="text-gray-600 mb-4">{error}</p>
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="text-sm font-medium text-accent hover:underline"
+            >
+              Ladda om sidan
+            </button>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

@@ -1,55 +1,206 @@
 "use client";
 
-import { useEffect, useState, useCallback, Suspense } from "react";
+import { useEffect, useState, useCallback, useRef, Suspense, lazy } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import ListingCard from "@/components/ListingCard";
+import FilterPanel from "@/components/FilterPanel";
+import type { FilterState } from "@/components/FilterPanel";
 import type { Listing } from "@/lib/types";
-import { Search, SlidersHorizontal, X, MapPin, ChevronDown } from "lucide-react";
+import { useDebounce } from "@/lib/useDebounce";
+import { Search, SlidersHorizontal, ChevronLeft, ChevronRight, Map, LayoutGrid } from "lucide-react";
+
+const ListingMap = lazy(() => import("@/components/ListingMap"));
+
+const LIMIT = 9;
+type SortOption = "date" | "price_asc" | "price_desc" | "size";
 
 function AnnonserContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
+  const [viewMode, setViewMode] = useState<"grid" | "map">("grid");
 
-  const [city, setCity] = useState(searchParams.get("city") || "");
-  const [type, setType] = useState(searchParams.get("type") || "");
-  const [category, setCategory] = useState(searchParams.get("category") || "");
-  const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
+  const [filterState, setFilterState] = useState<FilterState>({
+    city: searchParams.get("city") || "",
+    type: searchParams.get("type") || "",
+    category: searchParams.get("category") || "",
+    searchInput: searchParams.get("search") || "",
+    priceRange: [
+      parseInt(searchParams.get("priceMin") || "0", 10) || 0,
+      parseInt(searchParams.get("priceMax") || "200000", 10) || 200000,
+    ],
+    sizeRange: [
+      parseInt(searchParams.get("sizeMin") || "0", 10) || 0,
+      parseInt(searchParams.get("sizeMax") || "2000", 10) || 2000,
+    ],
+    selectedTags: searchParams.get("tags")?.split(",").filter(Boolean) || [],
+  });
+
+  const debouncedSearch = useDebounce(filterState.searchInput, 300);
+  const debouncedCity = useDebounce(filterState.city, 300);
+  const [page, setPage] = useState(() =>
+    Math.max(1, parseInt(searchParams.get("page") || "1", 10))
+  );
+  const [sort, setSort] = useState<SortOption>(
+    () => (searchParams.get("sort") as SortOption) || "date"
+  );
+  const [total, setTotal] = useState(0);
+  const filterChangeCount = useRef(0);
+
+  const updateFilters = useCallback((partial: Partial<FilterState>) => {
+    setFilterState((prev) => ({ ...prev, ...partial }));
+  }, []);
+
+  const clearFilters = useCallback(() => {
+    setFilterState({
+      city: "",
+      type: "",
+      category: "",
+      searchInput: "",
+      priceRange: [0, 200000],
+      sizeRange: [0, 2000],
+      selectedTags: [],
+    });
+    setPage(1);
+    setSort("date");
+    router.push("/annonser");
+  }, [router]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    filterChangeCount.current += 1;
+    if (filterChangeCount.current > 1) setPage(1);
+  }, [
+    debouncedCity,
+    filterState.type,
+    filterState.category,
+    debouncedSearch,
+    filterState.priceRange,
+    filterState.sizeRange,
+    filterState.selectedTags,
+  ]);
+
+  // Sync URL
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (debouncedCity) params.set("city", debouncedCity);
+    if (filterState.type) params.set("type", filterState.type);
+    if (filterState.category) params.set("category", filterState.category);
+    if (debouncedSearch) params.set("search", debouncedSearch);
+    if (sort !== "date") params.set("sort", sort);
+    if (page > 1) params.set("page", String(page));
+    if (filterState.priceRange[0] > 0)
+      params.set("priceMin", String(filterState.priceRange[0]));
+    if (filterState.priceRange[1] < 200000)
+      params.set("priceMax", String(filterState.priceRange[1]));
+    if (filterState.sizeRange[0] > 0)
+      params.set("sizeMin", String(filterState.sizeRange[0]));
+    if (filterState.sizeRange[1] < 2000)
+      params.set("sizeMax", String(filterState.sizeRange[1]));
+    if (filterState.selectedTags.length > 0)
+      params.set("tags", filterState.selectedTags.join(","));
+    const q = params.toString();
+    router.replace(q ? `/annonser?${q}` : "/annonser", { scroll: false });
+  }, [
+    debouncedCity,
+    filterState.type,
+    filterState.category,
+    debouncedSearch,
+    sort,
+    page,
+    filterState.priceRange,
+    filterState.sizeRange,
+    filterState.selectedTags,
+    router,
+  ]);
 
   const fetchListings = useCallback(async () => {
     setLoading(true);
+    setError(null);
     const params = new URLSearchParams();
-    if (city) params.set("city", city);
-    if (type) params.set("type", type);
-    if (category) params.set("category", category);
-    if (searchQuery) params.set("search", searchQuery);
+    if (debouncedCity) params.set("city", debouncedCity);
+    if (filterState.type) params.set("type", filterState.type);
+    if (filterState.category) params.set("category", filterState.category);
+    if (debouncedSearch) params.set("search", debouncedSearch);
+    params.set("sort", sort);
+    params.set("page", String(page));
+    params.set("limit", String(LIMIT));
+    if (filterState.priceRange[0] > 0)
+      params.set("priceMin", String(filterState.priceRange[0]));
+    if (filterState.priceRange[1] < 200000)
+      params.set("priceMax", String(filterState.priceRange[1]));
+    if (filterState.sizeRange[0] > 0)
+      params.set("sizeMin", String(filterState.sizeRange[0]));
+    if (filterState.sizeRange[1] < 2000)
+      params.set("sizeMax", String(filterState.sizeRange[1]));
+    if (filterState.selectedTags.length > 0)
+      params.set("tags", filterState.selectedTags.join(","));
 
     try {
       const res = await fetch(`/api/listings?${params.toString()}`);
+      if (!res.ok) {
+        setError("Kunde inte ladda annonser. Försök igen senare.");
+        setListings([]);
+        setTotal(0);
+        return;
+      }
       const data = await res.json();
-      setListings(data);
+      if (data.listings && typeof data.total === "number") {
+        setListings(data.listings);
+        setTotal(data.total);
+      } else {
+        setListings(Array.isArray(data) ? data : []);
+        setTotal(Array.isArray(data) ? data.length : 0);
+      }
     } catch {
+      setError("Ett fel uppstod vid hämtning. Försök igen senare.");
       setListings([]);
+      setTotal(0);
     } finally {
       setLoading(false);
     }
-  }, [city, type, category, searchQuery]);
+  }, [
+    debouncedCity,
+    filterState.type,
+    filterState.category,
+    debouncedSearch,
+    sort,
+    page,
+    filterState.priceRange,
+    filterState.sizeRange,
+    filterState.selectedTags,
+  ]);
 
   useEffect(() => {
     fetchListings();
   }, [fetchListings]);
 
-  const clearFilters = () => {
-    setCity("");
-    setType("");
-    setCategory("");
-    setSearchQuery("");
-    router.push("/annonser");
+  const goToPage = (p: number) => {
+    const next = Math.max(1, Math.min(p, Math.ceil(total / LIMIT)));
+    setPage(next);
   };
 
-  const hasFilters = city || type || category || searchQuery;
+  const hasFilters =
+    filterState.city ||
+    filterState.type ||
+    filterState.category ||
+    filterState.searchInput ||
+    filterState.priceRange[0] > 0 ||
+    filterState.priceRange[1] < 200000 ||
+    filterState.sizeRange[0] > 0 ||
+    filterState.sizeRange[1] < 2000 ||
+    filterState.selectedTags.length > 0;
+
+  const totalPages = Math.ceil(total / LIMIT) || 1;
+  const sortLabel: Record<SortOption, string> = {
+    date: "Senaste",
+    price_asc: "Pris (lågt till högt)",
+    price_desc: "Pris (högt till lågt)",
+    size: "Storlek",
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -71,110 +222,106 @@ function AnnonserContent() {
             <input
               type="text"
               placeholder="Sök lokaler..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              value={filterState.searchInput}
+              onChange={(e) => updateFilters({ searchInput: e.target.value })}
               className="w-full pl-12 pr-4 py-3 bg-muted rounded-xl text-sm border border-border focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-colors"
+              aria-label="Sök lokaler"
             />
           </div>
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className={`flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm font-medium transition-colors ${
-              showFilters || hasFilters
-                ? "bg-navy text-white"
-                : "bg-muted text-gray-600 hover:bg-muted-dark border border-border"
-            }`}
-          >
-            <SlidersHorizontal className="w-4 h-4" />
-            Filter
-            {hasFilters && (
-              <span className="w-2 h-2 rounded-full bg-accent" />
-            )}
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className={`flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm font-medium transition-colors ${
+                showFilters || hasFilters
+                  ? "bg-navy text-white"
+                  : "bg-muted text-gray-600 hover:bg-muted-dark border border-border"
+              }`}
+            >
+              <SlidersHorizontal className="w-4 h-4" />
+              Filter
+              {hasFilters && (
+                <span className="w-2 h-2 rounded-full bg-accent" />
+              )}
+            </button>
+            <button
+              onClick={() => setViewMode(viewMode === "grid" ? "map" : "grid")}
+              className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm font-medium bg-muted text-gray-600 hover:bg-muted-dark border border-border transition-colors"
+              aria-label={viewMode === "grid" ? "Visa karta" : "Visa rutnät"}
+            >
+              {viewMode === "grid" ? (
+                <>
+                  <Map className="w-4 h-4" />
+                  <span className="hidden sm:inline">Karta</span>
+                </>
+              ) : (
+                <>
+                  <LayoutGrid className="w-4 h-4" />
+                  <span className="hidden sm:inline">Rutnät</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Expandable Filters */}
         {showFilters && (
-          <div className="mb-8 p-6 bg-muted rounded-2xl border border-border animate-slide-down">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {/* City filter */}
-              <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1.5">
-                  Stad
-                </label>
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder="Alla städer"
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 bg-white rounded-lg text-sm border border-border focus:border-accent outline-none"
-                  />
-                </div>
-              </div>
-
-              {/* Type filter */}
-              <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1.5">
-                  Typ
-                </label>
-                <div className="relative">
-                  <select
-                    value={type}
-                    onChange={(e) => setType(e.target.value)}
-                    className="w-full appearance-none px-4 py-2.5 bg-white rounded-lg text-sm border border-border focus:border-accent outline-none pr-10"
-                  >
-                    <option value="">Alla typer</option>
-                    <option value="sale">Till salu</option>
-                    <option value="rent">Uthyres</option>
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                </div>
-              </div>
-
-              {/* Category filter */}
-              <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1.5">
-                  Kategori
-                </label>
-                <div className="relative">
-                  <select
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    className="w-full appearance-none px-4 py-2.5 bg-white rounded-lg text-sm border border-border focus:border-accent outline-none pr-10"
-                  >
-                    <option value="">Alla kategorier</option>
-                    <option value="butik">Butik</option>
-                    <option value="kontor">Kontor</option>
-                    <option value="lager">Lager</option>
-                    <option value="ovrigt">Övrigt</option>
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                </div>
-              </div>
-            </div>
-
-            {hasFilters && (
-              <button
-                onClick={clearFilters}
-                className="mt-4 flex items-center gap-1.5 text-sm text-gray-500 hover:text-navy transition-colors"
-              >
-                <X className="w-4 h-4" />
-                Rensa filter
-              </button>
-            )}
-          </div>
+          <FilterPanel
+            filters={filterState}
+            onChange={updateFilters}
+            onClear={clearFilters}
+            totalResults={total}
+            loading={loading}
+          />
         )}
 
-        {/* Results count */}
-        <div className="mb-6 flex items-center justify-between">
+        {/* Results count & sort */}
+        <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <p className="text-sm text-gray-500">
-            {loading ? "Laddar..." : `${listings.length} lokaler hittades`}
+            {loading
+              ? "Laddar..."
+              : total > 0
+                ? `Visar ${(page - 1) * LIMIT + 1}–${Math.min(page * LIMIT, total)} av ${total} lokaler`
+                : "Inga lokaler hittades"}
           </p>
+          <div className="flex items-center gap-2">
+            <label
+              htmlFor="sort-annonser"
+              className="text-sm text-gray-500 whitespace-nowrap"
+            >
+              Sortering:
+            </label>
+            <select
+              id="sort-annonser"
+              value={sort}
+              onChange={(e) => {
+                setSort(e.target.value as SortOption);
+                setPage(1);
+              }}
+              className="px-3 py-2 bg-muted rounded-lg text-sm border border-border focus:border-accent outline-none"
+              aria-label="Sortera annonser"
+            >
+              <option value="date">{sortLabel.date}</option>
+              <option value="price_asc">{sortLabel.price_asc}</option>
+              <option value="price_desc">{sortLabel.price_desc}</option>
+              <option value="size">{sortLabel.size}</option>
+            </select>
+          </div>
         </div>
 
-        {/* Listings Grid */}
-        {loading ? (
+        {/* Content: Grid or Map */}
+        {viewMode === "map" ? (
+          <Suspense
+            fallback={
+              <div className="h-[600px] bg-muted rounded-2xl flex items-center justify-center">
+                <div className="text-gray-400">Laddar karta...</div>
+              </div>
+            }
+          >
+            <div className="h-[600px] rounded-2xl overflow-hidden border border-border">
+              <ListingMap listings={listings} />
+            </div>
+          </Suspense>
+        ) : loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(6)].map((_, i) => (
               <div
@@ -189,6 +336,22 @@ function AnnonserContent() {
                 </div>
               </div>
             ))}
+          </div>
+        ) : error ? (
+          <div className="text-center py-20">
+            <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-red-50 flex items-center justify-center">
+              <Search className="w-8 h-8 text-red-400" />
+            </div>
+            <h3 className="text-lg font-semibold text-navy mb-2">
+              Något gick fel
+            </h3>
+            <p className="text-sm text-gray-500 mb-6">{error}</p>
+            <button
+              onClick={() => fetchListings()}
+              className="px-6 py-2.5 bg-navy text-white text-sm font-medium rounded-lg hover:bg-navy-light transition-colors"
+            >
+              Försök igen
+            </button>
           </div>
         ) : listings.length === 0 ? (
           <div className="text-center py-20">
@@ -209,11 +372,41 @@ function AnnonserContent() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {listings.map((listing) => (
-              <ListingCard key={listing.id} listing={listing} />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {listings.map((listing) => (
+                <ListingCard key={listing.id} listing={listing} />
+              ))}
+            </div>
+
+            {totalPages > 1 && (
+              <div className="mt-10 flex items-center justify-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => goToPage(page - 1)}
+                  disabled={page <= 1}
+                  className="flex items-center gap-1 px-4 py-2 rounded-lg text-sm font-medium border border-border bg-white text-gray-700 hover:bg-muted disabled:opacity-50 disabled:pointer-events-none transition-colors"
+                  aria-label="Föregående sida"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  Föregående
+                </button>
+                <span className="px-4 py-2 text-sm text-gray-500">
+                  Sida {page} av {totalPages}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => goToPage(page + 1)}
+                  disabled={page >= totalPages}
+                  className="flex items-center gap-1 px-4 py-2 rounded-lg text-sm font-medium border border-border bg-white text-gray-700 hover:bg-muted disabled:opacity-50 disabled:pointer-events-none transition-colors"
+                  aria-label="Nästa sida"
+                >
+                  Nästa
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

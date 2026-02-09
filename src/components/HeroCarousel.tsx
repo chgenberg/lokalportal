@@ -1,0 +1,75 @@
+"use client";
+
+import { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
+
+const IMAGES = ["/start/3.jpg", "/start/1.jpg", "/start/2.jpg"];
+const INTERVAL = 6000;
+
+export default function HeroCarousel() {
+  const [current, setCurrent] = useState(0);
+  const [loaded, setLoaded] = useState<boolean[]>([false, false, false]);
+
+  const next = useCallback(() => {
+    setCurrent((prev) => (prev + 1) % IMAGES.length);
+  }, []);
+
+  useEffect(() => {
+    const timer = setInterval(next, INTERVAL);
+    return () => clearInterval(timer);
+  }, [next]);
+
+  const markLoaded = (index: number) => {
+    setLoaded((prev) => {
+      const copy = [...prev];
+      copy[index] = true;
+      return copy;
+    });
+  };
+
+  return (
+    <>
+      {/* Carousel images */}
+      {IMAGES.map((src, i) => (
+        <div
+          key={src}
+          className="absolute inset-0 transition-opacity duration-1000 ease-in-out"
+          style={{ opacity: i === current ? 1 : 0 }}
+          aria-hidden={i !== current}
+        >
+          <Image
+            src={src}
+            alt=""
+            fill
+            priority={i === 0}
+            className="object-cover"
+            sizes="100vw"
+            onLoad={() => markLoaded(i)}
+          />
+        </div>
+      ))}
+
+      {/* Dark overlay for text readability */}
+      <div className="absolute inset-0 bg-navy/60" />
+
+      {/* Gradient overlay bottom */}
+      <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-navy/40 to-transparent" />
+
+      {/* Dots indicator */}
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+        {IMAGES.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => setCurrent(i)}
+            className={`w-2 h-2 rounded-full transition-all duration-300 ${
+              i === current
+                ? "bg-white w-6"
+                : "bg-white/40 hover:bg-white/70"
+            }`}
+            aria-label={`Bild ${i + 1}`}
+          />
+        ))}
+      </div>
+    </>
+  );
+}

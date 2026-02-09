@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   Store,
@@ -11,7 +12,7 @@ import {
   MapPin,
 } from "lucide-react";
 
-const categories = [
+const categoryConfig = [
   {
     id: "butik",
     icon: Store,
@@ -19,7 +20,6 @@ const categories = [
     description:
       "Hitta den perfekta butikslokalen i attraktiva lägen med hög exponering. Allt från gallerior till gatuplan.",
     features: ["Skyltfönster", "Centrala lägen", "Hög gångtrafik"],
-    count: 3,
     gradient: "from-blue-500 to-blue-700",
   },
   {
@@ -29,7 +29,6 @@ const categories = [
     description:
       "Moderna kontorslokaler med flexibla planlösningar. Från kontorshotell till hela våningsplan.",
     features: ["Fiber & IT", "Mötesrum", "Flexibla ytor"],
-    count: 4,
     gradient: "from-indigo-500 to-indigo-700",
   },
   {
@@ -39,7 +38,6 @@ const categories = [
     description:
       "Lagerlokaler i strategiska lägen med bra logistikförutsättningar. Lastbryggor och stora portar.",
     features: ["Lastbrygga", "Bra logistik", "Stora ytor"],
-    count: 2,
     gradient: "from-slate-500 to-slate-700",
   },
   {
@@ -49,12 +47,28 @@ const categories = [
     description:
       "Unika lokaler för kreativa verksamheter. Ateljéer, studios, pop-up butiker och mycket mer.",
     features: ["Kreativa ytor", "Flexibelt", "Unika lägen"],
-    count: 1,
     gradient: "from-violet-500 to-violet-700",
   },
 ];
 
 export default function KategorierPage() {
+  const [byCategory, setByCategory] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await fetch("/api/stats");
+        if (res.ok) {
+          const data = await res.json();
+          setByCategory(data.byCategory ?? {});
+        }
+      } catch {
+        // keep empty
+      }
+    };
+    fetchStats();
+  }, []);
+
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
@@ -70,7 +84,7 @@ export default function KategorierPage() {
       {/* Categories Grid */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {categories.map((cat) => (
+          {categoryConfig.map((cat) => (
             <Link
               key={cat.id}
               href={`/annonser?category=${cat.id}`}
@@ -110,7 +124,7 @@ export default function KategorierPage() {
                     <div className="flex items-center gap-4 text-sm text-gray-400">
                       <span className="flex items-center gap-1.5">
                         <TrendingUp className="w-4 h-4" />
-                        {cat.count} annonser
+                        {byCategory[cat.id] ?? 0} annonser
                       </span>
                       <span className="flex items-center gap-1.5">
                         <MapPin className="w-4 h-4" />

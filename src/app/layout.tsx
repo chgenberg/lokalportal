@@ -3,16 +3,46 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import SessionProvider from "@/components/SessionProvider";
 
 const inter = Inter({
   variable: "--font-geist-sans",
   subsets: ["latin"],
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://lokalportal.se";
+
 export const metadata: Metadata = {
   title: "Lokalportal – Hitta rätt lokal snabbare",
   description:
     "Sveriges ledande marknadsplats för kommersiella lokaler. Hitta butiker, kontor, lager och andra lokaler till salu eller uthyrning.",
+  openGraph: {
+    title: "Lokalportal – Hitta rätt lokal snabbare",
+    description: "Sveriges ledande marknadsplats för kommersiella lokaler. Hitta butiker, kontor, lager och mer.",
+    url: siteUrl,
+    siteName: "Lokalportal",
+    locale: "sv_SE",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Lokalportal – Hitta rätt lokal snabbare",
+    description: "Sveriges ledande marknadsplats för kommersiella lokaler.",
+  },
+  metadataBase: new URL(siteUrl),
+};
+
+const organizationJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "Lokalportal",
+  url: siteUrl,
+  description: "Sveriges ledande marknadsplats för kommersiella lokaler.",
+  contactPoint: {
+    "@type": "ContactPoint",
+    contactType: "customer service",
+    email: "info@lokalportal.se",
+  },
 };
 
 export default function RootLayout({
@@ -23,9 +53,15 @@ export default function RootLayout({
   return (
     <html lang="sv">
       <body className={`${inter.variable} antialiased`}>
-        <Header />
-        <main className="min-h-screen pt-16">{children}</main>
-        <Footer />
+        <SessionProvider>
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+          />
+          <Header />
+          <main className="min-h-screen pt-16">{children}</main>
+          <Footer />
+        </SessionProvider>
       </body>
     </html>
   );

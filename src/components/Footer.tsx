@@ -72,7 +72,7 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Contact */}
+          {/* Contact – uppdatera e-post och telefon till riktiga vid produktion */}
           <div>
             <h4 className="font-semibold text-sm uppercase tracking-wider mb-4 text-gray-300">
               Kontakt
@@ -80,7 +80,7 @@ export default function Footer() {
             <ul className="space-y-3">
               <li className="flex items-center gap-2 text-sm text-gray-400">
                 <Mail className="w-4 h-4" />
-                info@lokalportal.se
+                <a href="mailto:info@lokalportal.se" className="hover:text-white transition-colors">info@lokalportal.se</a>
               </li>
               <li className="flex items-center gap-2 text-sm text-gray-400">
                 <Phone className="w-4 h-4" />
@@ -99,10 +99,10 @@ export default function Footer() {
             © {new Date().getFullYear()} Lokalportal. Alla rättigheter förbehållna.
           </p>
           <div className="flex items-center gap-6">
-            <Link href="#" className="text-sm text-gray-500 hover:text-white transition-colors">
+            <Link href="/integritetspolicy" className="text-sm text-gray-500 hover:text-white transition-colors">
               Integritetspolicy
             </Link>
-            <Link href="#" className="text-sm text-gray-500 hover:text-white transition-colors">
+            <Link href="/villkor" className="text-sm text-gray-500 hover:text-white transition-colors">
               Villkor
             </Link>
           </div>

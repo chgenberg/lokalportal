@@ -150,7 +150,8 @@ export default function AnnonspaketPage() {
                   <span className="text-sm text-gray-500 ml-1">kr/{pkg.period}</span>
                 </div>
 
-                <button
+                <a
+                  href="/logga-in"
                   className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold transition-colors ${
                     pkg.highlighted
                       ? "bg-accent text-white hover:bg-accent-dark"
@@ -159,7 +160,7 @@ export default function AnnonspaketPage() {
                 >
                   <Shield className="w-4 h-4" />
                   Kom igång med BankID
-                </button>
+                </a>
 
                 <ul className="mt-8 space-y-3">
                   {pkg.features.map((feature) => (
