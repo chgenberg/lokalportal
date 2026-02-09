@@ -5,13 +5,13 @@ import { useRouter } from "next/navigation";
 import { useDebounce } from "@/lib/useDebounce";
 
 const SWEDISH_CITIES = [
-  "Stockholm", "Göteborg", "Malmö", "Uppsala", "Linköping", "Västerås",
-  "Örebro", "Norrköping", "Helsingborg", "Jönköping", "Umeå", "Lund",
-  "Borås", "Sundsvall", "Gävle", "Eskilstuna", "Halmstad", "Växjö",
-  "Karlstad", "Södertälje", "Täby", "Trollhättan", "Luleå", "Kalmar",
-  "Falun", "Kristianstad", "Skellefteå", "Uddevalla", "Nyköping",
-  "Skövde", "Varberg", "Östersund", "Karlskrona", "Borlänge",
-  "Tumba", "Motala", "Landskrona", "Lidköping", "Visby",
+  "Stockholm", "Goteborg", "Malmo", "Uppsala", "Linkoping", "Vasteras",
+  "Orebro", "Norrkoping", "Helsingborg", "Jonkoping", "Umea", "Lund",
+  "Boras", "Sundsvall", "Gavle", "Eskilstuna", "Halmstad", "Vaxjo",
+  "Karlstad", "Sodertalje", "Taby", "Trollhattan", "Lulea", "Kalmar",
+  "Falun", "Kristianstad", "Skelleftea", "Uddevalla", "Nykoping",
+  "Skovde", "Varberg", "Ostersund", "Karlskrona", "Borlange",
+  "Tumba", "Motala", "Landskrona", "Lidkoping", "Visby",
 ];
 
 export default function HeroSearch() {
@@ -68,18 +68,18 @@ export default function HeroSearch() {
     { value: "butik", label: "Butik" },
     { value: "kontor", label: "Kontor" },
     { value: "lager", label: "Lager" },
-    { value: "ovrigt", label: "Övrigt" },
+    { value: "ovrigt", label: "Ovrigt" },
   ];
 
   return (
-    <div className="w-full max-w-4xl mx-auto">
-      <div className="bg-white rounded-2xl shadow-xl border border-border p-2 flex flex-col md:flex-row gap-2">
-        {/* City Search */}
+    <div className="w-full max-w-3xl mx-auto">
+      <div className="glass rounded-2xl border border-white/20 p-2 flex flex-col md:flex-row gap-2 glow-strong">
+        {/* City */}
         <div ref={cityRef} className="relative flex-1">
-          <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-muted hover:bg-muted-dark transition-colors">
+          <div className="flex items-center px-4 py-3 rounded-xl bg-white/60 hover:bg-white/80 transition-colors">
             <input
               type="text"
-              placeholder="Sök stad..."
+              placeholder="Sok stad..."
               value={city}
               onChange={(e) => setCity(e.target.value)}
               onFocus={() => city.length >= 3 && setShowCitySuggestions(true)}
@@ -90,23 +90,19 @@ export default function HeroSearch() {
                 else if (e.key === "Enter" && highlightedIndex >= 0 && citySuggestions[highlightedIndex]) { e.preventDefault(); setCity(citySuggestions[highlightedIndex]); setShowCitySuggestions(false); setHighlightedIndex(-1); }
                 else if (e.key === "Escape") { setShowCitySuggestions(false); setHighlightedIndex(-1); }
               }}
-              className="w-full bg-transparent text-sm text-foreground placeholder-gray-400 outline-none"
-              aria-label="Sök stad"
-              aria-autocomplete="list"
-              aria-controls={showCitySuggestions ? "city-suggestions" : undefined}
-              aria-expanded={showCitySuggestions}
-              aria-activedescendant={highlightedIndex >= 0 && citySuggestions[highlightedIndex] ? `city-option-${highlightedIndex}` : undefined}
+              className="w-full bg-transparent text-sm text-navy placeholder-gray-400 outline-none"
+              aria-label="Sok stad"
             />
           </div>
           {showCitySuggestions && (
-            <ul id="city-suggestions" role="listbox" className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-lg border border-border z-50 animate-slide-down overflow-hidden list-none m-0 p-0">
+            <ul className="absolute top-full left-0 right-0 mt-1.5 glass rounded-xl border border-border/60 shadow-xl z-50 animate-scale-in overflow-hidden list-none m-0 p-0">
               {citySuggestions.map((suggestion, i) => (
-                <li key={suggestion} role="option" id={`city-option-${i}`} aria-selected={i === highlightedIndex}>
+                <li key={suggestion}>
                   <button
                     type="button"
                     onClick={() => { setCity(suggestion); setShowCitySuggestions(false); }}
                     onMouseEnter={() => setHighlightedIndex(i)}
-                    className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${i === highlightedIndex ? "bg-muted text-navy font-medium" : "hover:bg-muted"}`}
+                    className={`w-full text-left px-4 py-2.5 text-sm transition-all ${i === highlightedIndex ? "bg-navy/[0.04] text-navy font-medium" : "text-gray-600 hover:bg-navy/[0.02]"}`}
                   >
                     {suggestion}
                   </button>
@@ -116,54 +112,48 @@ export default function HeroSearch() {
           )}
         </div>
 
-        {/* Type Dropdown */}
-        <div ref={typeRef} className="relative w-full md:w-44">
+        {/* Type */}
+        <div ref={typeRef} className="relative w-full md:w-40">
           <button
             type="button"
             onClick={() => { setTypeOpen(!typeOpen); setCategoryOpen(false); }}
-            aria-expanded={typeOpen}
-            aria-haspopup="listbox"
-            aria-label="Välj typ"
-            className="w-full flex items-center justify-between gap-2 px-4 py-3 rounded-xl bg-muted hover:bg-muted-dark transition-colors text-sm"
+            className="w-full flex items-center justify-between gap-2 px-4 py-3 rounded-xl bg-white/60 hover:bg-white/80 transition-colors text-sm"
           >
-            <span className={type ? "text-foreground" : "text-gray-400"}>
+            <span className={type ? "text-navy font-medium" : "text-gray-400"}>
               {type ? typeOptions.find((o) => o.value === type)?.label : "Typ"}
             </span>
-            <span className={`text-gray-400 text-xs transition-transform ${typeOpen ? "rotate-180" : ""}`}>&#9662;</span>
+            <span className={`text-gray-300 text-[10px] transition-transform ${typeOpen ? "rotate-180" : ""}`}>&#9662;</span>
           </button>
           {typeOpen && (
-            <div role="listbox" className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-lg border border-border z-50 animate-slide-down overflow-hidden">
+            <div className="absolute top-full left-0 right-0 mt-1.5 glass rounded-xl border border-border/60 shadow-xl z-50 animate-scale-in overflow-hidden">
               {typeOptions.map((opt) => (
-                <button type="button" key={opt.value} role="option" aria-selected={type === opt.value}
+                <button type="button" key={opt.value}
                   onClick={() => { setType(opt.value); setTypeOpen(false); }}
-                  className={`w-full text-left px-4 py-2.5 text-sm hover:bg-muted transition-colors ${type === opt.value ? "bg-muted text-navy font-medium" : ""}`}
+                  className={`w-full text-left px-4 py-2.5 text-sm transition-all ${type === opt.value ? "bg-navy/[0.04] text-navy font-medium" : "text-gray-600 hover:bg-navy/[0.02]"}`}
                 >{opt.label}</button>
               ))}
             </div>
           )}
         </div>
 
-        {/* Category Dropdown */}
-        <div ref={categoryRef} className="relative w-full md:w-44">
+        {/* Category */}
+        <div ref={categoryRef} className="relative w-full md:w-40">
           <button
             type="button"
             onClick={() => { setCategoryOpen(!categoryOpen); setTypeOpen(false); }}
-            aria-expanded={categoryOpen}
-            aria-haspopup="listbox"
-            aria-label="Välj kategori"
-            className="w-full flex items-center justify-between gap-2 px-4 py-3 rounded-xl bg-muted hover:bg-muted-dark transition-colors text-sm"
+            className="w-full flex items-center justify-between gap-2 px-4 py-3 rounded-xl bg-white/60 hover:bg-white/80 transition-colors text-sm"
           >
-            <span className={category ? "text-foreground" : "text-gray-400"}>
+            <span className={category ? "text-navy font-medium" : "text-gray-400"}>
               {category ? categoryOptions.find((o) => o.value === category)?.label : "Kategori"}
             </span>
-            <span className={`text-gray-400 text-xs transition-transform ${categoryOpen ? "rotate-180" : ""}`}>&#9662;</span>
+            <span className={`text-gray-300 text-[10px] transition-transform ${categoryOpen ? "rotate-180" : ""}`}>&#9662;</span>
           </button>
           {categoryOpen && (
-            <div role="listbox" className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-lg border border-border z-50 animate-slide-down overflow-hidden">
+            <div className="absolute top-full left-0 right-0 mt-1.5 glass rounded-xl border border-border/60 shadow-xl z-50 animate-scale-in overflow-hidden">
               {categoryOptions.map((opt) => (
-                <button type="button" key={opt.value} role="option" aria-selected={category === opt.value}
+                <button type="button" key={opt.value}
                   onClick={() => { setCategory(opt.value); setCategoryOpen(false); }}
-                  className={`w-full text-left px-4 py-2.5 text-sm hover:bg-muted transition-colors ${category === opt.value ? "bg-muted text-navy font-medium" : ""}`}
+                  className={`w-full text-left px-4 py-2.5 text-sm transition-all ${category === opt.value ? "bg-navy/[0.04] text-navy font-medium" : "text-gray-600 hover:bg-navy/[0.02]"}`}
                 >{opt.label}</button>
               ))}
             </div>
@@ -173,10 +163,9 @@ export default function HeroSearch() {
         <button
           type="button"
           onClick={handleSearch}
-          aria-label="Sök lokaler"
-          className="px-6 py-3 bg-navy text-white rounded-xl hover:bg-navy-light transition-all text-sm font-medium shrink-0 hover:shadow-lg"
+          className="btn-glow px-7 py-3 bg-navy text-white rounded-xl text-sm font-semibold shrink-0 tracking-wide"
         >
-          Sök
+          Sok
         </button>
       </div>
     </div>

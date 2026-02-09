@@ -2,16 +2,16 @@
 
 @theme inline {
   --color-navy: #0a1628;
-  --color-navy-light: #1a2d4a;
+  --color-navy-light: #162240;
   --color-navy-dark: #060f1d;
   --color-accent: #0a1628;
-  --color-accent-light: #1a2d4a;
+  --color-accent-light: #162240;
   --color-accent-dark: #060f1d;
   --color-background: #ffffff;
   --color-foreground: #0a1628;
   --color-muted: #f8fafc;
   --color-muted-dark: #f1f5f9;
-  --color-border: #e2e8f0;
+  --color-border: #e8ecf1;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -19,42 +19,81 @@
 body {
   background: var(--color-background);
   color: var(--color-foreground);
-  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Smooth scrolling */
 html {
   scroll-behavior: smooth;
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
+/* ── Scrollbar ─────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+/* ── Pulsating Navy Glow ───────────────────────── */
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(10, 22, 40, 0.08), 0 0 60px rgba(10, 22, 40, 0.04); }
+  50% { box-shadow: 0 0 30px rgba(10, 22, 40, 0.15), 0 0 80px rgba(10, 22, 40, 0.08); }
 }
 
-::-webkit-scrollbar-track {
-  background: #f1f5f9;
+@keyframes glowPulseStrong {
+  0%, 100% { box-shadow: 0 0 24px rgba(10, 22, 40, 0.12), 0 0 64px rgba(10, 22, 40, 0.06); }
+  50% { box-shadow: 0 0 40px rgba(10, 22, 40, 0.22), 0 0 100px rgba(10, 22, 40, 0.10); }
 }
 
-::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 3px;
+@keyframes glowPulseLight {
+  0%, 100% { box-shadow: 0 0 15px rgba(10, 22, 40, 0.05), 0 4px 20px rgba(10, 22, 40, 0.03); }
+  50% { box-shadow: 0 0 25px rgba(10, 22, 40, 0.10), 0 4px 30px rgba(10, 22, 40, 0.06); }
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+@keyframes borderGlow {
+  0%, 100% { border-color: rgba(10, 22, 40, 0.08); }
+  50% { border-color: rgba(10, 22, 40, 0.20); }
 }
 
-/* Animations */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.glow { animation: glowPulse 3s ease-in-out infinite; }
+.glow-strong { animation: glowPulseStrong 3s ease-in-out infinite; }
+.glow-light { animation: glowPulseLight 4s ease-in-out infinite; }
+.glow-border { animation: borderGlow 3s ease-in-out infinite; }
+.float { animation: float 6s ease-in-out infinite; }
+
+.shimmer {
+  background: linear-gradient(90deg, transparent 0%, rgba(10, 22, 40, 0.03) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+/* ── Glass morphism ────────────────────────────── */
+.glass {
+  background: rgba(255, 255, 255, 0.70);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+}
+
+.glass-dark {
+  background: rgba(10, 22, 40, 0.85);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+}
+
+/* ── Base animations ───────────────────────────── */
 @keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes fadeIn {
@@ -63,29 +102,69 @@ html {
 }
 
 @keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-.animate-fade-in-up {
-  animation: fadeInUp 0.6s ease-out forwards;
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
 }
 
-.animate-fade-in {
-  animation: fadeIn 0.4s ease-out forwards;
-}
-
-.animate-slide-down {
-  animation: slideDown 0.3s ease-out forwards;
-}
+.animate-fade-in-up { animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+.animate-slide-down { animation: slideDown 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.animate-scale-in { animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
 .animation-delay-100 { animation-delay: 0.1s; }
 .animation-delay-200 { animation-delay: 0.2s; }
 .animation-delay-300 { animation-delay: 0.3s; }
 .animation-delay-400 { animation-delay: 0.4s; }
+
+/* ── Premium button glow on hover ──────────────── */
+.btn-glow {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-glow::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: transparent;
+  transition: box-shadow 0.3s ease;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.btn-glow:hover::after {
+  box-shadow: 0 0 30px rgba(10, 22, 40, 0.25), 0 0 60px rgba(10, 22, 40, 0.10);
+}
+
+.btn-glow:hover {
+  transform: translateY(-1px);
+}
+
+/* ── Card hover glow ───────────────────────────── */
+.card-glow {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-glow:hover {
+  box-shadow: 0 0 30px rgba(10, 22, 40, 0.10), 0 8px 32px rgba(10, 22, 40, 0.08);
+  border-color: rgba(10, 22, 40, 0.15);
+  transform: translateY(-4px);
+}
+
+/* ── Subtle grain texture overlay ──────────────── */
+.grain::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.015;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1;
+}
