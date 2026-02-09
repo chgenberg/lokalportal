@@ -59,14 +59,14 @@ export default function Header() {
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-24">
+          <div className="flex items-center justify-between h-18">
             <Link href="/" className="flex items-center gap-2 group shrink-0">
               <Image
-                src="/logohittayta.jpeg"
+                src="/HYlogo.png"
                 alt="Hittayta.se"
-                width={350}
-                height={100}
-                className="h-[90px] w-auto object-contain"
+                width={200}
+                height={60}
+                className="h-[52px] w-auto object-contain"
                 priority
               />
             </Link>
