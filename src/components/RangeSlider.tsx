@@ -91,7 +91,7 @@ export default function RangeSlider({
       >
         {/* Active range */}
         <div
-          className="absolute h-full bg-accent rounded-full"
+          className="absolute h-full bg-navy rounded-full"
           style={{
             left: `${leftPercent}%`,
             width: `${rightPercent - leftPercent}%`,
@@ -99,7 +99,7 @@ export default function RangeSlider({
         />
         {/* Min thumb */}
         <div
-          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-5 h-5 bg-white border-2 border-accent rounded-full shadow-md cursor-grab active:cursor-grabbing hover:scale-110 transition-transform z-10"
+          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-5 h-5 bg-white border-2 border-navy rounded-full shadow-md cursor-grab active:cursor-grabbing hover:scale-110 transition-transform z-10"
           style={{ left: `${leftPercent}%` }}
           onPointerDown={handlePointerDown("min")}
           role="slider"
@@ -111,7 +111,7 @@ export default function RangeSlider({
         />
         {/* Max thumb */}
         <div
-          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-5 h-5 bg-white border-2 border-accent rounded-full shadow-md cursor-grab active:cursor-grabbing hover:scale-110 transition-transform z-10"
+          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-5 h-5 bg-white border-2 border-navy rounded-full shadow-md cursor-grab active:cursor-grabbing hover:scale-110 transition-transform z-10"
           style={{ left: `${rightPercent}%` }}
           onPointerDown={handlePointerDown("max")}
           role="slider"

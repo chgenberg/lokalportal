@@ -1,56 +1,71 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import {
-  getConversationsForUser,
-  saveConversation,
-  findExistingConversation,
-  getListingById,
-  getMessages,
-  getUnreadCount,
-  getUserById,
-} from "@/lib/redis";
-import { v4 as uuidv4 } from "uuid";
+import prisma from "@/lib/db";
 
 export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions);
-  if (!session?.user) {
-    return NextResponse.json({ error: "Ej inloggad" }, { status: 401 });
-  }
+  if (!session?.user) return NextResponse.json({ error: "Ej inloggad" }, { status: 401 });
 
   const unreadOnly = request.nextUrl.searchParams.get("unreadOnly");
 
   if (unreadOnly === "true") {
-    const unreadCount = await getUnreadCount(session.user.id);
+    const unreadCount = await prisma.message.count({
+      where: {
+        read: false,
+        senderId: { not: session.user.id },
+        conversation: {
+          OR: [
+            { landlordId: session.user.id },
+            { tenantId: session.user.id },
+          ],
+        },
+      },
+    });
     return NextResponse.json({ unreadCount });
   }
 
-  const conversations = await getConversationsForUser(session.user.id);
+  const conversations = await prisma.conversation.findMany({
+    where: {
+      OR: [
+        { landlordId: session.user.id },
+        { tenantId: session.user.id },
+      ],
+    },
+    include: {
+      listing: { select: { title: true } },
+      landlord: { select: { name: true, role: true } },
+      tenant: { select: { name: true, role: true } },
+      messages: { orderBy: { createdAt: "desc" }, take: 1 },
+    },
+    orderBy: { lastMessageAt: "desc" },
+  });
 
-  // Enrich conversations with listing info and other user info
   const enriched = await Promise.all(
     conversations.map(async (conv) => {
-      const listing = await getListingById(conv.listingId);
-      const otherUserId =
-        session.user.id === conv.landlordId
-          ? conv.tenantId
-          : conv.landlordId;
-      const otherUser = await getUserById(otherUserId);
-      const messages = await getMessages(conv.id);
-      const unreadCount = messages.filter(
-        (m) => m.senderId !== session.user.id && !m.read
-      ).length;
-      const lastMessage = messages[messages.length - 1];
+      const isLandlord = session.user.id === conv.landlordId;
+      const otherUser = isLandlord ? conv.tenant : conv.landlord;
+      const unreadCount = await prisma.message.count({
+        where: {
+          conversationId: conv.id,
+          read: false,
+          senderId: { not: session.user.id },
+        },
+      });
+      const lastMsg = conv.messages[0];
 
       return {
-        ...conv,
-        listingTitle: listing?.title || "Okänd annons",
-        otherUserName: otherUser?.name || "Okänd användare",
-        otherUserRole: otherUser?.role || "tenant",
+        id: conv.id,
+        listingId: conv.listingId,
+        landlordId: conv.landlordId,
+        tenantId: conv.tenantId,
+        createdAt: conv.createdAt.toISOString(),
+        lastMessageAt: conv.lastMessageAt.toISOString(),
+        listingTitle: conv.listing.title,
+        otherUserName: otherUser.name,
+        otherUserRole: otherUser.role,
         unreadCount,
-        lastMessage: lastMessage
-          ? { text: lastMessage.text, createdAt: lastMessage.createdAt }
-          : null,
+        lastMessage: lastMsg ? { text: lastMsg.text, createdAt: lastMsg.createdAt.toISOString() } : null,
       };
     })
   );
@@ -60,42 +75,35 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
-  if (!session?.user) {
-    return NextResponse.json({ error: "Ej inloggad" }, { status: 401 });
-  }
+  if (!session?.user) return NextResponse.json({ error: "Ej inloggad" }, { status: 401 });
 
   const { listingId } = await request.json();
-  if (!listingId) {
-    return NextResponse.json({ error: "listingId krävs" }, { status: 400 });
-  }
+  if (!listingId) return NextResponse.json({ error: "listingId krävs" }, { status: 400 });
 
-  const listing = await getListingById(listingId);
-  if (!listing) {
-    return NextResponse.json(
-      { error: "Annons hittades inte" },
-      { status: 404 }
-    );
-  }
+  const listing = await prisma.listing.findUnique({ where: { id: listingId } });
+  if (!listing) return NextResponse.json({ error: "Annons hittades inte" }, { status: 404 });
 
   // Check for existing conversation
-  const existing = await findExistingConversation(listingId, session.user.id);
+  const existing = await prisma.conversation.findUnique({
+    where: { listingId_tenantId: { listingId, tenantId: session.user.id } },
+  });
   if (existing) {
-    return NextResponse.json(existing);
+    return NextResponse.json({
+      ...existing,
+      createdAt: existing.createdAt.toISOString(),
+      lastMessageAt: existing.lastMessageAt.toISOString(),
+    });
   }
 
-  // Determine landlord - use ownerId if available, otherwise use a default
   const landlordId = listing.ownerId || "system";
 
-  const conversation = {
-    id: uuidv4(),
-    listingId,
-    landlordId,
-    tenantId: session.user.id,
-    createdAt: new Date().toISOString(),
-    lastMessageAt: new Date().toISOString(),
-  };
+  const conversation = await prisma.conversation.create({
+    data: { listingId, landlordId, tenantId: session.user.id },
+  });
 
-  await saveConversation(conversation);
-
-  return NextResponse.json(conversation, { status: 201 });
+  return NextResponse.json({
+    ...conversation,
+    createdAt: conversation.createdAt.toISOString(),
+    lastMessageAt: conversation.lastMessageAt.toISOString(),
+  }, { status: 201 });
 }

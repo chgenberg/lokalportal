@@ -20,7 +20,7 @@ export default function Home() {
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight drop-shadow-lg">
               Hitta rätt lokal
               <br />
-              <span className="text-accent-light">snabbare</span>
+              <span className="text-white/90">snabbare</span>
             </h1>
             <p className="text-lg text-white/80 max-w-2xl mx-auto mb-10 drop-shadow">
               Sveriges smartaste marknadsplats för kommersiella lokaler.

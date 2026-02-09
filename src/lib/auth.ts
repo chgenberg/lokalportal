@@ -1,7 +1,7 @@
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
-import { getUserByEmail } from "./redis";
+import prisma from "./db";
 
 declare module "next-auth" {
   interface User {
@@ -36,31 +36,28 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Lösenord", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          return null;
-        }
+        if (!credentials?.email || !credentials?.password) return null;
 
-        const user = await getUserByEmail(credentials.email);
+        const user = await prisma.user.findUnique({
+          where: { email: credentials.email.toLowerCase().trim() },
+        });
         if (!user) return null;
 
-        const isValid = await bcrypt.compare(
-          credentials.password,
-          user.passwordHash
-        );
+        const isValid = await bcrypt.compare(credentials.password, user.passwordHash);
         if (!isValid) return null;
 
         return {
           id: user.id,
           email: user.email,
           name: user.name,
-          role: user.role,
+          role: user.role as "landlord" | "tenant",
         };
       },
     }),
   ],
   session: {
     strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // 30 days
+    maxAge: 30 * 24 * 60 * 60,
   },
   callbacks: {
     async jwt({ token, user }) {
@@ -78,8 +75,6 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
   },
-  pages: {
-    signIn: "/logga-in",
-  },
+  pages: { signIn: "/logga-in" },
   secret: process.env.NEXTAUTH_SECRET || "dev-secret-change-in-production",
 };

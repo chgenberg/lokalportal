@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getListingById } from "@/lib/redis";
+import prisma from "@/lib/db";
 
 const ID_REGEX = /^[a-zA-Z0-9_-]{1,50}$/;
 
@@ -13,15 +13,20 @@ export async function GET(
   }
 
   try {
-    const listing = await getListingById(id);
+    const listing = await prisma.listing.findUnique({ where: { id } });
     if (!listing) {
       return NextResponse.json({ error: "Annonsen hittades inte" }, { status: 404 });
     }
-    return NextResponse.json(listing);
+    return NextResponse.json({
+      ...listing,
+      createdAt: listing.createdAt.toISOString(),
+      contact: {
+        name: listing.contactName,
+        email: listing.contactEmail,
+        phone: listing.contactPhone,
+      },
+    });
   } catch {
-    return NextResponse.json(
-      { error: "Kunde inte hämta annonsen" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Kunde inte hämta annonsen" }, { status: 500 });
   }
 }

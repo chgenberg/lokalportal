@@ -15,28 +15,12 @@ interface ListingMapProps {
   singleMarker?: boolean;
 }
 
-const categoryColors: Record<string, string> = {
-  butik: "#2563eb",
-  kontor: "#059669",
-  lager: "#d97706",
-  ovrigt: "#7c3aed",
-};
-
-function createMarkerIcon(category: string) {
-  const color = categoryColors[category] || "#2563eb";
-  return L.divIcon({
-    className: "custom-marker",
-    html: `<div style="
-      width: 32px; height: 32px;
-      background: ${color};
-      border: 3px solid white;
-      border-radius: 50% 50% 50% 0;
-      transform: rotate(-45deg);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-    "></div>`,
-    iconSize: [32, 32],
-    iconAnchor: [16, 32],
-    popupAnchor: [0, -32],
+function createMarkerIcon() {
+  return L.icon({
+    iconUrl: "/hittaytapin.png",
+    iconSize: [36, 44],
+    iconAnchor: [18, 44],
+    popupAnchor: [0, -44],
   });
 }
 
@@ -90,7 +74,7 @@ export default function ListingMap({
     const markers: L.Marker[] = [];
 
     validListings.forEach((listing) => {
-      const icon = createMarkerIcon(listing.category);
+      const icon = createMarkerIcon();
       const marker = L.marker([listing.lat, listing.lng], { icon }).addTo(map);
 
       const popupContent = `

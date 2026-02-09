@@ -1,56 +1,52 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import {
-  getFavorites,
-  addFavorite,
-  removeFavorite,
-  getListingById,
-} from "@/lib/redis";
-import type { Listing } from "@/lib/types";
+import prisma from "@/lib/db";
 
 export async function GET() {
   const session = await getServerSession(authOptions);
-  if (!session?.user) {
-    return NextResponse.json({ error: "Ej inloggad" }, { status: 401 });
-  }
+  if (!session?.user) return NextResponse.json({ error: "Ej inloggad" }, { status: 401 });
 
-  const favoriteIds = await getFavorites(session.user.id);
-  const listings: Listing[] = [];
-  for (const id of favoriteIds) {
-    const listing = await getListingById(id);
-    if (listing) listings.push(listing);
-  }
+  const favorites = await prisma.favorite.findMany({
+    where: { userId: session.user.id },
+    include: { listing: true },
+  });
+
+  const listings = favorites.map((f) => ({
+    ...f.listing,
+    createdAt: f.listing.createdAt.toISOString(),
+    contact: { name: f.listing.contactName, email: f.listing.contactEmail, phone: f.listing.contactPhone },
+  }));
 
   return NextResponse.json({ listings });
 }
 
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
-  if (!session?.user) {
-    return NextResponse.json({ error: "Ej inloggad" }, { status: 401 });
-  }
+  if (!session?.user) return NextResponse.json({ error: "Ej inloggad" }, { status: 401 });
 
   const { listingId } = await request.json();
-  if (!listingId) {
-    return NextResponse.json({ error: "listingId krävs" }, { status: 400 });
-  }
+  if (!listingId) return NextResponse.json({ error: "listingId krävs" }, { status: 400 });
 
-  await addFavorite(session.user.id, listingId);
+  await prisma.favorite.upsert({
+    where: { userId_listingId: { userId: session.user.id, listingId } },
+    update: {},
+    create: { userId: session.user.id, listingId },
+  });
+
   return NextResponse.json({ ok: true });
 }
 
 export async function DELETE(request: NextRequest) {
   const session = await getServerSession(authOptions);
-  if (!session?.user) {
-    return NextResponse.json({ error: "Ej inloggad" }, { status: 401 });
-  }
+  if (!session?.user) return NextResponse.json({ error: "Ej inloggad" }, { status: 401 });
 
   const { listingId } = await request.json();
-  if (!listingId) {
-    return NextResponse.json({ error: "listingId krävs" }, { status: 400 });
-  }
+  if (!listingId) return NextResponse.json({ error: "listingId krävs" }, { status: 400 });
 
-  await removeFavorite(session.user.id, listingId);
+  await prisma.favorite.deleteMany({
+    where: { userId: session.user.id, listingId },
+  });
+
   return NextResponse.json({ ok: true });
 }

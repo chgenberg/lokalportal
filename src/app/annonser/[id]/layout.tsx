@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { getListingById } from "@/lib/redis";
+import prisma from "@/lib/db";
 
 type Props = { params: Promise<{ id: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
-  const listing = await getListingById(id);
+  const listing = await prisma.listing.findUnique({ where: { id } });
   if (!listing) {
     return { title: "Annons hittades inte – Lokalportal" };
   }
@@ -23,10 +23,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default function ListingIdLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function ListingIdLayout({ children }: { children: React.ReactNode }) {
   return children;
 }

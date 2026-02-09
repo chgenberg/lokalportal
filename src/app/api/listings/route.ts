@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getFilteredListings } from "@/lib/redis";
-import type { ListingSort } from "@/lib/redis";
+import prisma from "@/lib/db";
+import type { Prisma } from "@/generated/prisma/client";
 
 const VALID_TYPES = ["sale", "rent"] as const;
 const VALID_CATEGORIES = ["butik", "kontor", "lager", "ovrigt"] as const;
-const VALID_SORTS: ListingSort[] = ["date", "price_asc", "price_desc", "size"];
+type SortOption = "date" | "price_asc" | "price_desc" | "size";
+const VALID_SORTS: SortOption[] = ["date", "price_asc", "price_desc", "size"];
 const MAX_STRING_LENGTH = 100;
 
 function trimMax(s: string | null | undefined): string | undefined {
@@ -28,24 +29,17 @@ export async function GET(request: NextRequest) {
 
   const type = rawType && VALID_TYPES.includes(rawType as (typeof VALID_TYPES)[number]) ? rawType : undefined;
   const category = rawCategory && VALID_CATEGORIES.includes(rawCategory as (typeof VALID_CATEGORIES)[number]) ? rawCategory : undefined;
-  const sort = rawSort && VALID_SORTS.includes(rawSort as ListingSort) ? (rawSort as ListingSort) : undefined;
+  const sort: SortOption = rawSort && VALID_SORTS.includes(rawSort as SortOption) ? (rawSort as SortOption) : "date";
 
+  const city = trimMax(searchParams.get("city"));
+  const search = trimMax(searchParams.get("search"));
+  const featured = searchParams.get("featured") === "true" ? true : undefined;
+  const priceMin = parsePositiveInt(searchParams.get("priceMin"));
+  const priceMax = parsePositiveInt(searchParams.get("priceMax"));
+  const sizeMin = parsePositiveInt(searchParams.get("sizeMin"));
+  const sizeMax = parsePositiveInt(searchParams.get("sizeMax"));
   const rawTags = searchParams.get("tags");
   const tags = rawTags ? rawTags.split(",").map((t) => t.trim()).filter(Boolean) : undefined;
-
-  const filters = {
-    city: trimMax(searchParams.get("city")),
-    type,
-    category,
-    search: trimMax(searchParams.get("search")),
-    featured: searchParams.get("featured") === "true" ? true : undefined,
-    sort,
-    priceMin: parsePositiveInt(searchParams.get("priceMin")),
-    priceMax: parsePositiveInt(searchParams.get("priceMax")),
-    sizeMin: parsePositiveInt(searchParams.get("sizeMin")),
-    sizeMax: parsePositiveInt(searchParams.get("sizeMax")),
-    tags: tags && tags.length > 0 ? tags : undefined,
-  };
 
   const pageParam = searchParams.get("page");
   const limitParam = searchParams.get("limit");
@@ -55,19 +49,82 @@ export async function GET(request: NextRequest) {
   const limit = Number.isNaN(limitRaw) ? 0 : Math.min(50, Math.max(1, limitRaw));
 
   try {
-    const all = await getFilteredListings(filters);
+    const where: Prisma.ListingWhereInput = {};
 
-    if (page > 0 && limit > 0) {
-      const start = (page - 1) * limit;
-      const listings = all.slice(start, start + limit);
-      return NextResponse.json({ listings, total: all.length });
+    if (city) where.city = { equals: city, mode: "insensitive" };
+    if (type) where.type = type;
+    if (category) where.category = category;
+    if (featured) where.featured = true;
+    if (priceMin != null || priceMax != null) {
+      where.price = {};
+      if (priceMin != null) where.price.gte = priceMin;
+      if (priceMax != null) where.price.lte = priceMax;
+    }
+    if (sizeMin != null || sizeMax != null) {
+      where.size = {};
+      if (sizeMin != null) where.size.gte = sizeMin;
+      if (sizeMax != null) where.size.lte = sizeMax;
+    }
+    if (search) {
+      where.OR = [
+        { title: { contains: search, mode: "insensitive" } },
+        { city: { contains: search, mode: "insensitive" } },
+        { description: { contains: search, mode: "insensitive" } },
+      ];
+    }
+    if (tags && tags.length > 0) {
+      where.tags = { hasEvery: tags };
     }
 
-    return NextResponse.json(all);
-  } catch {
-    return NextResponse.json(
-      { error: "Kunde inte hämta annonser" },
-      { status: 500 }
-    );
+    const orderBy: Prisma.ListingOrderByWithRelationInput =
+      sort === "price_asc" ? { price: "asc" } :
+      sort === "price_desc" ? { price: "desc" } :
+      sort === "size" ? { size: "desc" } :
+      { createdAt: "desc" };
+
+    if (page > 0 && limit > 0) {
+      const [listings, total] = await Promise.all([
+        prisma.listing.findMany({ where, orderBy, skip: (page - 1) * limit, take: limit }),
+        prisma.listing.count({ where }),
+      ]);
+      return NextResponse.json({ listings: listings.map(formatListing), total });
+    }
+
+    const all = await prisma.listing.findMany({ where, orderBy });
+    return NextResponse.json(all.map(formatListing));
+  } catch (err) {
+    console.error("Listings error:", err);
+    return NextResponse.json({ error: "Kunde inte hämta annonser" }, { status: 500 });
   }
+}
+
+function formatListing(l: {
+  id: string; title: string; description: string; city: string; address: string;
+  type: string; category: string; price: number; size: number; imageUrl: string;
+  featured: boolean; createdAt: Date; lat: number; lng: number; tags: string[];
+  ownerId: string | null; contactName: string; contactEmail: string; contactPhone: string;
+}) {
+  return {
+    id: l.id,
+    title: l.title,
+    description: l.description,
+    city: l.city,
+    address: l.address,
+    type: l.type,
+    category: l.category,
+    price: l.price,
+    size: l.size,
+    imageUrl: l.imageUrl,
+    featured: l.featured,
+    createdAt: l.createdAt.toISOString(),
+    lat: l.lat,
+    lng: l.lng,
+    tags: l.tags,
+    ownerId: l.ownerId,
+    contact: {
+      name: l.contactName,
+      email: l.contactEmail,
+      phone: l.contactPhone,
+    },
+  };
 }

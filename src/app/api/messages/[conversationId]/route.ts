@@ -1,46 +1,48 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import {
-  getConversationById,
-  getMessages,
-  addMessage,
-  markMessagesAsRead,
-} from "@/lib/redis";
-import { v4 as uuidv4 } from "uuid";
+import prisma from "@/lib/db";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ conversationId: string }> }
 ) {
   const session = await getServerSession(authOptions);
-  if (!session?.user) {
-    return NextResponse.json({ error: "Ej inloggad" }, { status: 401 });
-  }
+  if (!session?.user) return NextResponse.json({ error: "Ej inloggad" }, { status: 401 });
 
   const { conversationId } = await params;
 
-  const conversation = await getConversationById(conversationId);
-  if (!conversation) {
-    return NextResponse.json(
-      { error: "Konversation hittades inte" },
-      { status: 404 }
-    );
-  }
-
-  // Verify user is part of conversation
-  if (
-    conversation.landlordId !== session.user.id &&
-    conversation.tenantId !== session.user.id
-  ) {
+  const conversation = await prisma.conversation.findUnique({ where: { id: conversationId } });
+  if (!conversation) return NextResponse.json({ error: "Konversation hittades inte" }, { status: 404 });
+  if (conversation.landlordId !== session.user.id && conversation.tenantId !== session.user.id) {
     return NextResponse.json({ error: "Ej behörig" }, { status: 403 });
   }
 
   // Mark messages as read
-  await markMessagesAsRead(conversationId, session.user.id);
+  await prisma.message.updateMany({
+    where: {
+      conversationId,
+      senderId: { not: session.user.id },
+      read: false,
+    },
+    data: { read: true },
+  });
 
-  const messages = await getMessages(conversationId);
-  return NextResponse.json({ messages });
+  const messages = await prisma.message.findMany({
+    where: { conversationId },
+    orderBy: { createdAt: "asc" },
+  });
+
+  return NextResponse.json({
+    messages: messages.map((m) => ({
+      id: m.id,
+      conversationId: m.conversationId,
+      senderId: m.senderId,
+      text: m.text,
+      read: m.read,
+      createdAt: m.createdAt.toISOString(),
+    })),
+  });
 }
 
 export async function POST(
@@ -48,46 +50,41 @@ export async function POST(
   { params }: { params: Promise<{ conversationId: string }> }
 ) {
   const session = await getServerSession(authOptions);
-  if (!session?.user) {
-    return NextResponse.json({ error: "Ej inloggad" }, { status: 401 });
-  }
+  if (!session?.user) return NextResponse.json({ error: "Ej inloggad" }, { status: 401 });
 
   const { conversationId } = await params;
 
-  const conversation = await getConversationById(conversationId);
-  if (!conversation) {
-    return NextResponse.json(
-      { error: "Konversation hittades inte" },
-      { status: 404 }
-    );
-  }
-
-  // Verify user is part of conversation
-  if (
-    conversation.landlordId !== session.user.id &&
-    conversation.tenantId !== session.user.id
-  ) {
+  const conversation = await prisma.conversation.findUnique({ where: { id: conversationId } });
+  if (!conversation) return NextResponse.json({ error: "Konversation hittades inte" }, { status: 404 });
+  if (conversation.landlordId !== session.user.id && conversation.tenantId !== session.user.id) {
     return NextResponse.json({ error: "Ej behörig" }, { status: 403 });
   }
 
   const { text } = await request.json();
   if (!text || typeof text !== "string" || text.trim().length === 0) {
-    return NextResponse.json(
-      { error: "Meddelande får inte vara tomt" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Meddelande får inte vara tomt" }, { status: 400 });
   }
 
-  const message = {
-    id: uuidv4(),
-    conversationId,
-    senderId: session.user.id,
-    text: text.trim().slice(0, 2000),
-    createdAt: new Date().toISOString(),
-    read: false,
-  };
+  const [message] = await Promise.all([
+    prisma.message.create({
+      data: {
+        conversationId,
+        senderId: session.user.id,
+        text: text.trim().slice(0, 2000),
+      },
+    }),
+    prisma.conversation.update({
+      where: { id: conversationId },
+      data: { lastMessageAt: new Date() },
+    }),
+  ]);
 
-  await addMessage(message);
-
-  return NextResponse.json(message, { status: 201 });
+  return NextResponse.json({
+    id: message.id,
+    conversationId: message.conversationId,
+    senderId: message.senderId,
+    text: message.text,
+    read: message.read,
+    createdAt: message.createdAt.toISOString(),
+  }, { status: 201 });
 }
