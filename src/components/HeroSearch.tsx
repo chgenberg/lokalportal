@@ -5,13 +5,13 @@ import { useRouter } from "next/navigation";
 import { useDebounce } from "@/lib/useDebounce";
 
 const SWEDISH_CITIES = [
-  "Stockholm", "Goteborg", "Malmo", "Uppsala", "Linkoping", "Vasteras",
-  "Orebro", "Norrkoping", "Helsingborg", "Jonkoping", "Umea", "Lund",
-  "Boras", "Sundsvall", "Gavle", "Eskilstuna", "Halmstad", "Vaxjo",
-  "Karlstad", "Sodertalje", "Taby", "Trollhattan", "Lulea", "Kalmar",
-  "Falun", "Kristianstad", "Skelleftea", "Uddevalla", "Nykoping",
-  "Skovde", "Varberg", "Ostersund", "Karlskrona", "Borlange",
-  "Tumba", "Motala", "Landskrona", "Lidkoping", "Visby",
+  "Stockholm", "Göteborg", "Malmö", "Uppsala", "Linköping", "Västerås",
+  "Örebro", "Norrköping", "Helsingborg", "Jönköping", "Umeå", "Lund",
+  "Borås", "Sundsvall", "Gävle", "Eskilstuna", "Halmstad", "Växjö",
+  "Karlstad", "Södertälje", "Täby", "Trollhättan", "Luleå", "Kalmar",
+  "Falun", "Kristianstad", "Skellefteå", "Uddevalla", "Nyköping",
+  "Skövde", "Varberg", "Östersund", "Karlskrona", "Borlänge",
+  "Tumba", "Motala", "Landskrona", "Lidköping", "Visby",
 ];
 
 export default function HeroSearch() {
@@ -68,7 +68,7 @@ export default function HeroSearch() {
     { value: "butik", label: "Butik" },
     { value: "kontor", label: "Kontor" },
     { value: "lager", label: "Lager" },
-    { value: "ovrigt", label: "Ovrigt" },
+    { value: "ovrigt", label: "Övrigt" },
   ];
 
   return (
@@ -79,7 +79,7 @@ export default function HeroSearch() {
           <div className="flex items-center px-4 py-3 rounded-xl bg-white/60 hover:bg-white/80 transition-colors">
             <input
               type="text"
-              placeholder="Sok stad..."
+              placeholder="Sök stad..."
               value={city}
               onChange={(e) => setCity(e.target.value)}
               onFocus={() => city.length >= 3 && setShowCitySuggestions(true)}
@@ -91,7 +91,7 @@ export default function HeroSearch() {
                 else if (e.key === "Escape") { setShowCitySuggestions(false); setHighlightedIndex(-1); }
               }}
               className="w-full bg-transparent text-sm text-navy placeholder-gray-400 outline-none"
-              aria-label="Sok stad"
+              aria-label="Sök stad"
             />
           </div>
           {showCitySuggestions && (
@@ -165,7 +165,7 @@ export default function HeroSearch() {
           onClick={handleSearch}
           className="btn-glow px-7 py-3 bg-navy text-white rounded-xl text-sm font-semibold shrink-0 tracking-wide"
         >
-          Sok
+          Sök
         </button>
       </div>
     </div>

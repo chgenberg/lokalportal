@@ -6,6 +6,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import type { Listing } from "@/lib/types";
 import { categoryLabels, typeLabels, availableTags } from "@/lib/types";
+import CustomSelect from "@/components/CustomSelect";
 
 function DashboardContent() {
   const { data: session } = useSession();
@@ -214,19 +215,21 @@ function DashboardContent() {
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Adress</label>
               <input type="text" value={createForm.address} onChange={(e) => setCreateForm((p) => ({ ...p, address: e.target.value }))} required className="w-full px-4 py-3 bg-muted rounded-xl text-sm border border-border focus:border-navy outline-none" />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Typ</label>
-              <select value={createForm.type} onChange={(e) => setCreateForm((p) => ({ ...p, type: e.target.value as "sale" | "rent" }))} className="w-full appearance-none px-4 py-3 bg-muted rounded-xl text-sm border border-border focus:border-navy outline-none">
-                <option value="rent">Uthyres</option>
-                <option value="sale">Till salu</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Kategori</label>
-              <select value={createForm.category} onChange={(e) => setCreateForm((p) => ({ ...p, category: e.target.value as "butik" | "kontor" | "lager" | "ovrigt" }))} className="w-full appearance-none px-4 py-3 bg-muted rounded-xl text-sm border border-border focus:border-navy outline-none">
-                {Object.entries(categoryLabels).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-              </select>
-            </div>
+            <CustomSelect
+              label="Typ"
+              value={createForm.type}
+              onChange={(v) => setCreateForm((p) => ({ ...p, type: v as "sale" | "rent" }))}
+              options={[
+                { value: "rent", label: "Uthyres" },
+                { value: "sale", label: "Till salu" },
+              ]}
+            />
+            <CustomSelect
+              label="Kategori"
+              value={createForm.category}
+              onChange={(v) => setCreateForm((p) => ({ ...p, category: v as "butik" | "kontor" | "lager" | "ovrigt" }))}
+              options={Object.entries(categoryLabels).map(([k, v]) => ({ value: k, label: v }))}
+            />
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Pris (kr)</label>
               <input type="number" value={createForm.price} onChange={(e) => setCreateForm((p) => ({ ...p, price: e.target.value }))} required min="0" className="w-full px-4 py-3 bg-muted rounded-xl text-sm border border-border focus:border-navy outline-none" placeholder={createForm.type === "rent" ? "kr/månad" : "Totalpris"} />

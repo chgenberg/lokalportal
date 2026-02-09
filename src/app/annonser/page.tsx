@@ -7,6 +7,7 @@ import FilterPanel from "@/components/FilterPanel";
 import type { FilterState } from "@/components/FilterPanel";
 import type { Listing } from "@/lib/types";
 import { useDebounce } from "@/lib/useDebounce";
+import CustomSelect from "@/components/CustomSelect";
 
 const ListingMap = lazy(() => import("@/components/ListingMap"));
 
@@ -113,39 +114,46 @@ function AnnonserContent() {
   const sortLabel: Record<SortOption, string> = { date: "Senaste", price_asc: "Pris (lågt till högt)", price_desc: "Pris (högt till lågt)", size: "Storlek" };
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="bg-muted border-b border-border">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <h1 className="text-3xl font-bold text-navy mb-2">Alla annonser</h1>
-          <p className="text-gray-500">Utforska vårt kompletta utbud av kommersiella lokaler</p>
+    <div className="min-h-screen bg-muted/30">
+      {/* Hero header */}
+      <div className="bg-navy relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-navy via-navy to-navy-light opacity-90" />
+        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: "radial-gradient(circle at 1px 1px, white 1px, transparent 0)", backgroundSize: "24px 24px" }} />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-12">
+          <p className="text-[11px] font-semibold tracking-[0.25em] uppercase text-white/40 mb-3">Lediga lokaler</p>
+          <h1 className="text-3xl md:text-4xl font-bold text-white mb-3 tracking-tight">Alla annonser</h1>
+          <p className="text-white/50 text-[15px] max-w-lg">Utforska vårt kompletta utbud av kommersiella lokaler runt om i Sverige.</p>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-col sm:flex-row gap-3 mb-8">
+        {/* Search & controls */}
+        <div className="flex flex-col sm:flex-row gap-3 mb-6 -mt-8 relative z-10">
           <div className="flex-1 relative">
             <input
               type="text"
-              placeholder="Sök lokaler..."
+              placeholder="Sök lokaler efter namn, stad eller beskrivning..."
               value={filterState.searchInput}
               onChange={(e) => updateFilters({ searchInput: e.target.value })}
-              className="w-full px-4 py-3 bg-muted rounded-xl text-sm border border-border focus:border-navy outline-none transition-colors"
+              className="w-full px-5 py-3.5 bg-white rounded-xl text-sm border border-border/60 shadow-lg shadow-navy/[0.04] focus:border-navy/30 focus:shadow-navy/[0.08] outline-none transition-all"
               aria-label="Sök lokaler"
             />
           </div>
           <div className="flex gap-2">
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm font-medium transition-colors ${
-                showFilters || hasFilters ? "bg-navy text-white" : "bg-muted text-gray-600 hover:bg-muted-dark border border-border"
+              className={`flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl text-sm font-medium shadow-lg transition-all ${
+                showFilters || hasFilters
+                  ? "bg-navy text-white shadow-navy/20"
+                  : "bg-white text-gray-600 hover:text-navy border border-border/60 shadow-navy/[0.04]"
               }`}
             >
               Filter
-              {hasFilters && <span className="w-2 h-2 rounded-full bg-white/60" />}
+              {hasFilters && <span className="w-1.5 h-1.5 rounded-full bg-white/60" />}
             </button>
             <button
               onClick={() => setViewMode(viewMode === "grid" ? "map" : "grid")}
-              className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm font-medium bg-muted text-gray-600 hover:bg-muted-dark border border-border transition-colors"
+              className="flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl text-sm font-medium bg-white text-gray-600 hover:text-navy border border-border/60 shadow-lg shadow-navy/[0.04] transition-all"
               aria-label={viewMode === "grid" ? "Visa karta" : "Visa rutnät"}
             >
               {viewMode === "grid" ? "Karta" : "Rutnät"}
@@ -157,61 +165,66 @@ function AnnonserContent() {
           <FilterPanel filters={filterState} onChange={updateFilters} onClear={clearFilters} totalResults={total} loading={loading} />
         )}
 
+        {/* Results bar */}
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <p className="text-sm text-gray-500">
-            {loading ? "Laddar..." : total > 0 ? `Visar ${(page - 1) * LIMIT + 1}–${Math.min(page * LIMIT, total)} av ${total} lokaler` : "Inga lokaler hittades"}
+          <p className="text-sm text-gray-400">
+            {loading ? "Laddar..." : total > 0 ? `Visar ${(page - 1) * LIMIT + 1}\u2013${Math.min(page * LIMIT, total)} av ${total} lokaler` : "Inga lokaler hittades"}
           </p>
           <div className="flex items-center gap-2">
-            <label htmlFor="sort-annonser" className="text-sm text-gray-500 whitespace-nowrap">Sortering:</label>
-            <select
-              id="sort-annonser"
+            <span className="text-[12px] text-gray-400 whitespace-nowrap tracking-wide uppercase">Sortering:</span>
+            <CustomSelect
               value={sort}
-              onChange={(e) => { setSort(e.target.value as SortOption); setPage(1); }}
-              className="px-3 py-2 bg-muted rounded-lg text-sm border border-border focus:border-navy outline-none"
-              aria-label="Sortera annonser"
-            >
-              <option value="date">{sortLabel.date}</option>
-              <option value="price_asc">{sortLabel.price_asc}</option>
-              <option value="price_desc">{sortLabel.price_desc}</option>
-              <option value="size">{sortLabel.size}</option>
-            </select>
+              onChange={(v) => { setSort(v as SortOption); setPage(1); }}
+              options={[
+                { value: "date", label: sortLabel.date },
+                { value: "price_asc", label: sortLabel.price_asc },
+                { value: "price_desc", label: sortLabel.price_desc },
+                { value: "size", label: sortLabel.size },
+              ]}
+              className="w-48"
+            />
           </div>
         </div>
 
+        {/* Content */}
         {viewMode === "map" ? (
-          <Suspense fallback={<div className="h-[600px] bg-muted rounded-2xl flex items-center justify-center"><div className="text-gray-400">Laddar karta...</div></div>}>
-            <div className="h-[600px] rounded-2xl overflow-hidden border border-border"><ListingMap listings={listings} /></div>
+          <Suspense fallback={<div className="h-[600px] bg-white rounded-2xl border border-border/60 flex items-center justify-center"><div className="text-gray-400 text-sm">Laddar karta...</div></div>}>
+            <div className="h-[600px] rounded-2xl overflow-hidden border border-border/60 shadow-sm"><ListingMap listings={listings} /></div>
           </Suspense>
         ) : loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="bg-white rounded-2xl border border-border overflow-hidden">
-                <div className="h-52 bg-muted animate-pulse" />
+              <div key={i} className="bg-white rounded-2xl border border-border/40 overflow-hidden">
+                <div className="h-52 bg-gradient-to-br from-muted to-muted/50 shimmer" />
                 <div className="p-5 space-y-3">
-                  <div className="h-4 bg-muted rounded animate-pulse w-3/4" />
-                  <div className="h-3 bg-muted rounded animate-pulse w-1/2" />
-                  <div className="h-3 bg-muted rounded animate-pulse w-full" />
+                  <div className="h-4 bg-muted/80 rounded-lg w-3/4" />
+                  <div className="h-3 bg-muted/60 rounded-lg w-1/2" />
+                  <div className="h-3 bg-muted/40 rounded-lg w-full" />
+                  <div className="pt-3 border-t border-border/30 flex justify-between">
+                    <div className="h-3 bg-muted/50 rounded w-16" />
+                    <div className="h-4 bg-muted/70 rounded w-24" />
+                  </div>
                 </div>
               </div>
             ))}
           </div>
         ) : error ? (
-          <div className="text-center py-20">
-            <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-navy/5 flex items-center justify-center">
-              <span className="text-2xl font-bold text-navy">!</span>
+          <div className="text-center py-24 bg-white rounded-2xl border border-border/40">
+            <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-navy/[0.04] flex items-center justify-center">
+              <span className="text-xl font-bold text-navy/30">!</span>
             </div>
             <h3 className="text-lg font-semibold text-navy mb-2">Något gick fel</h3>
-            <p className="text-sm text-gray-500 mb-6">{error}</p>
-            <button onClick={() => fetchListings()} className="px-6 py-2.5 bg-navy text-white text-sm font-medium rounded-lg hover:bg-navy-light transition-colors">Försök igen</button>
+            <p className="text-sm text-gray-400 mb-6">{error}</p>
+            <button onClick={() => fetchListings()} className="btn-glow px-6 py-2.5 bg-navy text-white text-sm font-medium rounded-lg">Försök igen</button>
           </div>
         ) : listings.length === 0 ? (
-          <div className="text-center py-20">
-            <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-muted flex items-center justify-center">
-              <span className="text-2xl font-bold text-gray-300">0</span>
+          <div className="text-center py-24 bg-white rounded-2xl border border-border/40">
+            <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-muted flex items-center justify-center">
+              <span className="text-xl font-bold text-gray-300">0</span>
             </div>
             <h3 className="text-lg font-semibold text-navy mb-2">Inga lokaler hittades</h3>
-            <p className="text-sm text-gray-500 mb-6">Prova att ändra dina sökfilter</p>
-            <button onClick={clearFilters} className="px-6 py-2.5 bg-navy text-white text-sm font-medium rounded-lg hover:bg-navy-light transition-colors">Rensa filter</button>
+            <p className="text-sm text-gray-400 mb-6">Prova att ändra dina sökfilter</p>
+            <button onClick={clearFilters} className="btn-glow px-6 py-2.5 bg-navy text-white text-sm font-medium rounded-lg">Rensa filter</button>
           </div>
         ) : (
           <>
@@ -219,10 +232,52 @@ function AnnonserContent() {
               {listings.map((listing) => <ListingCard key={listing.id} listing={listing} />)}
             </div>
             {totalPages > 1 && (
-              <div className="mt-10 flex items-center justify-center gap-2">
-                <button type="button" onClick={() => goToPage(page - 1)} disabled={page <= 1} className="px-4 py-2 rounded-lg text-sm font-medium border border-border bg-white text-gray-700 hover:bg-muted disabled:opacity-50 disabled:pointer-events-none transition-colors" aria-label="Föregående sida">&larr; Föregående</button>
-                <span className="px-4 py-2 text-sm text-gray-500">Sida {page} av {totalPages}</span>
-                <button type="button" onClick={() => goToPage(page + 1)} disabled={page >= totalPages} className="px-4 py-2 rounded-lg text-sm font-medium border border-border bg-white text-gray-700 hover:bg-muted disabled:opacity-50 disabled:pointer-events-none transition-colors" aria-label="Nästa sida">Nästa &rarr;</button>
+              <div className="mt-12 flex items-center justify-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => goToPage(page - 1)}
+                  disabled={page <= 1}
+                  className="px-4 py-2.5 rounded-lg text-sm font-medium bg-white text-gray-600 hover:text-navy border border-border/60 disabled:opacity-40 disabled:pointer-events-none transition-all hover:shadow-sm"
+                  aria-label="Föregående sida"
+                >
+                  &larr; Föregående
+                </button>
+                <div className="flex items-center gap-1 mx-2">
+                  {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                    let pageNum: number;
+                    if (totalPages <= 5) {
+                      pageNum = i + 1;
+                    } else if (page <= 3) {
+                      pageNum = i + 1;
+                    } else if (page >= totalPages - 2) {
+                      pageNum = totalPages - 4 + i;
+                    } else {
+                      pageNum = page - 2 + i;
+                    }
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => goToPage(pageNum)}
+                        className={`w-10 h-10 rounded-lg text-sm font-medium transition-all ${
+                          pageNum === page
+                            ? "bg-navy text-white shadow-sm"
+                            : "bg-white text-gray-500 hover:text-navy border border-border/60 hover:shadow-sm"
+                        }`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => goToPage(page + 1)}
+                  disabled={page >= totalPages}
+                  className="px-4 py-2.5 rounded-lg text-sm font-medium bg-white text-gray-600 hover:text-navy border border-border/60 disabled:opacity-40 disabled:pointer-events-none transition-all hover:shadow-sm"
+                  aria-label="Nästa sida"
+                >
+                  Nästa &rarr;
+                </button>
               </div>
             )}
           </>
@@ -234,7 +289,7 @@ function AnnonserContent() {
 
 export default function AnnonserPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-white flex items-center justify-center"><div className="text-gray-400">Laddar...</div></div>}>
+    <Suspense fallback={<div className="min-h-screen bg-muted/30 flex items-center justify-center"><div className="text-gray-400 text-sm">Laddar...</div></div>}>
       <AnnonserContent />
     </Suspense>
   );

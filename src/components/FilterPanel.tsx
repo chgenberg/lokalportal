@@ -1,6 +1,7 @@
 "use client";
 
 import RangeSlider from "./RangeSlider";
+import CustomSelect from "./CustomSelect";
 import { availableTags } from "@/lib/types";
 
 export interface FilterState {
@@ -56,7 +57,7 @@ export default function FilterPanel({ filters, onChange, onClear, totalResults, 
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <div>
-          <label className="block text-xs font-medium text-gray-500 mb-1.5">Stad</label>
+          <label className="block text-[11px] font-semibold text-gray-400 mb-1.5 tracking-[0.1em] uppercase">Stad</label>
           <input
             type="text"
             placeholder="Alla städer"
@@ -66,32 +67,30 @@ export default function FilterPanel({ filters, onChange, onClear, totalResults, 
             aria-label="Filtrera på stad"
           />
         </div>
-        <div>
-          <label className="block text-xs font-medium text-gray-500 mb-1.5">Typ</label>
-          <select
-            value={filters.type}
-            onChange={(e) => onChange({ type: e.target.value })}
-            className="w-full appearance-none px-4 py-2.5 bg-white rounded-lg text-sm border border-border focus:border-navy outline-none"
-          >
-            <option value="">Alla typer</option>
-            <option value="sale">Till salu</option>
-            <option value="rent">Uthyres</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-gray-500 mb-1.5">Kategori</label>
-          <select
-            value={filters.category}
-            onChange={(e) => onChange({ category: e.target.value })}
-            className="w-full appearance-none px-4 py-2.5 bg-white rounded-lg text-sm border border-border focus:border-navy outline-none"
-          >
-            <option value="">Alla kategorier</option>
-            <option value="butik">Butik</option>
-            <option value="kontor">Kontor</option>
-            <option value="lager">Lager</option>
-            <option value="ovrigt">Övrigt</option>
-          </select>
-        </div>
+        <CustomSelect
+          label="Typ"
+          value={filters.type}
+          onChange={(v) => onChange({ type: v })}
+          placeholder="Alla typer"
+          options={[
+            { value: "", label: "Alla typer" },
+            { value: "sale", label: "Till salu" },
+            { value: "rent", label: "Uthyres" },
+          ]}
+        />
+        <CustomSelect
+          label="Kategori"
+          value={filters.category}
+          onChange={(v) => onChange({ category: v })}
+          placeholder="Alla kategorier"
+          options={[
+            { value: "", label: "Alla kategorier" },
+            { value: "butik", label: "Butik" },
+            { value: "kontor", label: "Kontor" },
+            { value: "lager", label: "Lager" },
+            { value: "ovrigt", label: "Övrigt" },
+          ]}
+        />
       </div>
 
       <div className="mb-6">

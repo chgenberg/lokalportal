@@ -17,7 +17,7 @@ export default function Footer() {
               />
             </div>
             <p className="text-[13px] text-white/30 leading-relaxed">
-              Sveriges ledande marknadsplats for kommersiella lokaler.
+              Sveriges ledande marknadsplats för kommersiella lokaler.
             </p>
           </div>
 
@@ -37,7 +37,7 @@ export default function Footer() {
               <li><Link href="/annonser?category=butik" className="text-[13px] text-white/40 hover:text-white transition-colors">Butikslokaler</Link></li>
               <li><Link href="/annonser?category=kontor" className="text-[13px] text-white/40 hover:text-white transition-colors">Kontorslokaler</Link></li>
               <li><Link href="/annonser?category=lager" className="text-[13px] text-white/40 hover:text-white transition-colors">Lagerlokaler</Link></li>
-              <li><Link href="/annonser?category=ovrigt" className="text-[13px] text-white/40 hover:text-white transition-colors">Ovriga lokaler</Link></li>
+              <li><Link href="/annonser?category=ovrigt" className="text-[13px] text-white/40 hover:text-white transition-colors">Övriga lokaler</Link></li>
             </ul>
           </div>
 

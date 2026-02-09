@@ -24,8 +24,8 @@ export default function HeroStats() {
 
   const items = [
     { value: `${stats.totalListings}+`, label: "Lokaler" },
-    { value: `${stats.totalCities}+`, label: "Stader" },
-    { value: "500+", label: "Annonsorer" },
+    { value: `${stats.totalCities}+`, label: "Städer" },
+    { value: "500+", label: "Annonsörer" },
   ];
 
   return (

@@ -17,7 +17,7 @@ export default function FeaturedListings() {
         if (!res.ok) { setError("Kunde inte ladda utvalda lokaler."); setListings([]); return; }
         const data = await res.json();
         setListings(data.slice(0, 4));
-      } catch { setError("Ett fel uppstod vid hamtning."); setListings([]); } finally { setLoading(false); }
+      } catch { setError("Ett fel uppstod vid hämtning."); setListings([]); } finally { setLoading(false); }
     };
     fetchListings();
   }, []);

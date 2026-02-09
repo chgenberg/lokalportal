@@ -4,10 +4,10 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 
 const categoryConfig = [
-  { key: "butik", label: "Butik", description: "Butikslokaler i attraktiva lagen med bra exponering mot gata." },
-  { key: "kontor", label: "Kontor", description: "Moderna kontorslokaler med flexibla planlosningar." },
-  { key: "lager", label: "Lager", description: "Lagerlokaler med bra logistiklage och lastmojligheter." },
-  { key: "ovrigt", label: "Ovrigt", description: "Ateljeer, studios, pop-up lokaler och andra unika utrymmen." },
+  { key: "butik", label: "Butik", description: "Butikslokaler i attraktiva lägen med bra exponering mot gata." },
+  { key: "kontor", label: "Kontor", description: "Moderna kontorslokaler med flexibla planlösningar." },
+  { key: "lager", label: "Lager", description: "Lagerlokaler med bra logistikläge och lastmöjligheter." },
+  { key: "ovrigt", label: "Övrigt", description: "Ateljéer, studios, pop-up lokaler och andra unika utrymmen." },
 ];
 
 export default function CategoriesSection() {
@@ -34,25 +34,19 @@ export default function CategoriesSection() {
           <h2 className="text-3xl font-bold text-navy tracking-tight">Utforska lokaler</h2>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {categoryConfig.map((cat, i) => (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {categoryConfig.map((cat) => (
             <Link
               key={cat.key}
               href={`/annonser?category=${cat.key}`}
-              className="card-glow group relative p-7 bg-white rounded-2xl border border-border/60 glow-light"
-              style={{ animationDelay: `${i * 0.5}s` }}
+              className="card-glow group relative py-10 px-6 bg-white rounded-2xl border border-border/60 text-center glow-light"
             >
-              <div className="w-11 h-11 mb-5 rounded-xl bg-navy/[0.04] flex items-center justify-center group-hover:bg-navy transition-all duration-300">
-                <span className="text-[13px] font-bold text-navy group-hover:text-white transition-colors tracking-wide">
-                  {cat.label.charAt(0)}
-                </span>
-              </div>
-              <h3 className="text-base font-semibold text-navy mb-2 tracking-tight">
+              <h3 className="text-lg font-bold text-navy mb-2 tracking-tight group-hover:text-navy-light transition-colors">
                 {cat.label}
               </h3>
-              <p className="text-[13px] text-gray-400 mb-5 leading-relaxed">{cat.description}</p>
-              <span className="text-[11px] font-semibold text-navy/40 group-hover:text-navy transition-colors tracking-wide uppercase">
-                {byCategory[cat.key] ?? 0} annonser
+              <p className="text-[12px] text-gray-400 mb-4 leading-relaxed max-w-[200px] mx-auto">{cat.description}</p>
+              <span className="inline-block text-[11px] font-semibold text-navy/30 group-hover:text-navy transition-colors tracking-[0.15em] uppercase">
+                {byCategory[cat.key] ?? 0} annonser &rarr;
               </span>
             </Link>
           ))}

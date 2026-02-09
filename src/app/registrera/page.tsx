@@ -29,7 +29,7 @@ export default function RegisterPage() {
       await new Promise((resolve) => setTimeout(resolve, 1500));
       const result = await signIn("credentials", { email, password, redirect: false });
       if (result?.error) { router.push("/logga-in"); } else { router.push("/dashboard"); router.refresh(); }
-    } catch { setError("Nagot gick fel. Forsok igen."); setStep("details"); }
+    } catch { setError("Något gick fel. Försök igen."); setStep("details"); }
   };
 
   if (step === "loading") {
@@ -55,7 +55,7 @@ export default function RegisterPage() {
           </div>
           <h1 className="text-xl font-bold text-navy mb-1.5 tracking-tight">Skapa konto</h1>
           <p className="text-[13px] text-gray-400">
-            {step === "role" ? "Valj din kontotyp" : `Registrerar som ${role === "landlord" ? "hyresvard" : "hyresgast"}`}
+            {step === "role" ? "Välj din kontotyp" : `Registrerar som ${role === "landlord" ? "hyresvärd" : "hyresgäst"}`}
           </p>
         </div>
 
@@ -67,8 +67,8 @@ export default function RegisterPage() {
                   <span className="text-[13px] font-bold text-navy group-hover:text-white transition-colors">H</span>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-navy mb-1 tracking-tight">Hyresvard</h3>
-                  <p className="text-[12px] text-gray-400 leading-relaxed">Publicera annonser och kommunicera med hyresgaster</p>
+                  <h3 className="font-semibold text-navy mb-1 tracking-tight">Hyresvärd</h3>
+                  <p className="text-[12px] text-gray-400 leading-relaxed">Publicera annonser och kommunicera med hyresgäster</p>
                 </div>
               </div>
             </button>
@@ -79,8 +79,8 @@ export default function RegisterPage() {
                   <span className="text-[13px] font-bold text-navy group-hover:text-white transition-colors">G</span>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-navy mb-1 tracking-tight">Hyresgast</h3>
-                  <p className="text-[12px] text-gray-400 leading-relaxed">Sok lokaler, spara favoriter och kontakta hyresvardar</p>
+                  <h3 className="font-semibold text-navy mb-1 tracking-tight">Hyresgäst</h3>
+                  <p className="text-[12px] text-gray-400 leading-relaxed">Sök lokaler, spara favoriter och kontakta hyresvärdar</p>
                 </div>
               </div>
             </button>
@@ -93,7 +93,7 @@ export default function RegisterPage() {
 
             <div>
               <label className="block text-[12px] font-semibold text-gray-400 mb-1.5 tracking-wide uppercase">Namn</label>
-              <input type="text" value={name} onChange={(e) => setName(e.target.value)} required className="w-full px-4 py-3 bg-muted/50 rounded-xl text-sm border border-border/60 focus:border-navy/30 focus:bg-white outline-none transition-all" placeholder="Ditt fullstandiga namn" />
+              <input type="text" value={name} onChange={(e) => setName(e.target.value)} required className="w-full px-4 py-3 bg-muted/50 rounded-xl text-sm border border-border/60 focus:border-navy/30 focus:bg-white outline-none transition-all" placeholder="Ditt fullständiga namn" />
             </div>
 
             <div>
@@ -107,11 +107,11 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <label className="block text-[12px] font-semibold text-gray-400 mb-1.5 tracking-wide uppercase">Losenord</label>
+              <label className="block text-[12px] font-semibold text-gray-400 mb-1.5 tracking-wide uppercase">Lösenord</label>
               <div className="relative">
                 <input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} className="w-full px-4 py-3 bg-muted/50 rounded-xl text-sm border border-border/60 focus:border-navy/30 focus:bg-white outline-none transition-all pr-14" placeholder="Minst 6 tecken" />
                 <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-semibold text-gray-300 hover:text-gray-500 transition-colors tracking-wide uppercase">
-                  {showPassword ? "Dolj" : "Visa"}
+                  {showPassword ? "Dölj" : "Visa"}
                 </button>
               </div>
             </div>

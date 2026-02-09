@@ -3,7 +3,9 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { availableTags, categoryLabels, typeLabels } from "@/lib/types";
+import CustomSelect from "./CustomSelect";
 
 interface CreateListingModalProps {
   open: boolean;
@@ -86,8 +88,8 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
   const validateStep = (s: Step): string | null => {
     if (s === 1) {
       if (!form.title.trim()) return "Ange en rubrik";
-      if (!form.type) return "Valj typ (uthyres eller till salu)";
-      if (!form.category) return "Valj kategori";
+      if (!form.type) return "Välj typ (uthyres eller till salu)";
+      if (!form.category) return "Välj kategori";
       return null;
     }
     if (s === 2) {
@@ -150,7 +152,7 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
         router.refresh();
       }, 2000);
     } catch {
-      setError("Nagot gick fel. Forsok igen.");
+      setError("Något gick fel. Försök igen.");
       setSubmitting(false);
     }
   };
@@ -171,10 +173,48 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
     const n = Number(price);
     if (!n) return "—";
     if (type === "sale") return `${(n / 1000000).toFixed(1)} mkr`;
-    return `${n.toLocaleString("sv-SE")} kr/man`;
+    return `${n.toLocaleString("sv-SE")} kr/mån`;
   };
 
   if (!open) return null;
+
+  // Not logged in state
+  if (!session?.user) {
+    return (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div className="absolute inset-0 bg-navy/40 backdrop-blur-sm" onClick={handleClose} />
+        <div className="relative w-full max-w-md bg-white rounded-2xl p-10 text-center animate-scale-in" onClick={(e) => e.stopPropagation()}>
+          <button onClick={handleClose} className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-lg hover:bg-navy/[0.03] transition-colors text-gray-400 hover:text-navy">
+            &times;
+          </button>
+          <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-navy/[0.04] flex items-center justify-center">
+            <span className="text-2xl font-bold text-navy/40">H</span>
+          </div>
+          <h2 className="text-xl font-bold text-navy mb-2 tracking-tight">Annonsera din lokal</h2>
+          <p className="text-[13px] text-gray-400 mb-8 leading-relaxed max-w-xs mx-auto">
+            Logga in eller skapa ett konto för att publicera din annons och nå tusentals potentiella hyresgäster.
+          </p>
+          <div className="flex flex-col gap-2.5">
+            <Link
+              href="/logga-in"
+              onClick={handleClose}
+              className="btn-glow w-full py-3.5 bg-navy text-white text-[13px] font-semibold rounded-xl tracking-wide text-center"
+            >
+              Logga in
+            </Link>
+            <Link
+              href="/registrera"
+              onClick={handleClose}
+              className="w-full py-3.5 border border-navy/20 text-navy text-[13px] font-semibold rounded-xl tracking-wide text-center hover:bg-navy/[0.03] transition-colors"
+            >
+              Skapa konto
+            </Link>
+          </div>
+          <p className="text-[11px] text-gray-300 mt-6">Verifiering sker med BankID</p>
+        </div>
+      </div>
+    );
+  }
 
   // Success state
   if (submitted) {
@@ -186,7 +226,7 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
             <span className="text-2xl">&#10003;</span>
           </div>
           <h2 className="text-xl font-bold text-navy mb-2 tracking-tight">Annons publicerad</h2>
-          <p className="text-[13px] text-gray-400">Din annons ar nu live och synlig for alla besokare.</p>
+          <p className="text-[13px] text-gray-400">Din annons är nu live och synlig för alla besökare.</p>
         </div>
       </div>
     );
@@ -268,19 +308,16 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-[11px] font-semibold text-gray-400 mb-1.5 tracking-[0.1em] uppercase">Kategori</label>
-                  <select
-                    value={form.category}
-                    onChange={(e) => update({ category: e.target.value as FormData["category"] })}
-                    className="w-full appearance-none px-4 py-3 bg-muted/50 rounded-xl text-sm border border-border/60 focus:border-navy/30 focus:bg-white outline-none transition-all"
-                  >
-                    <option value="">Valj kategori</option>
-                    {Object.entries(categoryLabels).map(([val, label]) => (
-                      <option key={val} value={val}>{label}</option>
-                    ))}
-                  </select>
-                </div>
+                <CustomSelect
+                  label="Kategori"
+                  value={form.category}
+                  onChange={(v) => update({ category: v as FormData["category"] })}
+                  placeholder="Välj kategori"
+                  options={[
+                    { value: "", label: "Välj kategori" },
+                    ...Object.entries(categoryLabels).map(([val, label]) => ({ value: val, label })),
+                  ]}
+                />
               </div>
             </div>
           )}
@@ -315,7 +352,7 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-[11px] font-semibold text-gray-400 mb-1.5 tracking-[0.1em] uppercase">
-                    Pris {form.type === "sale" ? "(kr)" : "(kr/man)"}
+                    Pris {form.type === "sale" ? "(kr)" : "(kr/mån)"}
                   </label>
                   <input
                     type="number"
@@ -413,22 +450,15 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
           {/* Step 4: Preview */}
           {step === 4 && (
             <div className="animate-fade-in">
-              <p className="text-[11px] font-semibold text-gray-400 mb-4 tracking-[0.1em] uppercase">Forhandsgranskning</p>
+              <p className="text-[11px] font-semibold text-gray-400 mb-4 tracking-[0.1em] uppercase">Förhandsgranskning</p>
 
               {/* Preview card */}
               <div className="rounded-2xl border border-border/60 overflow-hidden glow-light mb-6">
                 {/* Simulated image area */}
                 <div className="h-40 bg-gradient-to-br from-navy/[0.06] to-navy/[0.12] relative flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="w-10 h-10 mx-auto mb-1.5 rounded-xl bg-white/80 flex items-center justify-center backdrop-blur-sm">
-                      <span className="text-sm font-bold text-navy/50">
-                        {form.category ? categoryLabels[form.category]?.charAt(0) : "?"}
-                      </span>
-                    </div>
-                    <span className="text-[10px] text-navy/30 font-semibold tracking-[0.1em] uppercase">
-                      {form.category ? categoryLabels[form.category] : "Kategori"}
-                    </span>
-                  </div>
+                  <span className="text-[11px] font-semibold text-navy/25 tracking-[0.2em] uppercase select-none">
+                    {form.category ? categoryLabels[form.category] : "Kategori"}
+                  </span>
                   <div className="absolute top-3 left-3 flex gap-1.5">
                     {form.type && (
                       <span className="px-2.5 py-1 text-[10px] font-semibold rounded-full bg-navy/90 text-white backdrop-blur-sm tracking-wide">
@@ -520,7 +550,7 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
                 onClick={next}
                 className="btn-glow px-6 py-2.5 bg-navy text-white text-[13px] font-semibold rounded-xl tracking-wide"
               >
-                Fortsatt &rarr;
+                Fortsätt &rarr;
               </button>
             ) : (
               <button

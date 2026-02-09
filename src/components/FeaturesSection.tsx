@@ -1,8 +1,8 @@
 const features = [
-  { title: "Smart sokning", description: "Filtrera pa stad, typ och kategori for att snabbt hitta exakt den lokal du letar efter." },
-  { title: "Verifierade annonsorer", description: "Alla annonsorer verifieras med BankID for att sakerst\u00e4lla trygghet och kvalitet." },
-  { title: "Snabb publicering", description: "Lagg upp din annons pa under 5 minuter. Na tusentals potentiella hyresgaster direkt." },
-  { title: "Support & hjalp", description: "Vart team finns tillgangligt for att hjalpa dig genom hela processen." },
+  { title: "Smart sökning", description: "Filtrera på stad, typ och kategori för att snabbt hitta exakt den lokal du letar efter." },
+  { title: "Verifierade annonsörer", description: "Alla annonsörer verifieras med BankID för att säkerställa trygghet och kvalitet." },
+  { title: "Snabb publicering", description: "Lägg upp din annons på under 5 minuter. Nå tusentals potentiella hyresgäster direkt." },
+  { title: "Support & hjälp", description: "Vårt team finns tillgängligt för att hjälpa dig genom hela processen." },
 ];
 
 export default function FeaturesSection() {
@@ -11,23 +11,17 @@ export default function FeaturesSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-gray-400 mb-3">Hur det fungerar</p>
-          <h2 className="text-3xl font-bold text-navy tracking-tight">Allt du behover</h2>
+          <h2 className="text-3xl font-bold text-navy tracking-tight">Allt du behöver</h2>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {features.map((feature, i) => (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {features.map((feature) => (
             <div
               key={feature.title}
-              className="card-glow group p-7 bg-white rounded-2xl border border-border/60 cursor-default glow-light"
-              style={{ animationDelay: `${i * 0.5}s` }}
+              className="card-glow group py-10 px-6 bg-white rounded-2xl border border-border/60 cursor-default text-center glow-light"
             >
-              <div className="w-10 h-10 mb-5 rounded-xl bg-navy/[0.04] flex items-center justify-center group-hover:bg-navy transition-all duration-300">
-                <span className="text-[13px] font-bold text-navy/60 group-hover:text-white transition-colors tabular-nums">
-                  0{i + 1}
-                </span>
-              </div>
-              <h3 className="text-base font-semibold text-navy mb-2 tracking-tight">{feature.title}</h3>
-              <p className="text-[13px] text-gray-400 leading-relaxed">{feature.description}</p>
+              <h3 className="text-base font-bold text-navy mb-2 tracking-tight">{feature.title}</h3>
+              <p className="text-[12px] text-gray-400 leading-relaxed max-w-[200px] mx-auto">{feature.description}</p>
             </div>
           ))}
         </div>

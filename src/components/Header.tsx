@@ -39,14 +39,6 @@ export default function Header() {
   }, [session]);
 
   const handleAnnonsera = () => {
-    if (!session?.user) {
-      router.push("/logga-in");
-      return;
-    }
-    if (session.user.role !== "landlord") {
-      router.push("/annonspaket");
-      return;
-    }
     setShowCreateModal(true);
   };
 
@@ -67,14 +59,14 @@ export default function Header() {
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex items-center justify-between h-24">
             <Link href="/" className="flex items-center gap-2 group shrink-0">
               <Image
                 src="/logohittayta.jpeg"
                 alt="Hittayta.se"
-                width={140}
-                height={40}
-                className="h-9 w-auto object-contain"
+                width={350}
+                height={100}
+                className="h-[90px] w-auto object-contain"
                 priority
               />
             </Link>

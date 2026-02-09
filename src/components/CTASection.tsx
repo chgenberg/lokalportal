@@ -11,10 +11,10 @@ export default function CTASection() {
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-white/[0.01] rounded-full" />
 
           <div className="relative z-10 px-8 py-20 md:px-16 md:py-24 text-center">
-            <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-white/25 mb-4">For fastighetsagare</p>
+            <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-white/25 mb-4">För fastighetsägare</p>
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 tracking-tight">Hyr ut din lokal</h2>
             <p className="text-base text-white/40 mb-10 max-w-lg mx-auto leading-relaxed">
-              Na tusentals potentiella hyresgaster. Logga in sakert med BankID och publicera din annons idag.
+              Nå tusentals potentiella hyresgäster. Logga in säkert med BankID och publicera din annons idag.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
