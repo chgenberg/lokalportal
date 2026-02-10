@@ -1,9 +1,9 @@
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@/generated/prisma/client";
 
-const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
+const globalForPrisma = globalThis as unknown as { prisma: PrismaClient | undefined };
 
-function createPrismaClient() {
+function createPrismaClient(): PrismaClient {
   const connectionString = process.env.DATABASE_URL;
   if (!connectionString?.trim()) {
     throw new Error(
@@ -14,8 +14,18 @@ function createPrismaClient() {
   return new PrismaClient({ adapter });
 }
 
-export const prisma = globalForPrisma.prisma || createPrismaClient();
+function getPrisma(): PrismaClient {
+  if (globalForPrisma.prisma) return globalForPrisma.prisma;
+  const client = createPrismaClient();
+  globalForPrisma.prisma = client;
+  return client;
+}
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+// Lazy proxy: only create the client when first used (at runtime), not at build time.
+export const prisma = new Proxy({} as PrismaClient, {
+  get(_, prop) {
+    return (getPrisma() as Record<string | symbol, unknown>)[prop];
+  },
+});
 
 export default prisma;
