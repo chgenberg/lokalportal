@@ -50,6 +50,14 @@ function IconPlus({ className }: { className?: string }) {
   );
 }
 
+function IconChart({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M18 20V10M12 20V4M6 20v-6" />
+    </svg>
+  );
+}
+
 function IconSettings({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -98,6 +106,7 @@ export default function DashboardLayoutClient({ children }: { children: React.Re
     { href: "/dashboard/meddelanden", label: "Meddelanden", icon: IconChat, show: true },
     { href: "/dashboard?tab=listings", label: "Mina annonser", icon: IconBuilding, show: isLandlord },
     { href: "/dashboard?tab=favorites", label: "Favoriter", icon: IconHeart, show: !isLandlord },
+    { href: "/dashboard?tab=statistics", label: "Statistik", icon: IconChart, show: isLandlord },
     { href: "/dashboard?tab=create", label: "Ny annons", icon: IconPlus, show: isLandlord },
     { href: "/dashboard?tab=settings", label: "Inställningar", icon: IconSettings, show: true },
   ];

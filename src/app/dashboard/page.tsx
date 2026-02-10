@@ -28,14 +28,25 @@ function DashboardContent() {
     totalListings: number;
     totalInquiries: number;
     totalFavorites: number;
+    totalViews?: number;
     responseRate: number;
     topListingId: string | null;
     topListingTitle: string | null;
     recentActivity: { type: "inquiry" | "message" | "favorite"; listingId: string; listingTitle: string; at: string }[];
   };
   type PerListingStats = { listingId: string; inquiryCount: number; favoriteCount: number; lastInquiryAt: string | null; viewCount: number }[];
+  type TimeSeries = {
+    dailyStats: { date: string; views: number; inquiries: number; favorites: number }[];
+    perListingDaily: { listingId: string; title: string; daily: number[] }[];
+    weeklyComparison: {
+      thisWeek: { views: number; inquiries: number; favorites: number };
+      lastWeek: { views: number; inquiries: number; favorites: number };
+    };
+    categoryDistribution: Record<string, number>;
+  };
   const [statsOverview, setStatsOverview] = useState<StatsOverview | null>(null);
   const [perListingStats, setPerListingStats] = useState<PerListingStats>([]);
+  const [timeSeries, setTimeSeries] = useState<TimeSeries | null>(null);
 
   const [createForm, setCreateForm] = useState({
     title: "", description: "", city: "", address: "",
@@ -108,6 +119,7 @@ function DashboardContent() {
             const statsData = await statsRes.json();
             setStatsOverview(statsData.overview ?? null);
             setPerListingStats(statsData.perListing ?? []);
+            setTimeSeries(statsData.timeSeries ?? null);
           } catch { /* */ }
         }
         const profileRes = await fetch("/api/auth/profile");
@@ -625,6 +637,10 @@ function DashboardContent() {
     );
   }
 
+  if (tab === "statistics" && isLandlord) {
+    return <StatisticsTab overview={statsOverview} perListing={perListingStats} timeSeries={timeSeries} formatPrice={formatPrice} />;
+  }
+
   if (tab === "create" && isLandlord) {
     return (
       <div className="space-y-6">
@@ -770,6 +786,375 @@ function DashboardContent() {
   }
 
   return null;
+}
+
+/* ── SVG Chart Components ─────────────────────────────── */
+
+function MiniLineChart({ data, color = "#1a2744", height = 120, className = "" }: { data: number[]; color?: string; height?: number; className?: string }) {
+  if (!data.length) return null;
+  const max = Math.max(...data, 1);
+  const w = 100;
+  const h = height;
+  const pad = 4;
+  const points = data.map((v, i) => {
+    const x = pad + (i / (data.length - 1)) * (w - pad * 2);
+    const y = h - pad - (v / max) * (h - pad * 2);
+    return `${x},${y}`;
+  });
+  const areaPoints = [...points, `${pad + ((data.length - 1) / (data.length - 1)) * (w - pad * 2)},${h - pad}`, `${pad},${h - pad}`];
+
+  return (
+    <svg viewBox={`0 0 ${w} ${h}`} className={className} preserveAspectRatio="none">
+      <defs>
+        <linearGradient id={`grad-${color.replace("#", "")}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity="0.15" />
+          <stop offset="100%" stopColor={color} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <polygon points={areaPoints.join(" ")} fill={`url(#grad-${color.replace("#", "")})`} />
+      <polyline points={points.join(" ")} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+    </svg>
+  );
+}
+
+function Sparkline({ data, color = "#1a2744" }: { data: number[]; color?: string }) {
+  if (!data.length) return null;
+  const max = Math.max(...data, 1);
+  const points = data.map((v, i) => {
+    const x = (i / (data.length - 1)) * 60;
+    const y = 16 - (v / max) * 14;
+    return `${x},${y}`;
+  }).join(" ");
+  return (
+    <svg viewBox="0 0 60 18" className="w-16 h-5 shrink-0">
+      <polyline points={points} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+    </svg>
+  );
+}
+
+function DonutChart({ data, size = 140 }: { data: { label: string; value: number; color: string }[]; size?: number }) {
+  const total = data.reduce((s, d) => s + d.value, 0);
+  if (!total) return null;
+  const r = size / 2 - 8;
+  const cx = size / 2;
+  const cy = size / 2;
+  let cumAngle = -90;
+
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+      {data.map((d, i) => {
+        const angle = (d.value / total) * 360;
+        const startAngle = cumAngle;
+        cumAngle += angle;
+        const endAngle = cumAngle;
+        const largeArc = angle > 180 ? 1 : 0;
+        const rad = Math.PI / 180;
+        const x1 = cx + r * Math.cos(startAngle * rad);
+        const y1 = cy + r * Math.sin(startAngle * rad);
+        const x2 = cx + r * Math.cos(endAngle * rad);
+        const y2 = cy + r * Math.sin(endAngle * rad);
+        return (
+          <path
+            key={i}
+            d={`M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} Z`}
+            fill={d.color}
+            stroke="white"
+            strokeWidth="2"
+            className="transition-opacity hover:opacity-80"
+          />
+        );
+      })}
+      <circle cx={cx} cy={cy} r={r * 0.55} fill="white" />
+      <text x={cx} y={cy - 4} textAnchor="middle" className="text-lg font-bold fill-navy" style={{ fontSize: 16 }}>{total}</text>
+      <text x={cx} y={cy + 12} textAnchor="middle" className="fill-gray-400" style={{ fontSize: 8 }}>annonser</text>
+    </svg>
+  );
+}
+
+function TrendArrow({ current, previous }: { current: number; previous: number }) {
+  if (previous === 0 && current === 0) return <span className="text-xs text-gray-400">—</span>;
+  const pct = previous > 0 ? Math.round(((current - previous) / previous) * 100) : current > 0 ? 100 : 0;
+  const up = pct >= 0;
+  return (
+    <span className={`inline-flex items-center gap-0.5 text-xs font-semibold ${up ? "text-green-600" : "text-red-500"}`}>
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className={up ? "" : "rotate-180"}>
+        <path d="M6 2.5L10 7.5H2L6 2.5Z" fill="currentColor" />
+      </svg>
+      {Math.abs(pct)}%
+    </span>
+  );
+}
+
+function BarChart({ items, maxValue }: { items: { label: string; value: number; color: string }[]; maxValue: number }) {
+  return (
+    <div className="space-y-3">
+      {items.map((item, i) => (
+        <div key={i}>
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-xs text-gray-600 truncate max-w-[200px]">{item.label}</span>
+            <span className="text-xs font-semibold text-navy">{item.value}</span>
+          </div>
+          <div className="h-2 bg-muted rounded-full overflow-hidden">
+            <div
+              className="h-full rounded-full transition-all duration-700"
+              style={{ width: `${maxValue > 0 ? (item.value / maxValue) * 100 : 0}%`, backgroundColor: item.color }}
+            />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ── Statistics Tab ───────────────────────────────────── */
+
+const categoryColors: Record<string, string> = {
+  kontor: "#1a2744",
+  butik: "#3b82f6",
+  lager: "#f59e0b",
+  ovrigt: "#8b5cf6",
+};
+const categoryNames: Record<string, string> = {
+  kontor: "Kontor",
+  butik: "Butik",
+  lager: "Lager",
+  ovrigt: "Övrigt",
+};
+
+function StatisticsTab({
+  overview,
+  perListing,
+  timeSeries,
+  formatPrice,
+}: {
+  overview: { totalListings: number; totalInquiries: number; totalFavorites: number; totalViews?: number; responseRate: number; topListingId: string | null; topListingTitle: string | null } | null;
+  perListing: { listingId: string; inquiryCount: number; favoriteCount: number; viewCount: number }[];
+  timeSeries: { dailyStats: { date: string; views: number; inquiries: number; favorites: number }[]; perListingDaily: { listingId: string; title: string; daily: number[] }[]; weeklyComparison: { thisWeek: { views: number; inquiries: number; favorites: number }; lastWeek: { views: number; inquiries: number; favorites: number } }; categoryDistribution: Record<string, number> } | null;
+  formatPrice: (price: number, type: string) => string;
+}) {
+  const [chartMetric, setChartMetric] = useState<"views" | "inquiries" | "favorites">("views");
+
+  if (!overview || !timeSeries) {
+    return (
+      <div className="space-y-6">
+        <h1 className="text-2xl font-bold text-navy">Statistik</h1>
+        <div className="bg-white rounded-2xl border border-border p-12 text-center">
+          <p className="text-gray-500">Laddar statistik...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const wc = timeSeries.weeklyComparison;
+  const daily = timeSeries.dailyStats;
+  const chartData = daily.map((d) => d[chartMetric]);
+
+  const kpis = [
+    { label: "Totala visningar", value: overview.totalViews ?? 0, thisWeek: wc.thisWeek.views, lastWeek: wc.lastWeek.views, color: "#1a2744" },
+    { label: "Förfrågningar", value: overview.totalInquiries, thisWeek: wc.thisWeek.inquiries, lastWeek: wc.lastWeek.inquiries, color: "#3b82f6" },
+    { label: "Sparade", value: overview.totalFavorites, thisWeek: wc.thisWeek.favorites, lastWeek: wc.lastWeek.favorites, color: "#f59e0b" },
+    { label: "Svarsfrekvens", value: overview.responseRate, thisWeek: overview.responseRate, lastWeek: overview.responseRate, color: "#10b981", suffix: "%" },
+  ];
+
+  const maxInquiries = Math.max(...perListing.map((p) => p.inquiryCount), 1);
+  const maxViews = Math.max(...perListing.map((p) => p.viewCount), 1);
+
+  const catData = Object.entries(timeSeries.categoryDistribution).map(([key, val]) => ({
+    label: categoryNames[key] ?? key,
+    value: val,
+    color: categoryColors[key] ?? "#94a3b8",
+  }));
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-navy mb-1">Statistik</h1>
+        <p className="text-sm text-gray-500">Översikt över dina annonsers prestanda de senaste 30 dagarna</p>
+      </div>
+
+      {/* KPI Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {kpis.map((kpi) => (
+          <div key={kpi.label} className="bg-white rounded-2xl border border-border p-5 hover:shadow-md transition-shadow group">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-[11px] font-semibold text-gray-400 tracking-[0.1em] uppercase">{kpi.label}</p>
+              <TrendArrow current={kpi.thisWeek} previous={kpi.lastWeek} />
+            </div>
+            <p className="text-3xl font-bold text-navy tracking-tight">
+              {kpi.value.toLocaleString("sv-SE")}{kpi.suffix ?? ""}
+            </p>
+            <div className="mt-2 flex items-center gap-2 text-[11px] text-gray-400">
+              <span>Denna vecka: {kpi.thisWeek}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Main Chart */}
+      <div className="bg-white rounded-2xl border border-border p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+          <h2 className="font-semibold text-navy">Utveckling (30 dagar)</h2>
+          <div className="flex gap-1 bg-muted rounded-xl p-1">
+            {(["views", "inquiries", "favorites"] as const).map((m) => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => setChartMetric(m)}
+                className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
+                  chartMetric === m
+                    ? "bg-navy text-white shadow-sm"
+                    : "text-gray-500 hover:text-navy"
+                }`}
+              >
+                {m === "views" ? "Visningar" : m === "inquiries" ? "Förfrågningar" : "Sparade"}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="relative h-48">
+          <MiniLineChart
+            data={chartData}
+            color={chartMetric === "views" ? "#1a2744" : chartMetric === "inquiries" ? "#3b82f6" : "#f59e0b"}
+            height={192}
+            className="w-full h-full"
+          />
+          {/* X-axis labels */}
+          <div className="absolute bottom-0 left-0 right-0 flex justify-between px-1">
+            {[0, 7, 14, 21, 29].map((idx) => (
+              <span key={idx} className="text-[10px] text-gray-400">
+                {daily[idx] ? new Date(daily[idx].date).toLocaleDateString("sv-SE", { day: "numeric", month: "short" }) : ""}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* Daily summary row */}
+        <div className="flex items-center gap-6 mt-4 pt-4 border-t border-border/40">
+          <div>
+            <p className="text-[10px] text-gray-400 uppercase tracking-wider">Idag</p>
+            <p className="text-lg font-bold text-navy">{daily[daily.length - 1]?.[chartMetric] ?? 0}</p>
+          </div>
+          <div>
+            <p className="text-[10px] text-gray-400 uppercase tracking-wider">Genomsnitt/dag</p>
+            <p className="text-lg font-bold text-navy">{Math.round(chartData.reduce((a, b) => a + b, 0) / chartData.length)}</p>
+          </div>
+          <div>
+            <p className="text-[10px] text-gray-400 uppercase tracking-wider">Totalt 30d</p>
+            <p className="text-lg font-bold text-navy">{chartData.reduce((a, b) => a + b, 0)}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Two-column: Per-listing bars + Category donut */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Per-listing performance */}
+        <div className="lg:col-span-2 bg-white rounded-2xl border border-border p-6">
+          <h2 className="font-semibold text-navy mb-4">Prestanda per annons</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <p className="text-[11px] text-gray-400 uppercase tracking-wider mb-3">Visningar</p>
+              <BarChart
+                items={[...perListing].sort((a, b) => b.viewCount - a.viewCount).map((p) => ({
+                  label: timeSeries.perListingDaily.find((pl) => pl.listingId === p.listingId)?.title ?? p.listingId.slice(0, 8),
+                  value: p.viewCount,
+                  color: "#1a2744",
+                }))}
+                maxValue={maxViews}
+              />
+            </div>
+            <div>
+              <p className="text-[11px] text-gray-400 uppercase tracking-wider mb-3">Förfrågningar</p>
+              <BarChart
+                items={[...perListing].sort((a, b) => b.inquiryCount - a.inquiryCount).map((p) => ({
+                  label: timeSeries.perListingDaily.find((pl) => pl.listingId === p.listingId)?.title ?? p.listingId.slice(0, 8),
+                  value: p.inquiryCount,
+                  color: "#3b82f6",
+                }))}
+                maxValue={maxInquiries}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Category distribution */}
+        <div className="bg-white rounded-2xl border border-border p-6">
+          <h2 className="font-semibold text-navy mb-4">Kategorier</h2>
+          <div className="flex justify-center mb-4">
+            <DonutChart data={catData} />
+          </div>
+          <div className="space-y-2">
+            {catData.map((c) => (
+              <div key={c.label} className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: c.color }} />
+                <span className="text-xs text-gray-600 flex-1">{c.label}</span>
+                <span className="text-xs font-semibold text-navy">{c.value}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Per-listing sparklines table */}
+      <div className="bg-white rounded-2xl border border-border p-6">
+        <h2 className="font-semibold text-navy mb-4">Visningstrender per annons</h2>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-border/40">
+                <th className="text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider pb-3">Annons</th>
+                <th className="text-right text-[11px] font-semibold text-gray-400 uppercase tracking-wider pb-3">Visningar</th>
+                <th className="text-right text-[11px] font-semibold text-gray-400 uppercase tracking-wider pb-3">Förfrågn.</th>
+                <th className="text-right text-[11px] font-semibold text-gray-400 uppercase tracking-wider pb-3">Sparade</th>
+                <th className="text-right text-[11px] font-semibold text-gray-400 uppercase tracking-wider pb-3 pr-2">Trend (30d)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {timeSeries.perListingDaily.map((pl) => {
+                const stats = perListing.find((p) => p.listingId === pl.listingId);
+                return (
+                  <tr key={pl.listingId} className="border-b border-border/20 hover:bg-muted/30 transition-colors">
+                    <td className="py-3 pr-4">
+                      <Link href={`/annonser/${pl.listingId}`} className="text-sm font-medium text-navy hover:text-navy-light transition-colors truncate block max-w-[240px]">
+                        {pl.title}
+                      </Link>
+                    </td>
+                    <td className="py-3 text-right text-sm font-semibold text-navy">{stats?.viewCount ?? 0}</td>
+                    <td className="py-3 text-right text-sm text-gray-600">{stats?.inquiryCount ?? 0}</td>
+                    <td className="py-3 text-right text-sm text-gray-600">{stats?.favoriteCount ?? 0}</td>
+                    <td className="py-3 text-right pr-2">
+                      <div className="flex justify-end">
+                        <Sparkline data={pl.daily} color={pl.daily[pl.daily.length - 1] >= pl.daily[0] ? "#10b981" : "#ef4444"} />
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Top performer highlight */}
+      {overview.topListingId && overview.topListingTitle && (
+        <div className="bg-gradient-to-r from-navy to-navy-light rounded-2xl p-6 text-white">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <p className="text-[11px] font-semibold text-white/50 uppercase tracking-wider mb-1">Toppresterande annons</p>
+              <p className="text-lg font-bold">{overview.topListingTitle}</p>
+              <p className="text-sm text-white/70 mt-1">Flest förfrågningar bland dina annonser</p>
+            </div>
+            <Link
+              href={`/annonser/${overview.topListingId}`}
+              className="px-5 py-2.5 bg-white/20 text-white text-sm font-medium rounded-xl hover:bg-white/30 transition-colors backdrop-blur-sm whitespace-nowrap"
+            >
+              Visa annons
+            </Link>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 function StatCard({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
