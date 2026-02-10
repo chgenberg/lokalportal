@@ -3,7 +3,11 @@
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 
-const IMAGES = ["/start/3.jpg", "/start/1.jpg", "/start/2.jpg"];
+const IMAGES = [
+  "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1920&q=80",
+  "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1920&q=80",
+  "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=1920&q=80",
+];
 const ALT_TEXTS = [
   "Kommersiell lokal med moderna kontorsytor",
   "Butikslokal med stor fönsterfront",
