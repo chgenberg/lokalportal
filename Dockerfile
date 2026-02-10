@@ -49,6 +49,14 @@ RUN mkdir -p uploads && chown nextjs:nodejs uploads
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
+# Include prisma CLI for runtime migrations
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
+COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+
+# Start script: migrate then start
+COPY --chown=nextjs:nodejs start.sh ./start.sh
+
 USER nextjs
 
 EXPOSE 3000
@@ -56,4 +64,4 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["node", "server.js"]
+CMD ["sh", "start.sh"]
