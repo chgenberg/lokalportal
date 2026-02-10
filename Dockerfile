@@ -16,6 +16,11 @@ COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
 
+# Dummy values for build-time only — real values are set at runtime via Railway env vars
+ENV NEXTAUTH_SECRET="build-time-placeholder"
+ENV NEXTAUTH_URL="https://ledigyta.se"
+ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy"
+
 RUN npx prisma generate
 RUN npm run build
 
