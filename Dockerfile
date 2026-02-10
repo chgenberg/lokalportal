@@ -49,10 +49,8 @@ RUN mkdir -p uploads && chown nextjs:nodejs uploads
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Include prisma CLI for runtime migrations
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
-COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+# Install prisma CLI + dotenv for runtime migrations (prisma.config.ts imports dotenv)
+RUN npm install --no-save prisma@7 dotenv
 
 # Start script: migrate then start
 COPY --chown=nextjs:nodejs start.sh ./start.sh
