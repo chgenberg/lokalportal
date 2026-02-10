@@ -9,15 +9,28 @@ const ListingMap = lazy(() => import("@/components/ListingMap"));
 export default function KartaPage() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | undefined>();
 
+  const fetchListings = async () => {
+    setError(null);
+    setLoading(true);
+    try {
+      const res = await fetch("/api/listings");
+      if (res.ok) {
+        const data = await res.json();
+        setListings(Array.isArray(data) ? data : data.listings || []);
+      } else {
+        setError("Kunde inte ladda lokaler. Försök igen.");
+      }
+    } catch {
+      setError("Ett fel uppstod vid hämtning. Försök igen.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchListings = async () => {
-      try {
-        const res = await fetch("/api/listings");
-        if (res.ok) { const data = await res.json(); setListings(Array.isArray(data) ? data : data.listings || []); }
-      } catch { /* fallback */ } finally { setLoading(false); }
-    };
     fetchListings();
   }, []);
 
@@ -41,6 +54,14 @@ export default function KartaPage() {
         <div className="lg:w-80 xl:w-96 overflow-y-auto border-r border-border bg-white">
           <div className="p-4">
             <p className="text-xs font-medium text-gray-500 mb-3">{listings.length} lokaler</p>
+            {error && (
+              <div role="alert" className="mb-4 p-3 rounded-xl bg-red-50 border border-red-100 text-sm text-red-800">
+                <p className="mb-2">{error}</p>
+                <button type="button" onClick={fetchListings} className="text-sm font-medium text-red-600 hover:underline">
+                  Försök igen
+                </button>
+              </div>
+            )}
             <div className="space-y-2">
               {loading
                 ? [...Array(5)].map((_, i) => <div key={i} className="p-3 rounded-xl bg-muted animate-pulse h-20" />)

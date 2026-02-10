@@ -1,9 +1,10 @@
 import { MetadataRoute } from "next";
+import prisma from "@/lib/db";
 
-const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://hittayta.se";
+const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://ledigyta.se";
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  return [
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const staticPages: MetadataRoute.Sitemap = [
     { url: baseUrl, lastModified: new Date(), changeFrequency: "weekly", priority: 1 },
     { url: `${baseUrl}/annonser`, lastModified: new Date(), changeFrequency: "daily", priority: 0.9 },
     { url: `${baseUrl}/kategorier`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.8 },
@@ -17,4 +18,20 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${baseUrl}/cookies`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.3 },
     { url: `${baseUrl}/villkor`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.3 },
   ];
+
+  try {
+    const listings = await prisma.listing.findMany({
+      select: { id: true, createdAt: true },
+      orderBy: { createdAt: "desc" },
+    });
+    const listingEntries: MetadataRoute.Sitemap = listings.map((l) => ({
+      url: `${baseUrl}/annonser/${l.id}`,
+      lastModified: l.createdAt,
+      changeFrequency: "weekly" as const,
+      priority: 0.7,
+    }));
+    return [...staticPages, ...listingEntries];
+  } catch {
+    return staticPages;
+  }
 }

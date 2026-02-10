@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: "Dashboard – Hittayta.se",
   description:
     "Hantera ditt konto på Hittayta.se. Översikt, annonser, meddelanden, favoriter och inställningar.",
+  robots: { index: false, follow: false },
 };
 
 export default function DashboardLayout({

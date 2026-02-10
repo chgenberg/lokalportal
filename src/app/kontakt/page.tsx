@@ -59,7 +59,7 @@ export default function KontaktPage() {
               <div className="space-y-4">
                 <div>
                   <p className="text-[11px] text-gray-400 tracking-wide mb-0.5">E-post</p>
-                  <a href="mailto:info@hittayta.se" className="text-[14px] font-medium text-navy hover:underline">info@hittayta.se</a>
+                  <a href="mailto:info@ledigyta.se" className="text-[14px] font-medium text-navy hover:underline">info@ledigyta.se</a>
                 </div>
                 <div>
                   <p className="text-[11px] text-gray-400 tracking-wide mb-0.5">Plats</p>
@@ -174,7 +174,7 @@ export default function KontaktPage() {
                 {status === "error" && (
                   <div role="alert" className="bg-red-50 border border-red-200 rounded-xl p-4">
                     <p className="text-[13px] text-red-600">
-                      Något gick fel. Försök igen eller skicka ett mejl direkt till <a href="mailto:info@hittayta.se" className="underline">info@hittayta.se</a>.
+                      Något gick fel. Försök igen eller skicka ett mejl direkt till <a href="mailto:info@ledigyta.se" className="underline">info@ledigyta.se</a>.
                     </p>
                   </div>
                 )}

@@ -82,7 +82,7 @@ export default function CookiesPage() {
           <section>
             <h2 className="text-xl font-semibold text-navy mb-3 tracking-tight">6. Kontakt</h2>
             <p className="text-[15px] text-gray-600 leading-relaxed">
-              Har du frågor om vår användning av cookies? Kontakta oss på <a href="mailto:info@hittayta.se" className="text-navy hover:underline">info@hittayta.se</a> eller via vår <Link href="/kontakt" className="text-navy hover:underline">kontaktsida</Link>.
+              Har du frågor om vår användning av cookies? Kontakta oss på <a href="mailto:info@ledigyta.se" className="text-navy hover:underline">info@ledigyta.se</a> eller via vår <Link href="/kontakt" className="text-navy hover:underline">kontaktsida</Link>.
             </p>
           </section>
         </div>

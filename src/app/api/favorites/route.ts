@@ -3,6 +3,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/db";
 
+const LISTING_ID_REGEX = /^[a-zA-Z0-9_-]{1,50}$/;
+
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
@@ -32,7 +34,9 @@ export async function POST(request: NextRequest) {
     if (!session?.user) return NextResponse.json({ error: "Ej inloggad" }, { status: 401 });
 
     const { listingId } = await request.json();
-    if (!listingId || typeof listingId !== "string") return NextResponse.json({ error: "listingId krävs" }, { status: 400 });
+    if (!listingId || typeof listingId !== "string" || !LISTING_ID_REGEX.test(listingId)) {
+      return NextResponse.json({ error: "listingId krävs och måste vara giltigt" }, { status: 400 });
+    }
 
     await prisma.favorite.upsert({
       where: { userId_listingId: { userId: session.user.id, listingId } },
@@ -53,7 +57,9 @@ export async function DELETE(request: NextRequest) {
     if (!session?.user) return NextResponse.json({ error: "Ej inloggad" }, { status: 401 });
 
     const { listingId } = await request.json();
-    if (!listingId || typeof listingId !== "string") return NextResponse.json({ error: "listingId krävs" }, { status: 400 });
+    if (!listingId || typeof listingId !== "string" || !LISTING_ID_REGEX.test(listingId)) {
+      return NextResponse.json({ error: "listingId krävs och måste vara giltigt" }, { status: 400 });
+    }
 
     await prisma.favorite.deleteMany({
       where: { userId: session.user.id, listingId },

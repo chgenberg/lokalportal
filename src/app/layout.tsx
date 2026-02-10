@@ -7,10 +7,10 @@ import SessionProvider from "@/components/SessionProvider";
 
 const inter = Inter({
   variable: "--font-geist-sans",
-  subsets: ["latin"],
+  subsets: ["latin", "latin-ext"],
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://hittayta.se";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://ledigyta.se";
 
 export const metadata: Metadata = {
   title: "Hittayta.se – Hitta rätt lokal snabbare",
@@ -41,7 +41,7 @@ const organizationJsonLd = {
   contactPoint: {
     "@type": "ContactPoint",
     contactType: "customer service",
-    email: "info@hittayta.se",
+    email: "info@ledigyta.se",
   },
 };
 

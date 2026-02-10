@@ -80,7 +80,7 @@ export default function ListingDetailPage() {
   const formatPrice = (price: number, type: string) => type === "sale" ? `${(price / 1000000).toFixed(1)} mkr` : `${price.toLocaleString("sv-SE")} kr/mån`;
   const hasImage = listing.imageUrl && listing.imageUrl.trim() !== "";
 
-  const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://ledigyta.se";
   const listingJsonLd = {
     "@context": "https://schema.org", "@type": "Product", name: listing.title, description: listing.description,
     category: categoryLabels[listing.category],
@@ -91,10 +91,11 @@ export default function ListingDetailPage() {
     ],
     url: `${baseUrl}/annonser/${listing.id}`,
   };
+  const jsonLdStr = JSON.stringify(listingJsonLd).replace(/<\/script/gi, "<\\/script").replace(/<\//g, "<\\/");
 
   return (
     <div className="min-h-screen bg-muted/30">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(listingJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdStr }} />
 
       {/* Hero image */}
       <div className="bg-navy relative overflow-hidden">

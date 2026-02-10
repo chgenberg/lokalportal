@@ -23,20 +23,34 @@ function AnnonserContent() {
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "map">("grid");
 
+  const typeParam = searchParams.get("type");
+  const priceMinParam = searchParams.get("priceMin");
+  const priceMaxParam = searchParams.get("priceMax");
   const [filterState, setFilterState] = useState<FilterState>({
     city: searchParams.get("city") || "",
-    type: searchParams.get("type") || "",
+    type: typeParam || "",
     category: searchParams.get("category") || "",
     searchInput: searchParams.get("search") || "",
-    priceRange: [
-      parseInt(searchParams.get("priceMin") || "0", 10) || 0,
-      parseInt(searchParams.get("priceMax") || "200000", 10) || 200000,
-    ],
+    priceRange:
+      typeParam !== "sale"
+        ? [
+            parseInt(priceMinParam || "0", 10) || 0,
+            parseInt(priceMaxParam || "100000", 10) || 100000,
+          ]
+        : [0, 100000],
+    salePriceRange:
+      typeParam === "sale"
+        ? [
+            parseFloat(priceMinParam || "0") / 1e6,
+            priceMaxParam ? Math.min(20, parseFloat(priceMaxParam) / 1e6) : 20,
+          ]
+        : [0, 20],
     sizeRange: [
       parseInt(searchParams.get("sizeMin") || "0", 10) || 0,
-      parseInt(searchParams.get("sizeMax") || "2000", 10) || 2000,
+      parseInt(searchParams.get("sizeMax") || "1000", 10) || 1000,
     ],
     selectedTags: searchParams.get("tags")?.split(",").filter(Boolean) || [],
+    nearTo: searchParams.get("nearTo")?.split(",").filter(Boolean) || [],
   });
 
   const debouncedSearch = useDebounce(filterState.searchInput, 300);
@@ -51,7 +65,17 @@ function AnnonserContent() {
   }, []);
 
   const clearFilters = useCallback(() => {
-    setFilterState({ city: "", type: "", category: "", searchInput: "", priceRange: [0, 200000], sizeRange: [0, 2000], selectedTags: [] });
+    setFilterState({
+      city: "",
+      type: "",
+      category: "",
+      searchInput: "",
+      priceRange: [0, 100000],
+      salePriceRange: [0, 20],
+      sizeRange: [0, 1000],
+      selectedTags: [],
+      nearTo: [],
+    });
     setPage(1);
     setSort("date");
     router.push("/annonser");
@@ -60,7 +84,10 @@ function AnnonserContent() {
   useEffect(() => {
     filterChangeCount.current += 1;
     if (filterChangeCount.current > 1) setPage(1);
-  }, [debouncedCity, filterState.type, filterState.category, debouncedSearch, filterState.priceRange, filterState.sizeRange, filterState.selectedTags]);
+  }, [debouncedCity, filterState.type, filterState.category, debouncedSearch, filterState.priceRange, filterState.salePriceRange, filterState.sizeRange, filterState.selectedTags, filterState.nearTo]);
+
+  const priceMin = filterState.type === "sale" ? filterState.salePriceRange[0] * 1e6 : filterState.priceRange[0];
+  const priceMax = filterState.type === "sale" ? filterState.salePriceRange[1] * 1e6 : filterState.priceRange[1];
 
   useEffect(() => {
     const params = new URLSearchParams();
@@ -70,14 +97,15 @@ function AnnonserContent() {
     if (debouncedSearch) params.set("search", debouncedSearch);
     if (sort !== "date") params.set("sort", sort);
     if (page > 1) params.set("page", String(page));
-    if (filterState.priceRange[0] > 0) params.set("priceMin", String(filterState.priceRange[0]));
-    if (filterState.priceRange[1] < 200000) params.set("priceMax", String(filterState.priceRange[1]));
+    if (priceMin > 0) params.set("priceMin", String(Math.round(priceMin)));
+    if (priceMax < (filterState.type === "sale" ? 20e6 : 100000)) params.set("priceMax", String(Math.round(priceMax)));
     if (filterState.sizeRange[0] > 0) params.set("sizeMin", String(filterState.sizeRange[0]));
-    if (filterState.sizeRange[1] < 2000) params.set("sizeMax", String(filterState.sizeRange[1]));
+    if (filterState.sizeRange[1] < 1000) params.set("sizeMax", String(filterState.sizeRange[1]));
     if (filterState.selectedTags.length > 0) params.set("tags", filterState.selectedTags.join(","));
+    if (filterState.nearTo.length > 0) params.set("nearTo", filterState.nearTo.join(","));
     const q = params.toString();
     router.replace(q ? `/annonser?${q}` : "/annonser", { scroll: false });
-  }, [debouncedCity, filterState.type, filterState.category, debouncedSearch, sort, page, filterState.priceRange, filterState.sizeRange, filterState.selectedTags, router]);
+  }, [debouncedCity, filterState.type, filterState.category, debouncedSearch, sort, page, priceMin, priceMax, filterState.sizeRange, filterState.selectedTags, filterState.nearTo, router]);
 
   const fetchListings = useCallback(async () => {
     setLoading(true);
@@ -90,10 +118,10 @@ function AnnonserContent() {
     params.set("sort", sort);
     params.set("page", String(page));
     params.set("limit", String(LIMIT));
-    if (filterState.priceRange[0] > 0) params.set("priceMin", String(filterState.priceRange[0]));
-    if (filterState.priceRange[1] < 200000) params.set("priceMax", String(filterState.priceRange[1]));
+    if (priceMin > 0) params.set("priceMin", String(Math.round(priceMin)));
+    if (priceMax < (filterState.type === "sale" ? 20e6 : 100000)) params.set("priceMax", String(Math.round(priceMax)));
     if (filterState.sizeRange[0] > 0) params.set("sizeMin", String(filterState.sizeRange[0]));
-    if (filterState.sizeRange[1] < 2000) params.set("sizeMax", String(filterState.sizeRange[1]));
+    if (filterState.sizeRange[1] < 1000) params.set("sizeMax", String(filterState.sizeRange[1]));
     if (filterState.selectedTags.length > 0) params.set("tags", filterState.selectedTags.join(","));
 
     try {
@@ -103,13 +131,25 @@ function AnnonserContent() {
       if (data.listings && typeof data.total === "number") { setListings(data.listings); setTotal(data.total); }
       else { setListings(Array.isArray(data) ? data : []); setTotal(Array.isArray(data) ? data.length : 0); }
     } catch { setError("Ett fel uppstod."); setListings([]); setTotal(0); } finally { setLoading(false); }
-  }, [debouncedCity, filterState.type, filterState.category, debouncedSearch, sort, page, filterState.priceRange, filterState.sizeRange, filterState.selectedTags]);
+  }, [debouncedCity, filterState.type, filterState.category, debouncedSearch, sort, page, priceMin, priceMax, filterState.sizeRange, filterState.selectedTags]);
 
   useEffect(() => { fetchListings(); }, [fetchListings]);
 
   const goToPage = (p: number) => { setPage(Math.max(1, Math.min(p, Math.ceil(total / LIMIT)))); };
 
-  const hasFilters = filterState.city || filterState.type || filterState.category || filterState.searchInput || filterState.priceRange[0] > 0 || filterState.priceRange[1] < 200000 || filterState.sizeRange[0] > 0 || filterState.sizeRange[1] < 2000 || filterState.selectedTags.length > 0;
+  const hasFilters =
+    filterState.city ||
+    filterState.type ||
+    filterState.category ||
+    filterState.searchInput ||
+    filterState.priceRange[0] > 0 ||
+    filterState.priceRange[1] < 100000 ||
+    filterState.salePriceRange[0] > 0 ||
+    filterState.salePriceRange[1] < 20 ||
+    filterState.sizeRange[0] > 0 ||
+    filterState.sizeRange[1] < 1000 ||
+    filterState.selectedTags.length > 0 ||
+    filterState.nearTo.length > 0;
   const totalPages = Math.ceil(total / LIMIT) || 1;
   const sortLabel: Record<SortOption, string> = { date: "Senaste", price_asc: "Pris (lågt till högt)", price_desc: "Pris (högt till lågt)", size: "Storlek" };
 
@@ -127,9 +167,9 @@ function AnnonserContent() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Search & controls */}
-        <div className="flex flex-col sm:flex-row gap-3 mb-6 -mt-8 relative z-10">
-          <div className="flex-1 relative">
+        {/* Search row: full width, Karta only on desktop */}
+        <div className="flex flex-wrap gap-3 mb-4 -mt-8 relative z-10">
+          <div className="flex-1 min-w-0">
             <input
               type="text"
               placeholder="Sök lokaler efter namn, stad eller beskrivning..."
@@ -139,18 +179,7 @@ function AnnonserContent() {
               aria-label="Sök lokaler"
             />
           </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className={`flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl text-sm font-medium shadow-lg transition-all ${
-                showFilters || hasFilters
-                  ? "bg-navy text-white shadow-navy/20"
-                  : "bg-white text-gray-600 hover:text-navy border border-border/60 shadow-navy/[0.04]"
-              }`}
-            >
-              Filter
-              {hasFilters && <span className="w-1.5 h-1.5 rounded-full bg-white/60" />}
-            </button>
+          <div className="hidden lg:flex">
             <button
               onClick={() => setViewMode(viewMode === "grid" ? "map" : "grid")}
               className="flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl text-sm font-medium bg-white text-gray-600 hover:text-navy border border-border/60 shadow-lg shadow-navy/[0.04] transition-all"
@@ -161,15 +190,60 @@ function AnnonserContent() {
           </div>
         </div>
 
+        {/* Mobile: Filter + Karta */}
+        <div className="flex gap-2 mb-4 lg:hidden">
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className={`flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl text-sm font-medium shadow-lg transition-all ${
+              showFilters || hasFilters ? "bg-navy text-white shadow-navy/20" : "bg-white text-gray-600 hover:text-navy border border-border/60 shadow-navy/[0.04]"
+            }`}
+          >
+            Filter
+            {hasFilters && <span className="w-1.5 h-1.5 rounded-full bg-white/60" />}
+          </button>
+          <button
+            onClick={() => setViewMode(viewMode === "grid" ? "map" : "grid")}
+            className="flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl text-sm font-medium bg-white text-gray-600 hover:text-navy border border-border/60 shadow-lg shadow-navy/[0.04] transition-all"
+            aria-label={viewMode === "grid" ? "Visa karta" : "Visa rutnät"}
+          >
+            {viewMode === "grid" ? "Karta" : "Rutnät"}
+          </button>
+        </div>
+
         {showFilters && (
-          <FilterPanel filters={filterState} onChange={updateFilters} onClear={clearFilters} totalResults={total} loading={loading} />
+          <div className="mb-6 lg:hidden">
+            <FilterPanel
+              filters={filterState}
+              onChange={updateFilters}
+              onClear={clearFilters}
+              onClose={() => setShowFilters(false)}
+              totalResults={total}
+              loading={loading}
+              compact
+            />
+          </div>
         )}
 
-        {/* Results bar */}
-        <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <p className="text-sm text-gray-400">
-            {loading ? "Laddar..." : total > 0 ? `Visar ${(page - 1) * LIMIT + 1}\u2013${Math.min(page * LIMIT, total)} av ${total} lokaler` : "Inga lokaler hittades"}
-          </p>
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* Left: filter panel — desktop only */}
+          <aside className="hidden lg:block w-72 shrink-0">
+            <div className="sticky top-24">
+              <FilterPanel
+                filters={filterState}
+                onChange={updateFilters}
+                onClear={clearFilters}
+                totalResults={total}
+                loading={loading}
+              />
+            </div>
+          </aside>
+
+          <main className="flex-1 min-w-0">
+            {/* Results bar */}
+            <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <p className="text-sm text-gray-500">
+                {loading ? "Laddar..." : total > 0 ? `${total} lokaler hittades` : "Inga lokaler hittades"}
+              </p>
           <div className="flex items-center gap-2">
             <span className="text-[12px] text-gray-400 whitespace-nowrap tracking-wide uppercase">Sortering:</span>
             <CustomSelect
@@ -282,6 +356,8 @@ function AnnonserContent() {
             )}
           </>
         )}
+          </main>
+        </div>
       </div>
     </div>
   );

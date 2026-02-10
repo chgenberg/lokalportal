@@ -3,6 +3,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/db";
 
+const LISTING_ID_REGEX = /^[a-zA-Z0-9_-]{1,50}$/;
+
 export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user) return NextResponse.json({ error: "Ej inloggad" }, { status: 401 });
@@ -104,7 +106,9 @@ export async function POST(request: NextRequest) {
   }
 
   const { listingId } = body;
-  if (!listingId) return NextResponse.json({ error: "listingId krävs" }, { status: 400 });
+  if (!listingId || typeof listingId !== "string" || !LISTING_ID_REGEX.test(listingId)) {
+    return NextResponse.json({ error: "listingId krävs och måste vara giltigt" }, { status: 400 });
+  }
 
   try {
     const listing = await prisma.listing.findUnique({ where: { id: listingId } });
@@ -124,6 +128,12 @@ export async function POST(request: NextRequest) {
     if (!listing.ownerId) {
       return NextResponse.json(
         { error: "Denna annons har ingen hyresvärd kopplad. Kontakta support." },
+        { status: 400 }
+      );
+    }
+    if (listing.ownerId === session.user.id) {
+      return NextResponse.json(
+        { error: "Du kan inte starta en konversation med dig själv om egna annonser." },
         { status: 400 }
       );
     }

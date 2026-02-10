@@ -1,14 +1,18 @@
 import { getToken } from "next-auth/jwt";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function middleware(request: NextRequest) {
-  const secret = process.env.NEXTAUTH_SECRET?.trim();
-  if (process.env.NODE_ENV === "production" && !secret) {
+const getSecret = () => {
+  const s = process.env.NEXTAUTH_SECRET?.trim();
+  if (process.env.NODE_ENV === "production" && !s) {
     throw new Error("NEXTAUTH_SECRET is required in production. Set it in your environment.");
   }
+  return s || "dev-secret-change-in-production";
+};
+
+export async function middleware(request: NextRequest) {
   const token = await getToken({
     req: request,
-    secret: secret || "dev-secret-change-in-production",
+    secret: getSecret(),
   });
 
   const { pathname } = request.nextUrl;

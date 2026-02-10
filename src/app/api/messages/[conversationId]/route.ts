@@ -92,6 +92,31 @@ export async function POST(
     return NextResponse.json({ error: "Meddelande eller fil krävs" }, { status: 400 });
   }
 
+  let safeFileUrl: string | null = null;
+  let safeFileName: string | null = null;
+  let safeFileSize: number | null = null;
+  let safeFileMimeType: string | null = null;
+  if (hasFile) {
+    const urlStr = String(fileUrl).trim();
+    if (!urlStr.startsWith("/api/upload/")) {
+      return NextResponse.json({ error: "Ogiltig fil-URL" }, { status: 400 });
+    }
+    safeFileUrl = urlStr.slice(0, 500);
+    const nameStr = String(fileName).trim().replace(/^.*[/\\]/, "").slice(0, 255);
+    if (!nameStr) {
+      return NextResponse.json({ error: "Ogiltigt filnamn" }, { status: 400 });
+    }
+    safeFileName = nameStr;
+    if (fileSize != null) {
+      const n = Number(fileSize);
+      if (!Number.isInteger(n) || n < 0 || n > 50_000_000) {
+        return NextResponse.json({ error: "Ogiltig filstorlek" }, { status: 400 });
+      }
+      safeFileSize = n;
+    }
+    safeFileMimeType = typeof fileMimeType === "string" ? fileMimeType.trim().slice(0, 100) : null;
+  }
+
   try {
     const [message] = await Promise.all([
       prisma.message.create({
@@ -99,10 +124,10 @@ export async function POST(
           conversationId,
           senderId: session.user.id,
           text: hasText ? text.trim().slice(0, 2000) : "",
-          fileUrl: fileUrl || null,
-          fileName: fileName || null,
-          fileSize: fileSize || null,
-          fileMimeType: fileMimeType || null,
+          fileUrl: safeFileUrl,
+          fileName: safeFileName,
+          fileSize: safeFileSize,
+          fileMimeType: safeFileMimeType,
         },
       }),
       prisma.conversation.update({

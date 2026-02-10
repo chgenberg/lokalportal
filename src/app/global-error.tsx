@@ -15,6 +15,10 @@ export default function GlobalError({
 
   return (
     <html lang="sv">
+      <head>
+        <meta charSet="utf-8" />
+        <title>Fel – Hittayta.se</title>
+      </head>
       <body style={{ margin: 0, fontFamily: "system-ui, sans-serif", background: "#fff", color: "#0a1628" }}>
         <div
           style={{
@@ -31,24 +35,40 @@ export default function GlobalError({
               Något gick fel
             </h1>
             <p style={{ color: "#6b7280", marginBottom: "2rem" }}>
-              Ett allvarligt fel inträffade. Försök ladda om sidan.
+              Ett allvarligt fel inträffade. Försök ladda om sidan eller gå till startsidan.
             </p>
-            <button
-              type="button"
-              onClick={reset}
-              style={{
-                padding: "0.75rem 1.5rem",
-                background: "#0a1628",
-                color: "#fff",
-                border: "none",
-                borderRadius: "0.75rem",
-                fontSize: "0.875rem",
-                fontWeight: 500,
-                cursor: "pointer",
-              }}
-            >
-              Ladda om
-            </button>
+            <div style={{ display: "flex", gap: "0.75rem", justifyContent: "center", flexWrap: "wrap" }}>
+              <button
+                type="button"
+                onClick={reset}
+                style={{
+                  padding: "0.75rem 1.5rem",
+                  background: "#0a1628",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "0.75rem",
+                  fontSize: "0.875rem",
+                  fontWeight: 500,
+                  cursor: "pointer",
+                }}
+              >
+                Ladda om
+              </button>
+              <a
+                href="/"
+                style={{
+                  padding: "0.75rem 1.5rem",
+                  color: "#0a1628",
+                  border: "1px solid #0a1628",
+                  borderRadius: "0.75rem",
+                  fontSize: "0.875rem",
+                  fontWeight: 500,
+                  textDecoration: "none",
+                }}
+              >
+                Till startsidan
+              </a>
+            </div>
           </div>
         </div>
       </body>

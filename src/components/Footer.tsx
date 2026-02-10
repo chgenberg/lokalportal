@@ -36,14 +36,13 @@ export default function Footer() {
             <ul className="space-y-3">
               <li><Link href="/om-oss" className="text-[13px] text-white/40 hover:text-white transition-colors">Om oss</Link></li>
               <li><Link href="/kontakt" className="text-[13px] text-white/40 hover:text-white transition-colors">Kontakta oss</Link></li>
-              <li><Link href="/annonspaket" className="text-[13px] text-white/40 hover:text-white transition-colors">Annonspaket</Link></li>
             </ul>
           </div>
 
           <div>
             <h4 className="text-[11px] font-semibold uppercase tracking-[0.15em] mb-5 text-white/20">Kontakt</h4>
             <ul className="space-y-3">
-              <li><a href="mailto:info@hittayta.se" className="text-[13px] text-white/40 hover:text-white transition-colors">info@hittayta.se</a></li>
+              <li><a href="mailto:info@ledigyta.se" className="text-[13px] text-white/40 hover:text-white transition-colors">info@ledigyta.se</a></li>
               <li className="text-[13px] text-white/40">Stockholm, Sverige</li>
             </ul>
           </div>
