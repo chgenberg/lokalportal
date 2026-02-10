@@ -3,6 +3,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/db";
 
+const CONVERSATION_ID_REGEX = /^[a-zA-Z0-9_-]{1,50}$/;
+
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ conversationId: string }> }
@@ -11,6 +13,9 @@ export async function GET(
   if (!session?.user) return NextResponse.json({ error: "Ej inloggad" }, { status: 401 });
 
   const { conversationId } = await params;
+  if (!conversationId || !CONVERSATION_ID_REGEX.test(conversationId)) {
+    return NextResponse.json({ error: "Ogiltigt konversations-id" }, { status: 400 });
+  }
 
   try {
     const conversation = await prisma.conversation.findUnique({ where: { id: conversationId } });
@@ -62,6 +67,9 @@ export async function POST(
   if (!session?.user) return NextResponse.json({ error: "Ej inloggad" }, { status: 401 });
 
   const { conversationId } = await params;
+  if (!conversationId || !CONVERSATION_ID_REGEX.test(conversationId)) {
+    return NextResponse.json({ error: "Ogiltigt konversations-id" }, { status: 400 });
+  }
 
   const conversation = await prisma.conversation.findUnique({ where: { id: conversationId } });
   if (!conversation) return NextResponse.json({ error: "Konversation hittades inte" }, { status: 404 });

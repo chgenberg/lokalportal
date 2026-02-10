@@ -45,16 +45,23 @@ function DashboardContent() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [listingsRes, unreadRes] = await Promise.all([fetch("/api/listings"), fetch("/api/messages/conversations?unreadOnly=true")]);
-        if (listingsRes.ok) {
+        const unreadPromise = fetch("/api/messages/conversations?unreadOnly=true");
+        const listingsPromise = isLandlord ? fetch("/api/listings?mine=true") : null;
+        const favPromise = !isLandlord ? fetch("/api/favorites") : null;
+        const [listingsRes, unreadRes, favRes] = await Promise.all([
+          listingsPromise ?? Promise.resolve(null),
+          unreadPromise,
+          favPromise ?? Promise.resolve(null),
+        ]);
+        if (listingsRes?.ok) {
           const data = await listingsRes.json();
-          const all = Array.isArray(data) ? data : data.listings || [];
-          if (isLandlord) setListings(all.filter((l: Listing) => l.ownerId === session?.user?.id));
-          if (!isLandlord) {
-            try { const favRes = await fetch("/api/favorites"); if (favRes.ok) { const favData = await favRes.json(); setFavorites(favData.listings || []); } } catch { /* */ }
-          }
+          const items = Array.isArray(data) ? data : data.listings || [];
+          setListings(items);
         }
-        if (unreadRes.ok) { const unreadData = await unreadRes.json(); setUnreadCount(unreadData.unreadCount || 0); }
+        if (favRes?.ok) {
+          try { const favData = await favRes.json(); setFavorites(favData.listings || []); } catch { /* */ }
+        }
+        if (unreadRes.ok) { const unreadData = await unreadRes.json(); setUnreadCount(unreadData.unreadCount ?? 0); }
       } catch { /* */ } finally { setLoading(false); }
     };
     if (session?.user) fetchData();

@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/db";
 import type { Prisma } from "@/generated/prisma/client";
 
@@ -22,6 +24,16 @@ function parsePositiveInt(s: string | null): number | undefined {
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
+
+  const mine = searchParams.get("mine") === "true";
+  let ownerId: string | undefined;
+  if (mine) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json({ error: "Ej inloggad" }, { status: 401 });
+    }
+    ownerId = session.user.id;
+  }
 
   const rawType = searchParams.get("type");
   const rawCategory = searchParams.get("category");
@@ -52,6 +64,7 @@ export async function GET(request: NextRequest) {
   try {
     const where: Prisma.ListingWhereInput = {};
 
+    if (ownerId) where.ownerId = ownerId;
     if (city) where.city = { equals: city, mode: "insensitive" };
     if (type) where.type = type;
     if (category) where.category = category;

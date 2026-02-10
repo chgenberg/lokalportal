@@ -8,23 +8,35 @@ import { randomUUID } from "crypto";
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 
 const ALLOWED_MIME_TYPES = [
-  // Images
   "image/jpeg",
   "image/png",
   "image/gif",
   "image/webp",
-  // Documents
   "application/pdf",
   "application/msword",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   "application/vnd.ms-excel",
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  // Archives
   "application/zip",
-  // Text
   "text/plain",
   "text/csv",
-];
+] as const;
+
+/** Only one extension per MIME to avoid double extensions (e.g. .php.jpg). */
+const MIME_TO_EXT: Record<string, string> = {
+  "image/jpeg": ".jpg",
+  "image/png": ".png",
+  "image/gif": ".gif",
+  "image/webp": ".webp",
+  "application/pdf": ".pdf",
+  "application/msword": ".doc",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document": ".docx",
+  "application/vnd.ms-excel": ".xls",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": ".xlsx",
+  "application/zip": ".zip",
+  "text/plain": ".txt",
+  "text/csv": ".csv",
+};
 
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -47,14 +59,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!ALLOWED_MIME_TYPES.includes(file.type)) {
+    if (!(ALLOWED_MIME_TYPES as readonly string[]).includes(file.type)) {
       return NextResponse.json(
         { error: "Filtypen stöds inte." },
         { status: 400 }
       );
     }
 
-    const ext = path.extname(file.name) || "";
+    const ext = MIME_TO_EXT[file.type] ?? ".bin";
     const uniqueName = `${randomUUID()}${ext}`;
     const uploadsDir = path.join(process.cwd(), "uploads");
 

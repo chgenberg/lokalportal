@@ -6,83 +6,103 @@ Sveriges ledande marknadsplats för kommersiella lokaler. Hitta butiker, kontor,
 
 - **Frontend:** Next.js 16, React 19, TypeScript, Tailwind CSS 4
 - **Backend:** Next.js API Routes
-- **Database:** Redis (via ioredis)
-- **Deployment:** Railway + GitHub
-- **Auth:** BankID (placeholder)
+- **Database:** PostgreSQL med Prisma ORM
+- **Auth:** NextAuth (Credentials, e-post/lösenord)
+- **E-post:** Resend (kontaktformulär)
+- **Kartor:** Leaflet / react-leaflet
+- **Deployment:** Docker (standalone output)
 
-## Getting Started
-
-### Prerequisites
+## Förutsättningar
 
 - Node.js 20+
-- Redis (optional - app works with sample data without Redis)
+- PostgreSQL-databas
 
-### Installation
+## Installation
 
 ```bash
-# Install dependencies
+# Installera beroenden
 npm install
 
-# Set up environment variables
-cp .env.local .env.local
-# Edit .env.local with your Redis URL
+# Kopiera miljövariabler
+cp .env.example .env.local
+# Redigera .env.local med DATABASE_URL, NEXTAUTH_SECRET m.m.
 
-# Run development server
+# Generera Prisma-klient och kör migrationer
+npx prisma generate
+npx prisma migrate deploy
+# eller för utveckling: npx prisma migrate dev
+
+# Starta utvecklingsserver
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Öppna [http://localhost:3000](http://localhost:3000) i webbläsaren.
 
-### Seed Data
+## Miljövariabler
 
-To populate Redis with sample listings:
+Se `.env.example`. Obligatoriskt:
+
+- `DATABASE_URL` – PostgreSQL-anslutningssträng
+- `NEXTAUTH_SECRET` – hemlighet för NextAuth (krävs i produktion)
+
+Valfritt: `SEED_SECRET`, `RESEND_API_KEY`, `CONTACT_EMAIL_TO`, `RESEND_FROM_EMAIL`, `NEXT_PUBLIC_SITE_URL`.
+
+## Seed-data
+
+För att fylla databasen med exempelannonser (kräver `SEED_SECRET` i produktion):
 
 ```bash
-curl -X POST http://localhost:3000/api/seed
+curl -X POST -H "Authorization: Bearer DIN_SEED_SECRET" http://localhost:3000/api/seed
+# eller: -H "x-seed-secret: DIN_SEED_SECRET"
 ```
 
-## Deployment on Railway
-
-1. Push your code to GitHub
-2. Create a new project on [Railway](https://railway.app)
-3. Add a Redis service
-4. Connect your GitHub repository
-5. Railway will automatically detect the Dockerfile and deploy
-6. The `REDIS_URL` environment variable is automatically set by Railway when you add Redis
-
-## Project Structure
+## Projektstruktur
 
 ```
 src/
 ├── app/
 │   ├── api/
-│   │   ├── listings/    # Listings API
-│   │   └── seed/        # Seed sample data
-│   ├── annonser/        # All listings page
-│   ├── annonspaket/     # Pricing packages
-│   ├── kategorier/      # Categories page
+│   │   ├── auth/          # NextAuth + registrering
+│   │   ├── contact/       # Kontaktformulär (Resend)
+│   │   ├── favorites/     # Favoriter
+│   │   ├── listings/      # Annonser (GET, create, [id] GET/PUT/DELETE)
+│   │   ├── messages/      # Konversationer och meddelanden
+│   │   ├── seed/          # Seed exempeldata
+│   │   ├── stats/         # Statistik för startsida
+│   │   └── upload/        # Filuppladdning (bilder, dokument)
+│   ├── annonser/          # Lista annonser, sök, filter
+│   ├── annonser/[id]/     # Annonsdetalj
+│   ├── dashboard/         # Mina annonser, favoriter, meddelanden
+│   ├── karta/             # Kartvy
+│   ├── kategorier/        # Kategorier
+│   ├── kontakt/           # Kontaktformulär
+│   ├── logga-in/          # Inloggning
+│   ├── registrera/        # Registrering
+│   ├── villkor/           # Villkor, integritet, cookies, om oss
 │   ├── globals.css
 │   ├── layout.tsx
-│   └── page.tsx         # Homepage
-├── components/
-│   ├── CategoriesSection.tsx
-│   ├── CTASection.tsx
-│   ├── FeaturedListings.tsx
-│   ├── FeaturesSection.tsx
-│   ├── Footer.tsx
-│   ├── Header.tsx
-│   ├── HeroSearch.tsx
-│   └── ListingCard.tsx
-└── lib/
-    ├── redis.ts         # Redis client & helpers
-    └── types.ts         # TypeScript types
+│   └── page.tsx           # Startsida
+├── components/            # Delade UI-komponenter
+├── lib/
+│   ├── auth.ts            # NextAuth-konfiguration
+│   ├── db.ts              # Prisma-klient (lazy proxy)
+│   ├── types.ts           # TypeScript-typer
+│   └── useDebounce.ts
+├── generated/prisma/      # Prisma Client (genererad)
+└── middleware.ts          # Skydd av /dashboard, redirect auth-sidor
 ```
 
-## Features
+## Funktioner
 
-- City autocomplete search (suggests Swedish cities after 3 characters)
-- Filter by type (Till salu / Uthyres) and category (Butik / Kontor / Lager / Övrigt)
-- Responsive, minimalist design with dark navy theme
-- Interactive pricing page with monthly/yearly toggle
-- BankID login placeholder for verified advertisers
-- Redis-backed data with graceful fallback to sample data
+- Sök och filter (stad, typ, kategori, pris, storlek, taggar)
+- Kartvy med Leaflet
+- Inloggning/registrering (hyresvärd/hyresgäst)
+- Skapa, redigera och ta bort egna annonser (hyresvärd)
+- Favoriter
+- Meddelanden mellan hyresgäst och hyresvärd (med filuppladdning)
+- Kontaktformulär med e-post via Resend
+- Responsiv design med mörkt navy-tema
+
+## Deployment (Docker)
+
+Projektet inkluderar en `Dockerfile` för standalone-build. Säkerställ att `DATABASE_URL` och `NEXTAUTH_SECRET` är satta i miljön. Katalogen `uploads` skapas automatiskt för uppladdade filer.

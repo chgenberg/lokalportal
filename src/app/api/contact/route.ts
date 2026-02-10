@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
+import { checkRateLimit, getClientKey } from "@/lib/rateLimit";
+
+const CONTACT_MAX = 5;
+const CONTACT_WINDOW_MS = 15 * 60 * 1000;
 
 const MAX_NAME = 200;
 const MAX_EMAIL = 254;
@@ -7,6 +11,14 @@ const MAX_SUBJECT = 300;
 const MAX_MESSAGE = 5000;
 
 export async function POST(req: NextRequest) {
+  const key = `contact:${getClientKey(req)}`;
+  const { limited, retryAfter } = checkRateLimit(key, CONTACT_MAX, CONTACT_WINDOW_MS);
+  if (limited) {
+    return NextResponse.json(
+      { error: "För många försök. Försök igen senare." },
+      { status: 429, headers: retryAfter ? { "Retry-After": String(retryAfter) } : undefined }
+    );
+  }
   try {
     const { name, email, subject, message } = await req.json();
 

@@ -47,7 +47,7 @@ model Listing {
   contactPhone String @default("")
 
   ownerId String?
-  owner   User?   @relation(fields: [ownerId], references: [id])
+  owner   User?   @relation(fields: [ownerId], references: [id], onDelete: SetNull)
 
   conversations Conversation[]
   favorites     Favorite[]
@@ -66,11 +66,11 @@ model Listing {
 model Conversation {
   id            String   @id @default(uuid())
   listingId     String
-  listing       Listing  @relation(fields: [listingId], references: [id])
+  listing       Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
   landlordId    String
-  landlord      User     @relation("LandlordConversations", fields: [landlordId], references: [id])
+  landlord      User     @relation("LandlordConversations", fields: [landlordId], references: [id], onDelete: Cascade)
   tenantId      String
-  tenant        User     @relation("TenantConversations", fields: [tenantId], references: [id])
+  tenant        User     @relation("TenantConversations", fields: [tenantId], references: [id], onDelete: Cascade)
   createdAt     DateTime @default(now())
   lastMessageAt DateTime @default(now())
 
@@ -86,9 +86,9 @@ model Conversation {
 model Message {
   id             String       @id @default(uuid())
   conversationId String
-  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   senderId       String
-  sender         User         @relation(fields: [senderId], references: [id])
+  sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
   text           String
   read           Boolean      @default(false)
   createdAt      DateTime     @default(now())
@@ -109,9 +109,9 @@ model Message {
 model Favorite {
   id        String   @id @default(uuid())
   userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   listingId String
-  listing   Listing  @relation(fields: [listingId], references: [id])
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
 
   @@unique([userId, listingId])
