@@ -33,7 +33,7 @@ export default function HeroStats() {
       {items.map((item, i) => (
         <div key={i} className="text-center">
           <div className="text-2xl font-bold text-white tracking-tight">{item.value}</div>
-          <div className="text-[11px] font-medium text-white/30 mt-1 tracking-[0.15em] uppercase">{item.label}</div>
+          <div className="text-[11px] font-medium text-white mt-1 tracking-[0.15em] uppercase">{item.label}</div>
         </div>
       ))}
     </div>
