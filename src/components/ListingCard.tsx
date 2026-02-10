@@ -5,10 +5,14 @@ import Image from "next/image";
 import { typeLabels, categoryLabels } from "@/lib/types";
 import type { Listing } from "@/lib/types";
 import PlaceholderImage from "./PlaceholderImage";
+import FavoriteButton from "./FavoriteButton";
 
-interface ListingCardProps { listing: Listing; }
+interface ListingCardProps {
+  listing: Listing;
+  favorited?: boolean;
+}
 
-export default function ListingCard({ listing }: ListingCardProps) {
+export default function ListingCard({ listing, favorited: initialFavorited }: ListingCardProps) {
   const formatPrice = (price: number, type: string) => {
     if (type === "sale") return `${(price / 1000000).toFixed(1)} mkr`;
     return `${price.toLocaleString("sv-SE")} kr/mån`;
@@ -48,13 +52,14 @@ export default function ListingCard({ listing }: ListingCardProps) {
               {categoryLabels[listing.category]}
             </span>
           </div>
-          {listing.featured && (
-            <div className="absolute top-3 right-3">
+          <div className="absolute top-3 right-3 flex items-center gap-2">
+            <FavoriteButton listingId={listing.id} initialFavorited={initialFavorited} />
+            {listing.featured && (
               <span className="px-2.5 py-1 text-[10px] font-semibold rounded-full bg-white/90 text-navy backdrop-blur-sm tracking-wide">
                 Utvald
               </span>
-            </div>
-          )}
+            )}
+          </div>
 
           {/* Price overlay on hover */}
           <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-1 group-hover:translate-y-0">

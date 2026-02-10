@@ -5,10 +5,19 @@ import prisma from "@/lib/db";
 
 const LISTING_ID_REGEX = /^[a-zA-Z0-9_-]{1,50}$/;
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user) return NextResponse.json({ error: "Ej inloggad" }, { status: 401 });
+
+    const { searchParams } = new URL(request.url);
+    const checkListingId = searchParams.get("check");
+    if (checkListingId && LISTING_ID_REGEX.test(checkListingId)) {
+      const fav = await prisma.favorite.findUnique({
+        where: { userId_listingId: { userId: session.user.id, listingId: checkListingId } },
+      });
+      return NextResponse.json({ favorited: !!fav });
+    }
 
     const favorites = await prisma.favorite.findMany({
       where: { userId: session.user.id },
@@ -18,6 +27,7 @@ export async function GET() {
     const listings = favorites.map((f) => ({
       ...f.listing,
       createdAt: f.listing.createdAt.toISOString(),
+      savedAt: f.createdAt.toISOString(),
       contact: { name: f.listing.contactName, email: f.listing.contactEmail, phone: f.listing.contactPhone },
     }));
 

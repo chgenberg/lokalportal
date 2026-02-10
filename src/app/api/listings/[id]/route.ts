@@ -23,9 +23,18 @@ export async function GET(
   }
 
   try {
+    const session = await getServerSession(authOptions);
     const listing = await prisma.listing.findUnique({ where: { id } });
     if (!listing) {
       return NextResponse.json({ error: "Annonsen hittades inte" }, { status: 404 });
+    }
+    const isOwner = session?.user?.id === listing.ownerId;
+    if (!isOwner) {
+      await prisma.listing.update({
+        where: { id },
+        data: { viewCount: { increment: 1 } },
+      });
+      listing.viewCount = (listing.viewCount ?? 0) + 1;
     }
     return NextResponse.json({
       ...listing,
@@ -107,6 +116,44 @@ export async function PUT(
     });
   } catch {
     return NextResponse.json({ error: "Kunde inte uppdatera annonsen" }, { status: 500 });
+  }
+}
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) return NextResponse.json({ error: "Ej inloggad" }, { status: 401 });
+
+  const { id } = await params;
+  if (!id || !ID_REGEX.test(id)) {
+    return NextResponse.json({ error: "Annons-id saknas eller ogiltigt" }, { status: 400 });
+  }
+
+  try {
+    const body = await request.json().catch(() => ({}));
+    if (body.renew !== true) {
+      return NextResponse.json({ error: "Ogiltig åtgärd" }, { status: 400 });
+    }
+
+    const listing = await prisma.listing.findUnique({ where: { id } });
+    if (!listing) return NextResponse.json({ error: "Annonsen hittades inte" }, { status: 404 });
+    if (listing.ownerId !== session.user.id) {
+      return NextResponse.json({ error: "Du kan bara förnya egna annonser" }, { status: 403 });
+    }
+
+    const updated = await prisma.listing.update({
+      where: { id },
+      data: { createdAt: new Date() },
+    });
+    return NextResponse.json({
+      ...updated,
+      createdAt: updated.createdAt.toISOString(),
+      contact: { name: updated.contactName, email: updated.contactEmail, phone: updated.contactPhone },
+    });
+  } catch {
+    return NextResponse.json({ error: "Kunde inte förnya annonsen" }, { status: 500 });
   }
 }
 

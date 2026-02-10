@@ -37,6 +37,7 @@ model Listing {
   size        Int
   imageUrl    String   @default("")
   featured    Boolean  @default(false)
+  viewCount   Int      @default(0)
   createdAt   DateTime @default(now())
   lat         Float    @default(0)
   lng         Float    @default(0)

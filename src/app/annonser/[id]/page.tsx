@@ -7,6 +7,7 @@ import { useParams, useRouter } from "next/navigation";
 import { categoryLabels, typeLabels } from "@/lib/types";
 import type { Listing } from "@/lib/types";
 import PlaceholderImage from "@/components/PlaceholderImage";
+import FavoriteButton from "@/components/FavoriteButton";
 
 const ListingMap = lazy(() => import("@/components/ListingMap"));
 
@@ -17,6 +18,9 @@ export default function ListingDetailPage() {
   const [listing, setListing] = useState<Listing | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [favorited, setFavorited] = useState(false);
+  const [contactLoading, setContactLoading] = useState(false);
+  const [contactError, setContactError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchListing = async () => {
@@ -29,14 +33,41 @@ export default function ListingDetailPage() {
     if (id) fetchListing();
   }, [id]);
 
+  useEffect(() => {
+    if (!id) return;
+    const checkFavorited = async () => {
+      try {
+        const res = await fetch(`/api/favorites?check=${encodeURIComponent(id)}`);
+        if (res.ok) {
+          const data = await res.json();
+          setFavorited(!!data.favorited);
+        }
+      } catch { /* ignore */ }
+    };
+    checkFavorited();
+  }, [id]);
+
   const handleContact = async () => {
+    setContactError(null);
     try {
       const res = await fetch("/api/auth/session");
       const session = await res.json();
       if (!session?.user) { router.push(`/logga-in?callback=/annonser/${id}`); return; }
+      setContactLoading(true);
       const convRes = await fetch("/api/messages/conversations", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ listingId: id }) });
-      if (convRes.ok) { const conv = await convRes.json(); router.push(`/dashboard/meddelanden?conv=${conv.id}`); }
-    } catch { router.push(`/logga-in?callback=/annonser/${id}`); }
+      if (convRes.ok) {
+        const conv = await convRes.json();
+        router.push(`/dashboard/meddelanden?conv=${conv.id}`);
+        return;
+      }
+      const data = await convRes.json().catch(() => ({}));
+      const message = data?.error ?? "Kunde inte starta konversation.";
+      setContactError(message);
+    } catch {
+      setContactError("Något gick fel. Försök igen eller logga in.");
+    } finally {
+      setContactLoading(false);
+    }
   };
 
   if (loading) {
@@ -217,9 +248,21 @@ export default function ListingDetailPage() {
                   </div>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <button onClick={handleContact} className="btn-glow w-full py-3 px-4 bg-navy text-white text-center text-sm font-semibold rounded-xl">
-                    Kontakta hyresvärd
-                  </button>
+                  {contactError && (
+                    <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2" role="alert">
+                      {contactError}
+                    </p>
+                  )}
+                  <div className="flex gap-2 items-center">
+                    <button
+                      onClick={handleContact}
+                      disabled={contactLoading}
+                      className="btn-glow flex-1 py-3 px-4 bg-navy text-white text-center text-sm font-semibold rounded-xl disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                      {contactLoading ? "Vänta..." : "Kontakta hyresvärd"}
+                    </button>
+                    <FavoriteButton listingId={listing.id} initialFavorited={favorited} className="shrink-0 bg-white/80 text-navy rounded-xl p-2.5" />
+                  </div>
                   <a href={`mailto:${listing.contact.email}`} className="w-full py-3 px-4 border border-navy/20 text-navy text-center text-sm font-medium rounded-xl hover:bg-navy/[0.03] transition-colors">
                     Skicka e-post
                   </a>
