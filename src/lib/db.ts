@@ -24,7 +24,7 @@ function getPrisma(): PrismaClient {
 // Lazy proxy: only create the client when first used (at runtime), not at build time.
 export const prisma = new Proxy({} as PrismaClient, {
   get(_, prop) {
-    return (getPrisma() as Record<string | symbol, unknown>)[prop];
+    return (getPrisma() as unknown as Record<string | symbol, unknown>)[prop];
   },
 });
 
