@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { title, description, city, address, type, category, price, size, tags } = body;
+    const { title, description, city, address, type, category, price, size, tags, imageUrl } = body;
 
     if (!title || !description || !city || !address || !type || !category || price == null || price === "" || size == null || size === "") {
       return NextResponse.json({ error: "Alla obligatoriska fält måste fyllas i" }, { status: 400 });
@@ -43,6 +43,8 @@ export async function POST(request: NextRequest) {
 
     const user = await prisma.user.findUnique({ where: { id: session.user.id } });
 
+    const imageUrlStr = typeof imageUrl === "string" ? imageUrl.trim().slice(0, 2000) : "";
+
     const listing = await prisma.listing.create({
       data: {
         title: String(title).trim().slice(0, MAX_TITLE),
@@ -53,6 +55,7 @@ export async function POST(request: NextRequest) {
         category,
         price: Math.floor(priceNum),
         size: Math.floor(sizeNum),
+        imageUrl: imageUrlStr || "",
         tags: Array.isArray(tags) ? tags.slice(0, 20).filter((t: unknown) => typeof t === "string").map((t: string) => t.trim().slice(0, 50)) : [],
         ownerId: session.user.id,
         contactName: user?.name || session.user.name || "",

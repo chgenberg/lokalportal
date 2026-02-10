@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Resend } from "resend";
 
 const MAX_NAME = 200;
 const MAX_EMAIL = 254;
@@ -28,21 +29,32 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Ogiltig e-postadress" }, { status: 400 });
     }
 
-    // Minimal log for monitoring (no personal data or message content)
     console.info("Kontaktformulär mottaget");
 
-    // TODO: Send email via an email service provider
-    // Example with Resend:
-    // await resend.emails.send({
-    //   from: 'noreply@hittayta.se',
-    //   to: 'info@hittayta.se',
-    //   replyTo: email,
-    //   subject: `Kontaktformulär: ${subject}`,
-    //   text: `Från: ${name} (${email})\n\nÄmne: ${subject}\n\n${message}`,
-    // });
+    const apiKey = process.env.RESEND_API_KEY?.trim();
+    const toEmail = process.env.CONTACT_EMAIL_TO?.trim() || "info@hittayta.se";
+
+    if (apiKey) {
+      const resend = new Resend(apiKey);
+      const fromEmail = process.env.RESEND_FROM_EMAIL?.trim() || "onboarding@resend.dev";
+      const { error } = await resend.emails.send({
+        from: fromEmail,
+        to: toEmail,
+        replyTo: emailStr,
+        subject: `Kontaktformulär: ${subjectStr}`,
+        text: `Från: ${nameStr} (${emailStr})\n\nÄmne: ${subjectStr}\n\n${messageStr}`,
+      });
+      if (error) {
+        console.error("Resend send error:", error);
+        return NextResponse.json({ error: "Kunde inte skicka e-post. Försök igen senare." }, { status: 500 });
+      }
+    } else {
+      console.warn("[contact] RESEND_API_KEY not set – e-post skickas inte. Konfigurera Resend för att ta emot meddelanden.");
+    }
 
     return NextResponse.json({ success: true, message: "Meddelande skickat" });
-  } catch {
+  } catch (err) {
+    console.error("Contact POST error:", err);
     return NextResponse.json({ error: "Internt serverfel" }, { status: 500 });
   }
 }
