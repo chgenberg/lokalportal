@@ -93,6 +93,11 @@ model Message {
   read           Boolean      @default(false)
   createdAt      DateTime     @default(now())
 
+  fileUrl      String?
+  fileName     String?
+  fileSize     Int?
+  fileMimeType String?
+
   @@index([conversationId])
   @@index([senderId])
   @@map("messages")

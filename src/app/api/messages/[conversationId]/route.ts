@@ -41,6 +41,10 @@ export async function GET(
       text: m.text,
       read: m.read,
       createdAt: m.createdAt.toISOString(),
+      fileUrl: m.fileUrl,
+      fileName: m.fileName,
+      fileSize: m.fileSize,
+      fileMimeType: m.fileMimeType,
     })),
   });
 }
@@ -60,16 +64,19 @@ export async function POST(
     return NextResponse.json({ error: "Ej behörig" }, { status: 403 });
   }
 
-  let body: { text?: string };
+  let body: { text?: string; fileUrl?: string; fileName?: string; fileSize?: number; fileMimeType?: string };
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: "Ogiltig JSON" }, { status: 400 });
   }
 
-  const { text } = body;
-  if (!text || typeof text !== "string" || text.trim().length === 0) {
-    return NextResponse.json({ error: "Meddelande får inte vara tomt" }, { status: 400 });
+  const { text, fileUrl, fileName, fileSize, fileMimeType } = body;
+  const hasFile = fileUrl && fileName;
+  const hasText = text && typeof text === "string" && text.trim().length > 0;
+
+  if (!hasText && !hasFile) {
+    return NextResponse.json({ error: "Meddelande eller fil krävs" }, { status: 400 });
   }
 
   try {
@@ -78,7 +85,11 @@ export async function POST(
         data: {
           conversationId,
           senderId: session.user.id,
-          text: text.trim().slice(0, 2000),
+          text: hasText ? text.trim().slice(0, 2000) : "",
+          fileUrl: fileUrl || null,
+          fileName: fileName || null,
+          fileSize: fileSize || null,
+          fileMimeType: fileMimeType || null,
         },
       }),
       prisma.conversation.update({
@@ -94,6 +105,10 @@ export async function POST(
       text: message.text,
       read: message.read,
       createdAt: message.createdAt.toISOString(),
+      fileUrl: message.fileUrl,
+      fileName: message.fileName,
+      fileSize: message.fileSize,
+      fileMimeType: message.fileMimeType,
     }, { status: 201 });
   } catch (err) {
     console.error("Messages POST error:", err);

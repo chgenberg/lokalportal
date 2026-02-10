@@ -48,6 +48,10 @@ export interface Message {
   text: string;
   createdAt: string;
   read: boolean;
+  fileUrl?: string | null;
+  fileName?: string | null;
+  fileSize?: number | null;
+  fileMimeType?: string | null;
 }
 
 export const categoryLabels: Record<string, string> = {
