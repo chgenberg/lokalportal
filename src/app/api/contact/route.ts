@@ -28,14 +28,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Ogiltig e-postadress" }, { status: 400 });
     }
 
-    // Log the contact form submission
-    // In production, integrate with an email service like SendGrid, Resend, or similar
-    console.log("=== Nytt kontaktformulär ===");
-    console.log(`Namn: ${nameStr}`);
-    console.log(`E-post: ${emailStr}`);
-    console.log(`Ämne: ${subjectStr}`);
-    console.log(`Meddelande: ${messageStr}`);
-    console.log("============================");
+    // Minimal log for monitoring (no personal data or message content)
+    console.info("Kontaktformulär mottaget");
 
     // TODO: Send email via an email service provider
     // Example with Resend:

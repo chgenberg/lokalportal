@@ -65,6 +65,9 @@ const sampleListings = [
 ];
 
 export async function POST(request: NextRequest) {
+  if (process.env.NODE_ENV === "production" && !process.env.SEED_SECRET?.trim()) {
+    return new NextResponse(null, { status: 404 });
+  }
   const secret =
     request.headers.get("x-seed-secret") ??
     request.headers.get("authorization")?.replace(/^Bearer\s+/i, "");

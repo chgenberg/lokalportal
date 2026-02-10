@@ -1,6 +1,6 @@
-# Lokalportal
+# Hittayta.se
 
-Sveriges smartaste marknadsplats för kommersiella lokaler. Hitta butiker, kontor, lager och andra lokaler till salu eller uthyrning.
+Sveriges ledande marknadsplats för kommersiella lokaler. Hitta butiker, kontor, lager och andra lokaler till salu eller uthyrning.
 
 ## Tech Stack
 
