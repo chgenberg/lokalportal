@@ -4,6 +4,11 @@ import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 
 const IMAGES = ["/start/3.jpg", "/start/1.jpg", "/start/2.jpg"];
+const ALT_TEXTS = [
+  "Kommersiell lokal med moderna kontorsytor",
+  "Butikslokal med stor fönsterfront",
+  "Lagerlokal med god logistik",
+];
 const INTERVAL = 6000;
 
 export default function HeroCarousel() {
@@ -39,7 +44,7 @@ export default function HeroCarousel() {
         >
           <Image
             src={src}
-            alt=""
+            alt={ALT_TEXTS[i] ?? "Kommersiell lokal"}
             fill
             priority={i === 0}
             className="object-cover"

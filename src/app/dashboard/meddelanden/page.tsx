@@ -47,20 +47,37 @@ function MeddelandenContent() {
       </div>
 
       <div className="bg-white rounded-2xl border border-border overflow-hidden">
-        <div className="flex" style={{ height: "calc(100vh - 300px)", minHeight: "500px" }}>
-          <div className="w-80 border-r border-border overflow-y-auto shrink-0">
+        <div className="flex flex-col md:flex-row" style={{ height: "calc(100vh - 300px)", minHeight: "500px" }}>
+          {/* List: full width on mobile when no chat selected; fixed width on desktop */}
+          <div
+            className={`w-full md:w-80 border-r border-border overflow-y-auto shrink-0 ${selectedId ? "hidden md:block" : "block"}`}
+          >
             {loading ? (
               <div className="p-4 space-y-3">{[...Array(4)].map((_, i) => <div key={i} className="h-16 bg-muted rounded-xl animate-pulse" />)}</div>
             ) : (
               <ConversationList conversations={conversations} selectedId={selectedId} onSelect={setSelectedId} />
             )}
           </div>
-          <div className="flex-1 flex flex-col">
+
+          {/* Chat: hidden on mobile when no selection; show with Tillbaka on mobile */}
+          <div className={`flex-1 flex flex-col min-w-0 ${!selectedId ? "hidden md:flex" : "flex"}`}>
             {selectedConv && session?.user ? (
-              <ChatWindow conversationId={selectedConv.id} currentUserId={session.user.id} otherUserName={selectedConv.otherUserName} listingTitle={selectedConv.listingTitle} />
+              <>
+                <div className="md:hidden flex items-center gap-2 px-4 py-3 border-b border-border bg-white shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedId(undefined)}
+                    className="text-navy font-medium text-sm hover:bg-navy/[0.04] rounded-lg px-2 py-1 -ml-1 transition-colors"
+                    aria-label="Tillbaka till konversationer"
+                  >
+                    &larr; Tillbaka
+                  </button>
+                </div>
+                <ChatWindow conversationId={selectedConv.id} currentUserId={session.user.id} otherUserName={selectedConv.otherUserName} listingTitle={selectedConv.listingTitle} />
+              </>
             ) : (
               <div className="flex-1 flex items-center justify-center bg-muted/30">
-                <div className="text-center">
+                <div className="text-center px-4">
                   <p className="text-sm font-medium text-navy">Välj en konversation</p>
                   <p className="text-xs text-gray-500 mt-1">Välj en konversation till vänster för att börja chatta</p>
                 </div>

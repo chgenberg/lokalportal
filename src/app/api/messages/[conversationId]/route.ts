@@ -60,31 +60,43 @@ export async function POST(
     return NextResponse.json({ error: "Ej behörig" }, { status: 403 });
   }
 
-  const { text } = await request.json();
+  let body: { text?: string };
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Ogiltig JSON" }, { status: 400 });
+  }
+
+  const { text } = body;
   if (!text || typeof text !== "string" || text.trim().length === 0) {
     return NextResponse.json({ error: "Meddelande får inte vara tomt" }, { status: 400 });
   }
 
-  const [message] = await Promise.all([
-    prisma.message.create({
-      data: {
-        conversationId,
-        senderId: session.user.id,
-        text: text.trim().slice(0, 2000),
-      },
-    }),
-    prisma.conversation.update({
-      where: { id: conversationId },
-      data: { lastMessageAt: new Date() },
-    }),
-  ]);
+  try {
+    const [message] = await Promise.all([
+      prisma.message.create({
+        data: {
+          conversationId,
+          senderId: session.user.id,
+          text: text.trim().slice(0, 2000),
+        },
+      }),
+      prisma.conversation.update({
+        where: { id: conversationId },
+        data: { lastMessageAt: new Date() },
+      }),
+    ]);
 
-  return NextResponse.json({
-    id: message.id,
-    conversationId: message.conversationId,
-    senderId: message.senderId,
-    text: message.text,
-    read: message.read,
-    createdAt: message.createdAt.toISOString(),
-  }, { status: 201 });
+    return NextResponse.json({
+      id: message.id,
+      conversationId: message.conversationId,
+      senderId: message.senderId,
+      text: message.text,
+      read: message.read,
+      createdAt: message.createdAt.toISOString(),
+    }, { status: 201 });
+  } catch (err) {
+    console.error("Messages POST error:", err);
+    return NextResponse.json({ error: "Kunde inte skicka meddelande" }, { status: 500 });
+  }
 }

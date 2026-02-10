@@ -7,14 +7,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   const listing = await prisma.listing.findUnique({ where: { id } });
   if (!listing) {
-    return { title: "Annons hittades inte – Lokalportal" };
+    return { title: "Annons hittades inte – Hittayta.se" };
   }
   const price =
     listing.type === "sale"
       ? `${(listing.price / 1000000).toFixed(1)} mkr`
       : `${listing.price.toLocaleString("sv-SE")} kr/mån`;
   return {
-    title: `${listing.title} – Lokalportal`,
+    title: `${listing.title} – Hittayta.se`,
     description: `${listing.address}, ${listing.city}. ${price}. ${listing.description.slice(0, 150)}...`,
     openGraph: {
       title: listing.title,

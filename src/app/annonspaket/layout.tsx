@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Annonspaket – Lokalportal",
+  title: "Annonspaket – Hittayta.se",
   description:
     "Välj annonspaket för att hyra ut din lokal. Logga in med BankID och nå tusentals potentiella hyresgäster.",
   openGraph: {
-    title: "Annonspaket – Lokalportal",
-    description: "Annonsera din lokal hos Lokalportal. Säkert med BankID.",
+    title: "Annonspaket – Hittayta.se",
+    description: "Annonsera din lokal hos Hittayta.se. Säkert med BankID.",
   },
 };
 

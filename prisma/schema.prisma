@@ -57,6 +57,9 @@ model Listing {
   @@index([category])
   @@index([featured])
   @@index([ownerId])
+  @@index([price])
+  @@index([size])
+  @@index([createdAt])
   @@map("listings")
 }
 
@@ -76,6 +79,7 @@ model Conversation {
   @@unique([listingId, tenantId])
   @@index([landlordId])
   @@index([tenantId])
+  @@index([lastMessageAt])
   @@map("conversations")
 }
 

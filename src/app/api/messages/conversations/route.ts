@@ -82,38 +82,49 @@ export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user) return NextResponse.json({ error: "Ej inloggad" }, { status: 401 });
 
-  const { listingId } = await request.json();
+  let body: { listingId?: string };
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Ogiltig JSON" }, { status: 400 });
+  }
+
+  const { listingId } = body;
   if (!listingId) return NextResponse.json({ error: "listingId krävs" }, { status: 400 });
 
-  const listing = await prisma.listing.findUnique({ where: { id: listingId } });
-  if (!listing) return NextResponse.json({ error: "Annons hittades inte" }, { status: 404 });
+  try {
+    const listing = await prisma.listing.findUnique({ where: { id: listingId } });
+    if (!listing) return NextResponse.json({ error: "Annons hittades inte" }, { status: 404 });
 
-  // Check for existing conversation
-  const existing = await prisma.conversation.findUnique({
-    where: { listingId_tenantId: { listingId, tenantId: session.user.id } },
-  });
-  if (existing) {
-    return NextResponse.json({
-      ...existing,
-      createdAt: existing.createdAt.toISOString(),
-      lastMessageAt: existing.lastMessageAt.toISOString(),
+    const existing = await prisma.conversation.findUnique({
+      where: { listingId_tenantId: { listingId, tenantId: session.user.id } },
     });
+    if (existing) {
+      return NextResponse.json({
+        ...existing,
+        createdAt: existing.createdAt.toISOString(),
+        lastMessageAt: existing.lastMessageAt.toISOString(),
+      });
+    }
+
+    if (!listing.ownerId) {
+      return NextResponse.json(
+        { error: "Denna annons har ingen hyresvärd kopplad. Kontakta support." },
+        { status: 400 }
+      );
+    }
+
+    const conversation = await prisma.conversation.create({
+      data: { listingId, landlordId: listing.ownerId, tenantId: session.user.id },
+    });
+
+    return NextResponse.json({
+      ...conversation,
+      createdAt: conversation.createdAt.toISOString(),
+      lastMessageAt: conversation.lastMessageAt.toISOString(),
+    }, { status: 201 });
+  } catch (err) {
+    console.error("Conversations POST error:", err);
+    return NextResponse.json({ error: "Kunde inte skapa konversation" }, { status: 500 });
   }
-
-  if (!listing.ownerId) {
-    return NextResponse.json(
-      { error: "Denna annons har ingen hyresvärd kopplad. Kontakta support." },
-      { status: 400 }
-    );
-  }
-
-  const conversation = await prisma.conversation.create({
-    data: { listingId, landlordId: listing.ownerId, tenantId: session.user.id },
-  });
-
-  return NextResponse.json({
-    ...conversation,
-    createdAt: conversation.createdAt.toISOString(),
-    lastMessageAt: conversation.lastMessageAt.toISOString(),
-  }, { status: 201 });
 }
