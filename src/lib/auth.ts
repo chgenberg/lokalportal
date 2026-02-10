@@ -76,11 +76,6 @@ export const authOptions: NextAuthOptions = {
     },
   },
   pages: { signIn: "/logga-in" },
-  secret: (() => {
-    const secret = process.env.NEXTAUTH_SECRET?.trim();
-    if (process.env.NODE_ENV === "production" && !secret) {
-      throw new Error("NEXTAUTH_SECRET is required in production. Set it in your environment.");
-    }
-    return secret || "dev-secret-change-in-production";
-  })(),
+  // Use placeholder during build (no env in Docker/build). Runtime check in middleware.
+  secret: process.env.NEXTAUTH_SECRET?.trim() || "dev-secret-change-in-production",
 };
