@@ -144,7 +144,7 @@ export default function ListingDetailPage() {
                 </div>
                 <div className="text-center border-x border-border/40">
                   <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-1">Storlek</p>
-                  <p className="text-xl font-bold text-navy tracking-tight">{listing.size} m&sup2;</p>
+                  <p className="text-xl font-bold text-navy tracking-tight">{listing.size} m²</p>
                 </div>
                 <div className="text-center">
                   <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-1">Plats</p>
@@ -242,7 +242,7 @@ export default function ListingDetailPage() {
                   </div>
                   <div className="flex justify-between items-center py-2 border-b border-border/30">
                     <span className="text-[12px] text-gray-400 tracking-wide">Storlek</span>
-                    <span className="text-[13px] font-medium text-navy">{listing.size} m&sup2;</span>
+                    <span className="text-[13px] font-medium text-navy">{listing.size} m²</span>
                   </div>
                   <div className="flex justify-between items-center py-2">
                     <span className="text-[12px] text-gray-400 tracking-wide">Publicerad</span>

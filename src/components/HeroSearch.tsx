@@ -95,9 +95,13 @@ export default function HeroSearch() {
             />
           </div>
           {showCitySuggestions && (
-            <ul className="absolute top-full left-0 right-0 mt-1.5 glass rounded-xl border border-border/60 shadow-xl z-50 animate-scale-in overflow-hidden list-none m-0 p-0">
+            <ul
+              role="listbox"
+              aria-label="Förslag på städer"
+              className="absolute top-full left-0 right-0 mt-1.5 glass rounded-xl border border-border/60 shadow-xl z-50 animate-scale-in overflow-hidden list-none m-0 p-0"
+            >
               {citySuggestions.map((suggestion, i) => (
-                <li key={suggestion}>
+                <li key={suggestion} role="option" aria-selected={i === highlightedIndex}>
                   <button
                     type="button"
                     onClick={() => { setCity(suggestion); setShowCitySuggestions(false); }}
@@ -117,6 +121,9 @@ export default function HeroSearch() {
           <button
             type="button"
             onClick={() => { setTypeOpen(!typeOpen); setCategoryOpen(false); }}
+            aria-expanded={typeOpen}
+            aria-haspopup="listbox"
+            aria-label="Välj typ (till salu eller uthyres)"
             className="w-full flex items-center justify-between gap-2 px-4 py-3 rounded-xl bg-white/60 hover:bg-white/80 transition-colors text-sm"
           >
             <span className={type ? "text-navy font-medium" : "text-gray-400"}>
@@ -125,7 +132,7 @@ export default function HeroSearch() {
             <span className={`text-gray-300 text-[10px] transition-transform ${typeOpen ? "rotate-180" : ""}`}>&#9662;</span>
           </button>
           {typeOpen && (
-            <div className="absolute top-full left-0 right-0 mt-1.5 glass rounded-xl border border-border/60 shadow-xl z-50 animate-scale-in overflow-hidden">
+            <div role="listbox" aria-label="Typ" className="absolute top-full left-0 right-0 mt-1.5 glass rounded-xl border border-border/60 shadow-xl z-50 animate-scale-in overflow-hidden">
               {typeOptions.map((opt) => (
                 <button type="button" key={opt.value}
                   onClick={() => { setType(opt.value); setTypeOpen(false); }}
@@ -141,6 +148,9 @@ export default function HeroSearch() {
           <button
             type="button"
             onClick={() => { setCategoryOpen(!categoryOpen); setTypeOpen(false); }}
+            aria-expanded={categoryOpen}
+            aria-haspopup="listbox"
+            aria-label="Välj kategori (butik, kontor, lager, övrigt)"
             className="w-full flex items-center justify-between gap-2 px-4 py-3 rounded-xl bg-white/60 hover:bg-white/80 transition-colors text-sm"
           >
             <span className={category ? "text-navy font-medium" : "text-gray-400"}>
@@ -149,7 +159,7 @@ export default function HeroSearch() {
             <span className={`text-gray-300 text-[10px] transition-transform ${categoryOpen ? "rotate-180" : ""}`}>&#9662;</span>
           </button>
           {categoryOpen && (
-            <div className="absolute top-full left-0 right-0 mt-1.5 glass rounded-xl border border-border/60 shadow-xl z-50 animate-scale-in overflow-hidden">
+            <div role="listbox" aria-label="Kategori" className="absolute top-full left-0 right-0 mt-1.5 glass rounded-xl border border-border/60 shadow-xl z-50 animate-scale-in overflow-hidden">
               {categoryOptions.map((opt) => (
                 <button type="button" key={opt.value}
                   onClick={() => { setCategory(opt.value); setCategoryOpen(false); }}
@@ -164,6 +174,7 @@ export default function HeroSearch() {
           type="button"
           onClick={handleSearch}
           className="btn-glow px-7 py-3 bg-navy text-white rounded-xl text-sm font-semibold shrink-0 tracking-wide"
+          aria-label="Sök lokaler"
         >
           Sök
         </button>

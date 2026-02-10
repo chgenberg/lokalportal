@@ -209,7 +209,7 @@ function AnnonserContent() {
             ))}
           </div>
         ) : error ? (
-          <div className="text-center py-24 bg-white rounded-2xl border border-border/40">
+          <div role="alert" className="text-center py-24 bg-white rounded-2xl border border-border/40">
             <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-navy/[0.04] flex items-center justify-center">
               <span className="text-xl font-bold text-navy/30">!</span>
             </div>

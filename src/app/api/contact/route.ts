@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 
+const MAX_NAME = 200;
+const MAX_EMAIL = 254;
+const MAX_SUBJECT = 300;
+const MAX_MESSAGE = 5000;
+
 export async function POST(req: NextRequest) {
   try {
     const { name, email, subject, message } = await req.json();
@@ -8,19 +13,28 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Alla fält krävs" }, { status: 400 });
     }
 
-    // Validate email format
+    const nameStr = String(name).trim();
+    const emailStr = String(email).trim();
+    const subjectStr = String(subject).trim();
+    const messageStr = String(message).trim();
+
+    if (nameStr.length > MAX_NAME) return NextResponse.json({ error: "Namn är för långt" }, { status: 400 });
+    if (emailStr.length > MAX_EMAIL) return NextResponse.json({ error: "E-postadress är för lång" }, { status: 400 });
+    if (subjectStr.length > MAX_SUBJECT) return NextResponse.json({ error: "Ämne är för långt" }, { status: 400 });
+    if (messageStr.length > MAX_MESSAGE) return NextResponse.json({ error: "Meddelande är för långt" }, { status: 400 });
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (!emailRegex.test(emailStr)) {
       return NextResponse.json({ error: "Ogiltig e-postadress" }, { status: 400 });
     }
 
     // Log the contact form submission
     // In production, integrate with an email service like SendGrid, Resend, or similar
     console.log("=== Nytt kontaktformulär ===");
-    console.log(`Namn: ${name}`);
-    console.log(`E-post: ${email}`);
-    console.log(`Ämne: ${subject}`);
-    console.log(`Meddelande: ${message}`);
+    console.log(`Namn: ${nameStr}`);
+    console.log(`E-post: ${emailStr}`);
+    console.log(`Ämne: ${subjectStr}`);
+    console.log(`Meddelande: ${messageStr}`);
     console.log("============================");
 
     // TODO: Send email via an email service provider

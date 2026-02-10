@@ -172,7 +172,7 @@ export default function KontaktPage() {
                 </div>
 
                 {status === "error" && (
-                  <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+                  <div role="alert" className="bg-red-50 border border-red-200 rounded-xl p-4">
                     <p className="text-[13px] text-red-600">
                       Något gick fel. Försök igen eller skicka ett mejl direkt till <a href="mailto:info@hittayta.se" className="underline">info@hittayta.se</a>.
                     </p>

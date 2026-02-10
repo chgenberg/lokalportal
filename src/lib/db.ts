@@ -4,7 +4,12 @@ import { PrismaClient } from "@/generated/prisma/client";
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
 
 function createPrismaClient() {
-  const connectionString = process.env.DATABASE_URL!;
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString?.trim()) {
+    throw new Error(
+      "DATABASE_URL is not set. Add it to .env.local or your environment."
+    );
+  }
   const adapter = new PrismaPg({ connectionString });
   return new PrismaClient({ adapter });
 }

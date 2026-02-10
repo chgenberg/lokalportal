@@ -267,7 +267,7 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
         {/* Content */}
         <div className="flex-1 overflow-y-auto px-8 py-6">
           {error && (
-            <div className="mb-5 p-3 bg-navy/[0.03] border border-navy/10 rounded-xl text-[13px] text-navy animate-slide-down">
+            <div role="alert" className="mb-5 p-3 bg-navy/[0.03] border border-navy/10 rounded-xl text-[13px] text-navy animate-slide-down">
               {error}
             </div>
           )}
@@ -364,7 +364,7 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-semibold text-gray-400 mb-1.5 tracking-[0.1em] uppercase">Storlek (m&sup2;)</label>
+                  <label className="block text-[11px] font-semibold text-gray-400 mb-1.5 tracking-[0.1em] uppercase">Storlek (m²)</label>
                   <input
                     type="number"
                     value={form.size}
@@ -490,7 +490,7 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
                   )}
 
                   <div className="flex items-center justify-between pt-3 border-t border-border/40">
-                    <span className="text-[12px] text-gray-400 tracking-wide">{form.size || "—"} m&sup2;</span>
+                    <span className="text-[12px] text-gray-400 tracking-wide">{form.size || "—"} m²</span>
                     <span className="text-base font-bold text-navy tracking-tight">
                       {formatPrice(form.price, form.type)}
                     </span>

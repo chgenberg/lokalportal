@@ -17,7 +17,11 @@ export default function ListingCard({ listing }: ListingCardProps) {
   const hasImage = listing.imageUrl && listing.imageUrl.trim() !== "";
 
   return (
-    <Link href={`/annonser/${listing.id}`} className="block group">
+    <Link
+      href={`/annonser/${listing.id}`}
+      className="block group"
+      aria-label={`${listing.title}, ${listing.address}, ${listing.city}, ${listing.size} m²`}
+    >
       <div className="card-glow bg-white rounded-2xl border border-border/60 overflow-hidden transition-all duration-300 group-hover:shadow-lg group-hover:shadow-navy/[0.06] group-hover:-translate-y-1">
         {/* Image area */}
         <div className="relative h-52 overflow-hidden">
@@ -72,7 +76,7 @@ export default function ListingCard({ listing }: ListingCardProps) {
 
           <div className="flex items-center justify-between pt-3 border-t border-border/40">
             <div className="flex items-center gap-3">
-              <span className="text-[12px] text-gray-400 tracking-wide">{listing.size} m&sup2;</span>
+              <span className="text-[12px] text-gray-400 tracking-wide">{listing.size} m²</span>
               {listing.tags && listing.tags.length > 0 && (
                 <span className="text-[11px] text-navy/30 tracking-wide">{listing.tags[0]}</span>
               )}

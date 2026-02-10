@@ -76,5 +76,13 @@ export const authOptions: NextAuthOptions = {
     },
   },
   pages: { signIn: "/logga-in" },
-  secret: process.env.NEXTAUTH_SECRET || "dev-secret-change-in-production",
+  secret: (() => {
+    const secret = process.env.NEXTAUTH_SECRET;
+    if (process.env.NODE_ENV === "production" && !secret?.trim()) {
+      console.warn(
+        "[auth] NEXTAUTH_SECRET is not set in production. Set it in your environment to secure sessions."
+      );
+    }
+    return secret?.trim() || "dev-secret-change-in-production";
+  })(),
 };

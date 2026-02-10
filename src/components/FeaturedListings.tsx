@@ -49,7 +49,7 @@ export default function FeaturedListings() {
             ))}
           </div>
         ) : error ? (
-          <div className="py-16 px-6 bg-white rounded-2xl border border-border/40 text-center">
+          <div role="alert" className="py-16 px-6 bg-white rounded-2xl border border-border/40 text-center">
             <p className="text-gray-400 mb-4 text-sm">{error}</p>
             <button type="button" onClick={() => window.location.reload()} className="text-[13px] font-semibold text-navy hover:underline">Ladda om sidan</button>
           </div>

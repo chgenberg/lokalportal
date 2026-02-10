@@ -87,7 +87,7 @@ export default function RegisterPage() {
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
-            {error && <div className="p-3 bg-navy/[0.03] border border-navy/10 rounded-xl text-[13px] text-navy">{error}</div>}
+            {error && <div role="alert" className="p-3 bg-navy/[0.03] border border-navy/10 rounded-xl text-[13px] text-navy">{error}</div>}
 
             <button type="button" onClick={() => setStep("role")} className="text-[12px] font-semibold text-navy/50 hover:text-navy transition-colors mb-1">&larr; Byt kontotyp</button>
 

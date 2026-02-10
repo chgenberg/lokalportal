@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSession, signOut } from "next-auth/react";
@@ -13,6 +13,7 @@ export default function Header() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [scrolled, setScrolled] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
   const { data: session } = useSession();
   const router = useRouter();
 
@@ -21,6 +22,18 @@ export default function Header() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    };
+    if (userMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [userMenuOpen]);
 
   useEffect(() => {
     if (!session?.user) return;
@@ -112,9 +125,13 @@ export default function Header() {
                     Annonsera
                   </button>
 
-                  <div className="relative ml-1">
+                  <div className="relative ml-1" ref={userMenuRef}>
                     <button
+                      type="button"
                       onClick={() => setUserMenuOpen(!userMenuOpen)}
+                      aria-expanded={userMenuOpen}
+                      aria-haspopup="menu"
+                      aria-label="Användarmenyn"
                       className="flex items-center gap-2.5 pl-3 pr-2 py-1.5 rounded-full border border-border/60 hover:border-navy/20 hover:shadow-sm transition-all duration-200"
                     >
                       <span className="text-[13px] font-medium text-navy hidden lg:inline">

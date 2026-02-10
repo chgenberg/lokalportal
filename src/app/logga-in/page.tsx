@@ -54,7 +54,7 @@ function LoginContent() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {error && <div className="p-3 bg-navy/[0.03] border border-navy/10 rounded-xl text-[13px] text-navy">{error}</div>}
+          {error && <div role="alert" className="p-3 bg-navy/[0.03] border border-navy/10 rounded-xl text-[13px] text-navy">{error}</div>}
 
           <div>
             <label className="block text-[12px] font-semibold text-gray-400 mb-1.5 tracking-wide uppercase">E-postadress</label>

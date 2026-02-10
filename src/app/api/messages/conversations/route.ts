@@ -41,34 +41,39 @@ export async function GET(request: NextRequest) {
     orderBy: { lastMessageAt: "desc" },
   });
 
-  const enriched = await Promise.all(
-    conversations.map(async (conv) => {
-      const isLandlord = session.user.id === conv.landlordId;
-      const otherUser = isLandlord ? conv.tenant : conv.landlord;
-      const unreadCount = await prisma.message.count({
-        where: {
-          conversationId: conv.id,
-          read: false,
-          senderId: { not: session.user.id },
-        },
-      });
-      const lastMsg = conv.messages[0];
+  const convIds = conversations.map((c) => c.id);
+  const unreadCounts =
+    convIds.length > 0
+      ? await prisma.message.groupBy({
+          by: ["conversationId"],
+          where: {
+            conversationId: { in: convIds },
+            read: false,
+            senderId: { not: session.user.id },
+          },
+          _count: { id: true },
+        })
+      : [];
+  const unreadMap = Object.fromEntries(unreadCounts.map((u) => [u.conversationId, u._count.id]));
 
-      return {
-        id: conv.id,
-        listingId: conv.listingId,
-        landlordId: conv.landlordId,
-        tenantId: conv.tenantId,
-        createdAt: conv.createdAt.toISOString(),
-        lastMessageAt: conv.lastMessageAt.toISOString(),
-        listingTitle: conv.listing.title,
-        otherUserName: otherUser.name,
-        otherUserRole: otherUser.role,
-        unreadCount,
-        lastMessage: lastMsg ? { text: lastMsg.text, createdAt: lastMsg.createdAt.toISOString() } : null,
-      };
-    })
-  );
+  const enriched = conversations.map((conv) => {
+    const isLandlord = session.user.id === conv.landlordId;
+    const otherUser = isLandlord ? conv.tenant : conv.landlord;
+    const lastMsg = conv.messages[0];
+    return {
+      id: conv.id,
+      listingId: conv.listingId,
+      landlordId: conv.landlordId,
+      tenantId: conv.tenantId,
+      createdAt: conv.createdAt.toISOString(),
+      lastMessageAt: conv.lastMessageAt.toISOString(),
+      listingTitle: conv.listing.title,
+      otherUserName: otherUser.name,
+      otherUserRole: otherUser.role,
+      unreadCount: unreadMap[conv.id] ?? 0,
+      lastMessage: lastMsg ? { text: lastMsg.text, createdAt: lastMsg.createdAt.toISOString() } : null,
+    };
+  });
 
   return NextResponse.json({ conversations: enriched });
 }
@@ -95,10 +100,15 @@ export async function POST(request: NextRequest) {
     });
   }
 
-  const landlordId = listing.ownerId || "system";
+  if (!listing.ownerId) {
+    return NextResponse.json(
+      { error: "Denna annons har ingen hyresvärd kopplad. Kontakta support." },
+      { status: 400 }
+    );
+  }
 
   const conversation = await prisma.conversation.create({
-    data: { listingId, landlordId, tenantId: session.user.id },
+    data: { listingId, landlordId: listing.ownerId, tenantId: session.user.id },
   });
 
   return NextResponse.json({

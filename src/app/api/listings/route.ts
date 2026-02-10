@@ -43,10 +43,11 @@ export async function GET(request: NextRequest) {
 
   const pageParam = searchParams.get("page");
   const limitParam = searchParams.get("limit");
-  const pageRaw = pageParam ? parseInt(pageParam, 10) : 0;
-  const limitRaw = limitParam ? parseInt(limitParam, 10) : 0;
-  const page = Number.isNaN(pageRaw) ? 0 : Math.max(1, pageRaw);
-  const limit = Number.isNaN(limitRaw) ? 0 : Math.min(50, Math.max(1, limitRaw));
+  const defaultLimit = 12;
+  const pageRaw = pageParam ? parseInt(pageParam, 10) : 1;
+  const limitRaw = limitParam ? parseInt(limitParam, 10) : defaultLimit;
+  const page = Number.isNaN(pageRaw) ? 1 : Math.max(1, pageRaw);
+  const limit = Number.isNaN(limitRaw) ? defaultLimit : Math.min(50, Math.max(1, limitRaw));
 
   try {
     const where: Prisma.ListingWhereInput = {};
@@ -82,16 +83,11 @@ export async function GET(request: NextRequest) {
       sort === "size" ? { size: "desc" } :
       { createdAt: "desc" };
 
-    if (page > 0 && limit > 0) {
-      const [listings, total] = await Promise.all([
-        prisma.listing.findMany({ where, orderBy, skip: (page - 1) * limit, take: limit }),
-        prisma.listing.count({ where }),
-      ]);
-      return NextResponse.json({ listings: listings.map(formatListing), total });
-    }
-
-    const all = await prisma.listing.findMany({ where, orderBy });
-    return NextResponse.json(all.map(formatListing));
+    const [listings, total] = await Promise.all([
+      prisma.listing.findMany({ where, orderBy, skip: (page - 1) * limit, take: limit }),
+      prisma.listing.count({ where }),
+    ]);
+    return NextResponse.json({ listings: listings.map(formatListing), total });
   } catch (err) {
     console.error("Listings error:", err);
     return NextResponse.json({ error: "Kunde inte hämta annonser" }, { status: 500 });

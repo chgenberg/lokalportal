@@ -10,23 +10,23 @@ const inter = Inter({
   subsets: ["latin"],
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://lokalportal.se";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://hittayta.se";
 
 export const metadata: Metadata = {
-  title: "Lokalportal – Hitta rätt lokal snabbare",
+  title: "Hittayta.se – Hitta rätt lokal snabbare",
   description:
     "Sveriges ledande marknadsplats för kommersiella lokaler. Hitta butiker, kontor, lager och andra lokaler till salu eller uthyrning.",
   openGraph: {
-    title: "Lokalportal – Hitta rätt lokal snabbare",
+    title: "Hittayta.se – Hitta rätt lokal snabbare",
     description: "Sveriges ledande marknadsplats för kommersiella lokaler. Hitta butiker, kontor, lager och mer.",
     url: siteUrl,
-    siteName: "Lokalportal",
+    siteName: "Hittayta.se",
     locale: "sv_SE",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Lokalportal – Hitta rätt lokal snabbare",
+    title: "Hittayta.se – Hitta rätt lokal snabbare",
     description: "Sveriges ledande marknadsplats för kommersiella lokaler.",
   },
   metadataBase: new URL(siteUrl),
@@ -35,13 +35,13 @@ export const metadata: Metadata = {
 const organizationJsonLd = {
   "@context": "https://schema.org",
   "@type": "Organization",
-  name: "Lokalportal",
+  name: "Hittayta.se",
   url: siteUrl,
   description: "Sveriges ledande marknadsplats för kommersiella lokaler.",
   contactPoint: {
     "@type": "ContactPoint",
     contactType: "customer service",
-    email: "info@lokalportal.se",
+    email: "info@hittayta.se",
   },
 };
 
