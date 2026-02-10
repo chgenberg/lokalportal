@@ -4,7 +4,7 @@ import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/db";
 
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ conversationId: string }> }
 ) {
   const session = await getServerSession(authOptions);
@@ -12,41 +12,46 @@ export async function GET(
 
   const { conversationId } = await params;
 
-  const conversation = await prisma.conversation.findUnique({ where: { id: conversationId } });
-  if (!conversation) return NextResponse.json({ error: "Konversation hittades inte" }, { status: 404 });
-  if (conversation.landlordId !== session.user.id && conversation.tenantId !== session.user.id) {
-    return NextResponse.json({ error: "Ej behörig" }, { status: 403 });
+  try {
+    const conversation = await prisma.conversation.findUnique({ where: { id: conversationId } });
+    if (!conversation) return NextResponse.json({ error: "Konversation hittades inte" }, { status: 404 });
+    if (conversation.landlordId !== session.user.id && conversation.tenantId !== session.user.id) {
+      return NextResponse.json({ error: "Ej behörig" }, { status: 403 });
+    }
+
+    // Mark messages as read
+    await prisma.message.updateMany({
+      where: {
+        conversationId,
+        senderId: { not: session.user.id },
+        read: false,
+      },
+      data: { read: true },
+    });
+
+    const messages = await prisma.message.findMany({
+      where: { conversationId },
+      orderBy: { createdAt: "asc" },
+    });
+
+    return NextResponse.json({
+      messages: messages.map((m) => ({
+        id: m.id,
+        conversationId: m.conversationId,
+        senderId: m.senderId,
+        text: m.text,
+        read: m.read,
+        createdAt: m.createdAt.toISOString(),
+        fileUrl: m.fileUrl,
+        fileName: m.fileName,
+        fileSize: m.fileSize,
+        fileMimeType: m.fileMimeType,
+      })),
+    });
+  } catch (err) {
+    console.error("Messages GET error:", err);
+    return NextResponse.json({ error: "Kunde inte hämta meddelanden" }, { status: 500 });
   }
-
-  // Mark messages as read
-  await prisma.message.updateMany({
-    where: {
-      conversationId,
-      senderId: { not: session.user.id },
-      read: false,
-    },
-    data: { read: true },
-  });
-
-  const messages = await prisma.message.findMany({
-    where: { conversationId },
-    orderBy: { createdAt: "asc" },
-  });
-
-  return NextResponse.json({
-    messages: messages.map((m) => ({
-      id: m.id,
-      conversationId: m.conversationId,
-      senderId: m.senderId,
-      text: m.text,
-      read: m.read,
-      createdAt: m.createdAt.toISOString(),
-      fileUrl: m.fileUrl,
-      fileName: m.fileName,
-      fileSize: m.fileSize,
-      fileMimeType: m.fileMimeType,
-    })),
-  });
 }
 
 export async function POST(

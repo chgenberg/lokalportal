@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import DashboardLayoutClient from "./DashboardLayoutClient";
 
 export const metadata: Metadata = {
@@ -12,5 +13,9 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <DashboardLayoutClient>{children}</DashboardLayoutClient>;
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-muted" />}>
+      <DashboardLayoutClient>{children}</DashboardLayoutClient>
+    </Suspense>
+  );
 }

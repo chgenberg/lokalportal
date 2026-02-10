@@ -1,13 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 
 export default function DashboardLayoutClient({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { data: session } = useSession();
   const isLandlord = session?.user?.role === "landlord";
+  const currentTab = searchParams.get("tab");
 
   const navItems = [
     { href: "/dashboard", label: "Översikt", show: true },
@@ -32,7 +34,11 @@ export default function DashboardLayoutClient({ children }: { children: React.Re
               )}
               <nav className="space-y-1">
                 {navItems.filter((item) => item.show).map((item) => {
-                  const isActive = pathname === item.href || (item.href === "/dashboard" && pathname === "/dashboard" && !item.href.includes("tab"));
+                  const itemTab = item.href.includes("tab=") ? item.href.match(/tab=([^&]+)/)?.[1] : null;
+                  const isActive =
+                    pathname === item.href ||
+                    (item.href === "/dashboard" && pathname === "/dashboard" && !currentTab) ||
+                    (pathname === "/dashboard" && currentTab != null && itemTab === currentTab);
                   return (
                     <Link key={item.label} href={item.href} className={`block px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${isActive ? "bg-navy text-white" : "text-gray-600 hover:bg-muted hover:text-navy"}`}>
                       {item.label}

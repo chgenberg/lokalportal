@@ -129,7 +129,7 @@ function MeddelandenContent() {
                 <ChatWindow
                   conversationId={selectedConv.id}
                   currentUserId={session.user.id}
-                  currentUserName={session.user.name}
+                  currentUserName={session.user.name || "Användare"}
                   otherUserName={selectedConv.otherUserName}
                   listingTitle={selectedConv.listingTitle}
                 />

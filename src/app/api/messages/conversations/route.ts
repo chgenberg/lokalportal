@@ -7,75 +7,89 @@ export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user) return NextResponse.json({ error: "Ej inloggad" }, { status: 401 });
 
-  const unreadOnly = request.nextUrl.searchParams.get("unreadOnly");
+  try {
+    const unreadOnly = request.nextUrl.searchParams.get("unreadOnly");
 
-  if (unreadOnly === "true") {
-    const unreadCount = await prisma.message.count({
-      where: {
-        read: false,
-        senderId: { not: session.user.id },
-        conversation: {
-          OR: [
-            { landlordId: session.user.id },
-            { tenantId: session.user.id },
-          ],
-        },
-      },
-    });
-    return NextResponse.json({ unreadCount });
-  }
-
-  const conversations = await prisma.conversation.findMany({
-    where: {
-      OR: [
-        { landlordId: session.user.id },
-        { tenantId: session.user.id },
-      ],
-    },
-    include: {
-      listing: { select: { title: true } },
-      landlord: { select: { name: true, role: true } },
-      tenant: { select: { name: true, role: true } },
-      messages: { orderBy: { createdAt: "desc" }, take: 1 },
-    },
-    orderBy: { lastMessageAt: "desc" },
-  });
-
-  const convIds = conversations.map((c) => c.id);
-  const unreadCounts =
-    convIds.length > 0
-      ? await prisma.message.groupBy({
-          by: ["conversationId"],
-          where: {
-            conversationId: { in: convIds },
-            read: false,
-            senderId: { not: session.user.id },
+    if (unreadOnly === "true") {
+      const unreadCount = await prisma.message.count({
+        where: {
+          read: false,
+          senderId: { not: session.user.id },
+          conversation: {
+            OR: [
+              { landlordId: session.user.id },
+              { tenantId: session.user.id },
+            ],
           },
-          _count: { id: true },
-        })
-      : [];
-  const unreadMap = Object.fromEntries(unreadCounts.map((u) => [u.conversationId, u._count.id]));
+        },
+      });
+      return NextResponse.json({ unreadCount });
+    }
 
-  const enriched = conversations.map((conv) => {
-    const isLandlord = session.user.id === conv.landlordId;
-    const otherUser = isLandlord ? conv.tenant : conv.landlord;
-    const lastMsg = conv.messages[0];
-    return {
-      id: conv.id,
-      listingId: conv.listingId,
-      landlordId: conv.landlordId,
-      tenantId: conv.tenantId,
-      createdAt: conv.createdAt.toISOString(),
-      lastMessageAt: conv.lastMessageAt.toISOString(),
-      listingTitle: conv.listing.title,
-      otherUserName: otherUser.name,
-      otherUserRole: otherUser.role,
-      unreadCount: unreadMap[conv.id] ?? 0,
-      lastMessage: lastMsg ? { text: lastMsg.text, createdAt: lastMsg.createdAt.toISOString() } : null,
-    };
-  });
+    const conversations = await prisma.conversation.findMany({
+      where: {
+        OR: [
+          { landlordId: session.user.id },
+          { tenantId: session.user.id },
+        ],
+      },
+      include: {
+        listing: { select: { title: true } },
+        landlord: { select: { name: true, role: true } },
+        tenant: { select: { name: true, role: true } },
+        messages: { orderBy: { createdAt: "desc" }, take: 1 },
+      },
+      orderBy: { lastMessageAt: "desc" },
+    });
 
-  return NextResponse.json({ conversations: enriched });
+    const convIds = conversations.map((c) => c.id);
+    const unreadCounts =
+      convIds.length > 0
+        ? await prisma.message.groupBy({
+            by: ["conversationId"],
+            where: {
+              conversationId: { in: convIds },
+              read: false,
+              senderId: { not: session.user.id },
+            },
+            _count: { id: true },
+          })
+        : [];
+    const unreadMap = Object.fromEntries(unreadCounts.map((u) => [u.conversationId, u._count.id]));
+
+    const enriched = conversations.map((conv) => {
+      const isLandlord = session.user.id === conv.landlordId;
+      const otherUser = isLandlord ? conv.tenant : conv.landlord;
+      const lastMsg = conv.messages[0];
+      return {
+        id: conv.id,
+        listingId: conv.listingId,
+        landlordId: conv.landlordId,
+        tenantId: conv.tenantId,
+        createdAt: conv.createdAt.toISOString(),
+        lastMessageAt: conv.lastMessageAt.toISOString(),
+        listingTitle: conv.listing.title,
+        otherUserName: otherUser.name,
+        otherUserRole: otherUser.role,
+        unreadCount: unreadMap[conv.id] ?? 0,
+        lastMessage: lastMsg
+          ? {
+              text: lastMsg.text,
+              createdAt: lastMsg.createdAt.toISOString(),
+              fileUrl: lastMsg.fileUrl,
+              fileName: lastMsg.fileName,
+              fileSize: lastMsg.fileSize,
+              fileMimeType: lastMsg.fileMimeType,
+            }
+          : null,
+      };
+    });
+
+    return NextResponse.json({ conversations: enriched });
+  } catch (err) {
+    console.error("Conversations GET error:", err);
+    return NextResponse.json({ error: "Kunde inte hämta konversationer" }, { status: 500 });
+  }
 }
 
 export async function POST(request: NextRequest) {
