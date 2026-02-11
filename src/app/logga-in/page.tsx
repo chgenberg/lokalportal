@@ -32,7 +32,7 @@ function LoginContent() {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center px-4">
         <div className="w-full max-w-sm text-center animate-fade-in">
-          <div className="w-20 h-20 mx-auto mb-8 rounded-full bg-navy/[0.03] flex items-center justify-center glow">
+          <div className="w-20 h-20 mx-auto mb-8 rounded-full bg-navy/[0.03] border border-navy/10 shadow-sm flex items-center justify-center">
             <div className="w-12 h-12 rounded-full border-2 border-navy/20 border-t-navy animate-spin" />
           </div>
           <h1 className="text-xl font-bold text-navy mb-2 tracking-tight">Startar BankID...</h1>
@@ -46,7 +46,7 @@ function LoginContent() {
     <div className="min-h-screen bg-white flex items-center justify-center px-4">
       <div className="w-full max-w-sm animate-fade-in">
         <div className="text-center mb-10">
-          <div className="w-14 h-14 mx-auto mb-5 rounded-2xl bg-navy flex items-center justify-center glow-strong">
+          <div className="w-14 h-14 mx-auto mb-5 rounded-2xl bg-navy flex items-center justify-center shadow-md border border-navy/20">
             <span className="text-lg font-bold text-white">H</span>
           </div>
           <h1 className="text-xl font-bold text-navy mb-1.5 tracking-tight">Logga in</h1>
@@ -71,7 +71,7 @@ function LoginContent() {
             </div>
           </div>
 
-          <button type="submit" disabled={submitting} className="btn-glow w-full py-3.5 bg-navy text-white text-[13px] font-semibold rounded-xl disabled:opacity-50 tracking-wide">
+          <button type="submit" disabled={submitting} className="w-full py-3.5 bg-navy text-white text-[13px] font-semibold rounded-xl disabled:opacity-50 tracking-wide transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
             Logga in
           </button>
         </form>

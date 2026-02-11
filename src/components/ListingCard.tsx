@@ -26,7 +26,7 @@ export default function ListingCard({ listing, favorited: initialFavorited }: Li
       className="block group"
       aria-label={`${listing.title}, ${listing.address}, ${listing.city}, ${listing.size} m²`}
     >
-      <div className="card-glow bg-white rounded-2xl border border-border/60 overflow-hidden transition-all duration-300 group-hover:shadow-lg group-hover:shadow-navy/[0.06] group-hover:-translate-y-1">
+      <div className="bg-white rounded-2xl border border-border/60 overflow-hidden transition-all duration-300 hover:shadow-md hover:-translate-y-1 group">
         {/* Image area */}
         <div className="relative h-52 overflow-hidden">
           {hasImage ? (

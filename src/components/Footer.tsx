@@ -4,7 +4,7 @@ import NewsletterSignup from "./NewsletterSignup";
 
 export default function Footer() {
   return (
-    <footer className="bg-navy text-white relative grain">
+    <footer className="bg-navy text-white relative">
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
           <div className="md:col-span-1">
@@ -18,7 +18,7 @@ export default function Footer() {
               />
             </div>
             <p className="text-[13px] text-white/30 leading-relaxed mb-6">
-              Sveriges ledande marknadsplats för kommersiella lokaler.
+              Sveriges marknadsplats för kommersiella lokaler.
             </p>
             <NewsletterSignup />
           </div>
@@ -44,7 +44,7 @@ export default function Footer() {
           <div>
             <h4 className="text-[11px] font-semibold uppercase tracking-[0.15em] mb-5 text-white/20">Kontakt</h4>
             <ul className="space-y-3">
-              <li><a href="mailto:info@ledigyta.se" className="text-[13px] text-white/40 hover:text-white transition-colors">info@ledigyta.se</a></li>
+              <li><a href="mailto:info@hittayta.se" className="text-[13px] text-white/40 hover:text-white transition-colors duration-200">info@hittayta.se</a></li>
               <li className="text-[13px] text-white/40">Stockholm, Sverige</li>
             </ul>
           </div>
@@ -55,11 +55,11 @@ export default function Footer() {
             &copy; {new Date().getFullYear()} Hittayta.se
           </p>
           <div className="flex items-center gap-6">
-            <Link href="/om-oss" className="text-[12px] text-white/20 hover:text-white/50 transition-colors">Om oss</Link>
-            <Link href="/integritetspolicy" className="text-[12px] text-white/20 hover:text-white/50 transition-colors">Integritetspolicy</Link>
-            <Link href="/cookies" className="text-[12px] text-white/20 hover:text-white/50 transition-colors">Cookies</Link>
-            <Link href="/villkor" className="text-[12px] text-white/20 hover:text-white/50 transition-colors">Villkor</Link>
-            <Link href="/kontakt" className="text-[12px] text-white/20 hover:text-white/50 transition-colors">Kontakt</Link>
+            <Link href="/om-oss" className="text-[12px] text-white/20 hover:text-white/50 transition-colors duration-200">Om oss</Link>
+            <Link href="/integritetspolicy" className="text-[12px] text-white/20 hover:text-white/50 transition-colors duration-200">Integritetspolicy</Link>
+            <Link href="/cookies" className="text-[12px] text-white/20 hover:text-white/50 transition-colors duration-200">Cookies</Link>
+            <Link href="/villkor" className="text-[12px] text-white/20 hover:text-white/50 transition-colors duration-200">Villkor</Link>
+            <Link href="/kontakt" className="text-[12px] text-white/20 hover:text-white/50 transition-colors duration-200">Kontakt</Link>
           </div>
         </div>
       </div>

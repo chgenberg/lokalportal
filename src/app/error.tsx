@@ -9,7 +9,7 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
   return (
     <div className="min-h-screen bg-muted/30 flex items-center justify-center px-4">
       <div className="text-center max-w-md">
-        <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-navy/[0.06] flex items-center justify-center glow-light">
+        <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-navy/[0.06] border border-navy/10 shadow-sm flex items-center justify-center">
           <span className="text-2xl font-bold text-navy/60">!</span>
         </div>
         <h1 className="text-2xl font-bold text-navy mb-2 tracking-tight">Något gick fel</h1>
@@ -20,7 +20,7 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
           <button
             type="button"
             onClick={reset}
-            className="btn-glow px-6 py-3 bg-navy text-white rounded-xl text-sm font-medium hover:bg-navy-light transition-colors"
+            className="px-6 py-3 bg-navy text-white rounded-xl text-sm font-medium hover:bg-navy-light transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
           >
             Försök igen
           </button>

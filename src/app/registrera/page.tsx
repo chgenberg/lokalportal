@@ -36,7 +36,7 @@ export default function RegisterPage() {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center animate-fade-in">
-          <div className="w-20 h-20 mx-auto mb-8 rounded-full bg-navy/[0.03] flex items-center justify-center glow">
+          <div className="w-20 h-20 mx-auto mb-8 rounded-full bg-navy/[0.03] border border-navy/10 shadow-sm flex items-center justify-center">
             <div className="w-12 h-12 rounded-full border-2 border-navy/20 border-t-navy animate-spin" />
           </div>
           <h1 className="text-xl font-bold text-navy mb-2 tracking-tight">Skapar ditt konto...</h1>
@@ -50,7 +50,7 @@ export default function RegisterPage() {
     <div className="min-h-screen bg-white flex items-center justify-center px-4">
       <div className="w-full max-w-sm animate-fade-in">
         <div className="text-center mb-10">
-          <div className="w-14 h-14 mx-auto mb-5 rounded-2xl bg-navy flex items-center justify-center glow-strong">
+          <div className="w-14 h-14 mx-auto mb-5 rounded-2xl bg-navy flex items-center justify-center shadow-md border border-navy/20">
             <span className="text-lg font-bold text-white">H</span>
           </div>
           <h1 className="text-xl font-bold text-navy mb-1.5 tracking-tight">Skapa konto</h1>
@@ -61,7 +61,7 @@ export default function RegisterPage() {
 
         {step === "role" ? (
           <div className="space-y-3">
-            <button onClick={() => handleRoleSelect("landlord")} className="card-glow w-full p-6 rounded-2xl border border-border/60 text-left group">
+            <button onClick={() => handleRoleSelect("landlord")} className="w-full p-6 rounded-2xl border border-border/60 text-left group transition-all duration-300 hover:shadow-md hover:-translate-y-1">
               <div className="flex items-start gap-4">
                 <div className="w-11 h-11 rounded-xl bg-navy/[0.04] flex items-center justify-center shrink-0 group-hover:bg-navy transition-all duration-300">
                   <span className="text-[13px] font-bold text-navy group-hover:text-white transition-colors">H</span>
@@ -73,7 +73,7 @@ export default function RegisterPage() {
               </div>
             </button>
 
-            <button onClick={() => handleRoleSelect("tenant")} className="card-glow w-full p-6 rounded-2xl border border-border/60 text-left group">
+            <button onClick={() => handleRoleSelect("tenant")} className="w-full p-6 rounded-2xl border border-border/60 text-left group transition-all duration-300 hover:shadow-md hover:-translate-y-1">
               <div className="flex items-start gap-4">
                 <div className="w-11 h-11 rounded-xl bg-navy/[0.04] flex items-center justify-center shrink-0 group-hover:bg-navy transition-all duration-300">
                   <span className="text-[13px] font-bold text-navy group-hover:text-white transition-colors">G</span>
@@ -116,7 +116,7 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            <button type="submit" className="btn-glow w-full py-3.5 bg-navy text-white text-[13px] font-semibold rounded-xl tracking-wide">Skapa konto</button>
+            <button type="submit" className="w-full py-3.5 bg-navy text-white text-[13px] font-semibold rounded-xl tracking-wide transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">Skapa konto</button>
           </form>
         )}
 

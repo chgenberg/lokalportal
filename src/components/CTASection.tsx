@@ -18,13 +18,13 @@ export default function CTASection() {
               </p>
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3 flex-wrap">
-                <Link href="/logga-in" className="inline-flex items-center gap-2 px-8 py-3.5 bg-white text-navy font-semibold rounded-xl text-sm tracking-wide transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5">
+                <Link href="/logga-in" className="inline-flex items-center gap-2 px-8 py-3.5 bg-white text-navy font-semibold rounded-xl text-sm tracking-wide transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
                   Logga in med BankID
                 </Link>
                 <Link href="/skapa-annons" className="inline-flex items-center gap-2 px-8 py-3.5 bg-white/10 text-white font-medium rounded-xl border border-white/20 hover:bg-white/[0.15] transition-all duration-300 text-sm tracking-wide">
                   Skapa gratis annons-PDF
                 </Link>
-                <Link href="/annonspaket" className="inline-flex items-center gap-2 px-8 py-3.5 border border-white/10 text-white/70 font-medium rounded-xl hover:bg-white/[0.05] hover:text-white transition-all duration-300 text-sm tracking-wide">
+                <Link href="/annonspaket" className="inline-flex items-center gap-2 px-8 py-3.5 border border-white/10 text-white/70 font-medium rounded-xl hover:bg-white/[0.05] hover:text-white transition-all duration-200 text-sm tracking-wide">
                   Se annonspaket &rarr;
                 </Link>
               </div>

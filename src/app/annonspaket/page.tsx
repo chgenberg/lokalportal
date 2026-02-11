@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import ScrollReveal from "@/components/ScrollReveal";
 
 const packages = [
   {
@@ -52,11 +53,11 @@ export default function AnnonspaketPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-5xl mx-auto">
-          {packages.map((pkg) => (
+          {packages.map((pkg, index) => (
+            <ScrollReveal key={pkg.id} delay={index * 100}>
             <div
-              key={pkg.id}
-              className={`card-glow relative rounded-2xl border overflow-hidden ${
-                pkg.highlighted ? "border-navy/20 glow-strong" : "border-border/60 glow-light"
+              className={`relative rounded-2xl border overflow-hidden transition-all duration-300 hover:shadow-md hover:-translate-y-1 ${
+                pkg.highlighted ? "border-navy shadow-lg scale-[1.02]" : "border-border/60 bg-white"
               }`}
             >
               {pkg.highlighted && (
@@ -71,7 +72,7 @@ export default function AnnonspaketPage() {
                 </div>
                 <a
                   href="/logga-in"
-                  className={`btn-glow w-full flex items-center justify-center py-3 rounded-xl text-[13px] font-semibold tracking-wide ${
+                  className={`w-full flex items-center justify-center py-3 rounded-xl text-[13px] font-semibold tracking-wide transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 ${
                     pkg.highlighted ? "bg-navy text-white" : "bg-navy/[0.04] text-navy hover:bg-navy hover:text-white"
                   } transition-all`}
                 >
@@ -90,6 +91,7 @@ export default function AnnonspaketPage() {
           ))}
         </div>
 
+        <ScrollReveal>
         <div className="mt-24 max-w-2xl mx-auto">
           <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-gray-400 mb-3 text-center">FAQ</p>
           <h2 className="text-2xl font-bold text-navy text-center mb-10 tracking-tight">Vanliga frågor</h2>
@@ -100,7 +102,7 @@ export default function AnnonspaketPage() {
               { q: "Vad händer när min annons löper ut?", a: "Du får ett meddelande innan annonsen löper ut med möjlighet att förlänga. Utgångna annonser arkiveras och kan återaktiveras." },
               { q: "Finns det någon bindningstid?", a: "Nej, det finns ingen bindningstid. Du betalar per period och kan avsluta när du vill." },
             ].map((faq) => (
-              <details key={faq.q} className="group bg-white rounded-xl border border-border/60 glow-light">
+              <details key={faq.q} className="group bg-white rounded-xl border border-border/60 transition-all duration-300 hover:shadow-md">
                 <summary className="flex items-center justify-between cursor-pointer px-6 py-4 text-[13px] font-semibold text-navy list-none tracking-tight">
                   {faq.q}
                   <span className="text-gray-300 group-open:rotate-90 transition-transform text-sm">&rarr;</span>
@@ -110,6 +112,7 @@ export default function AnnonspaketPage() {
             ))}
           </div>
         </div>
+        </ScrollReveal>
       </div>
     </div>
   );

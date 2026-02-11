@@ -111,7 +111,7 @@ export default function Header() {
                   {isLandlord && (
                     <button
                       onClick={handleAnnonsera}
-                      className="btn-glow px-5 py-2 bg-navy text-white text-[13px] font-semibold rounded-lg"
+                      className="px-5 py-2 bg-navy text-white text-[13px] font-semibold rounded-lg transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
                     >
                       Annonsera
                     </button>
@@ -180,7 +180,7 @@ export default function Header() {
                   </Link>
                   <button
                     onClick={handleAnnonsera}
-                    className="btn-glow px-5 py-2 bg-navy text-white text-[13px] font-semibold rounded-lg"
+                    className="px-5 py-2 bg-navy text-white text-[13px] font-semibold rounded-lg transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
                   >
                     Annonsera
                   </button>

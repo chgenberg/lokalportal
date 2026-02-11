@@ -34,47 +34,14 @@ html {
 ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
 ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-/* ── Pulsating Navy Glow ───────────────────────── */
-@keyframes glowPulse {
-  0%, 100% { box-shadow: 0 0 20px rgba(10, 22, 40, 0.08), 0 0 60px rgba(10, 22, 40, 0.04); }
-  50% { box-shadow: 0 0 30px rgba(10, 22, 40, 0.15), 0 0 80px rgba(10, 22, 40, 0.08); }
-}
-
-@keyframes glowPulseStrong {
-  0%, 100% { box-shadow: 0 0 24px rgba(10, 22, 40, 0.12), 0 0 64px rgba(10, 22, 40, 0.06); }
-  50% { box-shadow: 0 0 40px rgba(10, 22, 40, 0.22), 0 0 100px rgba(10, 22, 40, 0.10); }
-}
-
-@keyframes glowPulseLight {
-  0%, 100% { box-shadow: 0 0 15px rgba(10, 22, 40, 0.05), 0 4px 20px rgba(10, 22, 40, 0.03); }
-  50% { box-shadow: 0 0 25px rgba(10, 22, 40, 0.10), 0 4px 30px rgba(10, 22, 40, 0.06); }
-}
-
-@keyframes borderGlow {
-  0%, 100% { border-color: rgba(10, 22, 40, 0.08); }
-  50% { border-color: rgba(10, 22, 40, 0.20); }
-}
-
+/* ── Skeleton loader (subtle opacity pulse) ─────── */
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 0.8; }
 }
-
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
-}
-
-.glow { animation: glowPulse 3s ease-in-out infinite; }
-.glow-strong { animation: glowPulseStrong 3s ease-in-out infinite; }
-.glow-light { animation: glowPulseLight 4s ease-in-out infinite; }
-.glow-border { animation: borderGlow 3s ease-in-out infinite; }
-.float { animation: float 6s ease-in-out infinite; }
 
 .shimmer {
-  background: linear-gradient(90deg, transparent 0%, rgba(10, 22, 40, 0.03) 50%, transparent 100%);
-  background-size: 200% 100%;
-  animation: shimmer 3s ease-in-out infinite;
+  animation: shimmer 2s ease-in-out infinite;
 }
 
 /* ── Glass morphism ────────────────────────────── */
@@ -127,50 +94,22 @@ html {
 .animation-delay-300 { animation-delay: 0.3s; }
 .animation-delay-400 { animation-delay: 0.4s; }
 
-/* ── Premium button glow on hover ──────────────── */
+/* ── Button hover (minimal) ────────────────────── */
 .btn-glow {
-  position: relative;
-  overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.btn-glow::after {
-  content: "";
-  position: absolute;
-  inset: -2px;
-  border-radius: inherit;
-  background: transparent;
-  transition: box-shadow 0.3s ease;
-  pointer-events: none;
-  z-index: -1;
-}
-
-.btn-glow:hover::after {
-  box-shadow: 0 0 30px rgba(10, 22, 40, 0.25), 0 0 60px rgba(10, 22, 40, 0.10);
+  transition: all 0.2s ease;
 }
 
 .btn-glow:hover {
-  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(10, 22, 40, 0.12);
+  transform: translateY(-2px);
 }
 
-/* ── Card hover glow ───────────────────────────── */
+/* ── Card hover (minimal) ───────────────────────── */
 .card-glow {
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.3s ease;
 }
 
 .card-glow:hover {
-  box-shadow: 0 0 30px rgba(10, 22, 40, 0.10), 0 8px 32px rgba(10, 22, 40, 0.08);
-  border-color: rgba(10, 22, 40, 0.15);
+  box-shadow: 0 4px 14px rgba(10, 22, 40, 0.08);
   transform: translateY(-4px);
-}
-
-/* ── Subtle grain texture overlay ──────────────── */
-.grain::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  opacity: 0.015;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-  pointer-events: none;
-  z-index: 1;
 }

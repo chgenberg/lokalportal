@@ -32,7 +32,7 @@ export default function Home() {
           </div>
 
           <HeroSearch />
-          <HeroStats />
+          <ScrollReveal><HeroStats /></ScrollReveal>
         </div>
       </section>
 

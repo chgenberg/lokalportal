@@ -73,7 +73,7 @@ export default function HeroSearch() {
 
   return (
     <div className="w-full max-w-3xl mx-auto">
-      <div className="glass rounded-2xl border border-white/20 p-2 flex flex-col md:flex-row gap-2 glow-strong">
+      <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-lg border border-white/20 p-2 flex flex-col md:flex-row gap-2">
         {/* City */}
         <div ref={cityRef} className="relative flex-1">
           <div className="flex items-center px-4 py-3 rounded-xl bg-white/60 hover:bg-white/80 transition-colors">
@@ -129,7 +129,7 @@ export default function HeroSearch() {
             <span className={type ? "text-navy font-medium" : "text-gray-400"}>
               {type ? typeOptions.find((o) => o.value === type)?.label : "Typ"}
             </span>
-            <span className={`text-gray-300 text-[10px] transition-transform ${typeOpen ? "rotate-180" : ""}`}>&#9662;</span>
+            <svg className={`w-3 h-3 text-gray-400 transition-transform shrink-0 ${typeOpen ? "rotate-180" : ""}`} viewBox="0 0 12 12" fill="currentColor" aria-hidden><path d="M6 8L2 4h8z" /></svg>
           </button>
           {typeOpen && (
             <div role="listbox" aria-label="Typ" className="absolute top-full left-0 right-0 mt-1.5 glass rounded-xl border border-border/60 shadow-xl z-50 animate-scale-in overflow-hidden">
@@ -156,7 +156,7 @@ export default function HeroSearch() {
             <span className={category ? "text-navy font-medium" : "text-gray-400"}>
               {category ? categoryOptions.find((o) => o.value === category)?.label : "Kategori"}
             </span>
-            <span className={`text-gray-300 text-[10px] transition-transform ${categoryOpen ? "rotate-180" : ""}`}>&#9662;</span>
+            <svg className={`w-3 h-3 text-gray-400 transition-transform shrink-0 ${categoryOpen ? "rotate-180" : ""}`} viewBox="0 0 12 12" fill="currentColor" aria-hidden><path d="M6 8L2 4h8z" /></svg>
           </button>
           {categoryOpen && (
             <div role="listbox" aria-label="Kategori" className="absolute top-full left-0 right-0 mt-1.5 glass rounded-xl border border-border/60 shadow-xl z-50 animate-scale-in overflow-hidden">
@@ -173,7 +173,7 @@ export default function HeroSearch() {
         <button
           type="button"
           onClick={handleSearch}
-          className="btn-glow px-7 py-3 bg-navy text-white rounded-xl text-sm font-semibold shrink-0 tracking-wide"
+          className="px-7 py-3 bg-navy text-white rounded-xl text-sm font-semibold shrink-0 tracking-wide transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
           aria-label="Sök lokaler"
         >
           Sök

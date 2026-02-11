@@ -12,7 +12,7 @@ export default function NotFound() {
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link
             href="/"
-            className="btn-glow px-6 py-3 bg-navy text-white rounded-xl text-sm font-medium hover:bg-navy-light transition-colors"
+            className="px-6 py-3 bg-navy text-white rounded-xl text-sm font-medium hover:bg-navy-light transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
           >
             Till startsidan
           </Link>

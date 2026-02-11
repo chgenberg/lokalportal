@@ -409,7 +409,7 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
             <Link
               href="/logga-in"
               onClick={handleClose}
-              className="btn-glow w-full py-3.5 bg-navy text-white text-[13px] font-semibold rounded-xl tracking-wide text-center"
+              className="w-full py-3.5 bg-navy text-white text-[13px] font-semibold rounded-xl tracking-wide text-center transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
             >
               Logga in
             </Link>
@@ -432,7 +432,7 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
       <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
         <div className="absolute inset-0 bg-navy/40 backdrop-blur-sm" />
         <div className="relative w-full max-w-md bg-white rounded-2xl p-10 text-center animate-scale-in">
-          <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-navy/[0.04] flex items-center justify-center glow">
+          <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-navy/[0.04] border border-navy/10 shadow-sm flex items-center justify-center">
             <span className="text-2xl">&#10003;</span>
           </div>
           <h2 className="text-xl font-bold text-navy mb-2 tracking-tight">Annons publicerad</h2>
@@ -789,7 +789,7 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
               <button
                 type="button"
                 onClick={handleGenerate}
-                className="btn-glow px-6 py-2.5 bg-navy text-white text-[13px] font-semibold rounded-xl tracking-wide"
+                className="px-6 py-2.5 bg-navy text-white text-[13px] font-semibold rounded-xl tracking-wide transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
               >
                 Skapa annons med AI
               </button>
@@ -800,7 +800,7 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
                 type="button"
                 onClick={handlePublish}
                 disabled={submitting || !generated?.imageUrl?.trim()}
-                className="btn-glow px-6 py-2.5 bg-navy text-white text-[13px] font-semibold rounded-xl tracking-wide disabled:opacity-50"
+                className="px-6 py-2.5 bg-navy text-white text-[13px] font-semibold rounded-xl tracking-wide disabled:opacity-50 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
               >
                 {submitting ? "Publicerar..." : generated?.imageUrl?.trim() ? "Publicera annons" : "Ladda upp bild först"}
               </button>

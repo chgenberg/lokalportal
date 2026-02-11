@@ -289,7 +289,7 @@ function AnnonserContent() {
             </div>
             <h3 className="text-lg font-semibold text-navy mb-2">Något gick fel</h3>
             <p className="text-sm text-gray-400 mb-6">{error}</p>
-            <button onClick={() => fetchListings()} className="btn-glow px-6 py-2.5 bg-navy text-white text-sm font-medium rounded-lg">Försök igen</button>
+            <button onClick={() => fetchListings()} className="px-6 py-2.5 bg-navy text-white text-sm font-medium rounded-lg transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">Försök igen</button>
           </div>
         ) : listings.length === 0 ? (
           <div className="text-center py-24 bg-white rounded-2xl border border-border/40">
@@ -298,7 +298,7 @@ function AnnonserContent() {
             </div>
             <h3 className="text-lg font-semibold text-navy mb-2">Inga lokaler hittades</h3>
             <p className="text-sm text-gray-400 mb-6">Prova att ändra dina sökfilter</p>
-            <button onClick={clearFilters} className="btn-glow px-6 py-2.5 bg-navy text-white text-sm font-medium rounded-lg">Rensa filter</button>
+            <button onClick={clearFilters} className="px-6 py-2.5 bg-navy text-white text-sm font-medium rounded-lg transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">Rensa filter</button>
           </div>
         ) : (
           <>

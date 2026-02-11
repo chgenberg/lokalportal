@@ -70,7 +70,7 @@ export default function KontaktPage() {
               <div className="space-y-4">
                 <div>
                   <p className="text-[11px] text-gray-400 tracking-wide mb-0.5">E-post</p>
-                  <a href="mailto:info@ledigyta.se" className="text-[14px] font-medium text-navy hover:underline">info@ledigyta.se</a>
+                  <a href="mailto:info@hittayta.se" className="text-[14px] font-medium text-navy hover:underline">info@hittayta.se</a>
                 </div>
                 <div>
                   <p className="text-[11px] text-gray-400 tracking-wide mb-0.5">Plats</p>
@@ -120,7 +120,7 @@ export default function KontaktPage() {
                 <p className="text-[12px] text-gray-300 mb-6 italic">&ldquo;Varje meddelande förtjänar ett ordentligt svar. Utom spam. Spam förtjänar papperskorgen.&rdquo; – Thomas</p>
                 <button
                   onClick={() => setStatus("idle")}
-                  className="btn-glow px-6 py-2.5 bg-navy text-white text-[13px] font-semibold rounded-xl"
+                  className="px-6 py-2.5 bg-navy text-white text-[13px] font-semibold rounded-xl transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
                 >
                   Skicka ett nytt meddelande
                 </button>
@@ -198,7 +198,7 @@ export default function KontaktPage() {
                   {status === "error" && (
                     <div role="alert" className="bg-red-50 border border-red-200 rounded-xl p-4">
                       <p className="text-[13px] text-red-600">
-                        Något gick fel. Thomas skyller på servern. Försök igen eller mejla direkt till <a href="mailto:info@ledigyta.se" className="underline">info@ledigyta.se</a>.
+                        Något gick fel. Thomas skyller på servern. Försök igen eller mejla direkt till <a href="mailto:info@hittayta.se" className="underline">info@hittayta.se</a>.
                       </p>
                     </div>
                   )}
@@ -206,7 +206,7 @@ export default function KontaktPage() {
                   <button
                     type="submit"
                     disabled={!isValid || status === "sending"}
-                    className="btn-glow w-full py-3.5 bg-navy text-white text-[13px] font-semibold rounded-xl disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
+                    className="w-full py-3.5 bg-navy text-white text-[13px] font-semibold rounded-xl disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
                   >
                     {status === "sending" ? "Skickar till Thomas..." : "Skicka meddelande"}
                   </button>

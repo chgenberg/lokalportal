@@ -367,7 +367,7 @@ export default function SkapaAnnonsClient() {
                 />
               </div>
             </div>
-            <button type="submit" className="mt-6 w-full btn-glow py-3.5 bg-navy text-white text-[13px] font-semibold rounded-xl tracking-wide">
+            <button type="submit" className="mt-6 w-full py-3.5 bg-navy text-white text-[13px] font-semibold rounded-xl tracking-wide transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
               Fortsätt till nästa steg
             </button>
           </form>
@@ -502,7 +502,7 @@ export default function SkapaAnnonsClient() {
             <button
               type="button"
               onClick={handleGenerate}
-              className="mt-6 w-full btn-glow py-3.5 bg-navy text-white text-[13px] font-semibold rounded-xl tracking-wide"
+              className="mt-6 w-full py-3.5 bg-navy text-white text-[13px] font-semibold rounded-xl tracking-wide transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
             >
               Generera annons med AI
             </button>

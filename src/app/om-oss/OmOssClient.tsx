@@ -246,7 +246,7 @@ export default function OmOssClient() {
           <h2 className="text-xl font-bold text-white mb-2 tracking-tight">Vill du prata lokaler med Thomas?</h2>
           <p className="text-[13px] text-white/40 mb-6">Han svarar på allt. Utom frågor om den där lokalen i Borås.</p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Link href="/kontakt" className="btn-glow inline-block px-6 py-2.5 bg-white text-navy text-[13px] font-semibold rounded-xl">
+            <Link href="/kontakt" className="inline-block px-6 py-2.5 bg-white text-navy text-[13px] font-semibold rounded-xl transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
               Kontakta oss
             </Link>
             <Link href="/skapa-annons" className="inline-block px-6 py-2.5 border border-white/15 text-white/70 text-[13px] font-medium rounded-xl hover:bg-white/[0.05] hover:text-white transition-all">

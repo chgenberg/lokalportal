@@ -99,7 +99,7 @@ export default function ListingDetailPage() {
               <span className="text-xl font-bold text-navy/30">!</span>
             </div>
             <p className="text-gray-500 mb-6">{error ?? "Annonsen hittades inte."}</p>
-            <Link href="/annonser" className="btn-glow inline-block px-6 py-2.5 bg-navy text-white text-sm font-medium rounded-lg">
+            <Link href="/annonser" className="inline-block px-6 py-2.5 bg-navy text-white text-sm font-medium rounded-lg transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
               &larr; Alla annonser
             </Link>
           </div>
@@ -143,7 +143,7 @@ export default function ListingDetailPage() {
               <button
                 onClick={handleContact}
                 disabled={contactLoading}
-                className="btn-glow flex-1 py-3 px-4 bg-navy text-white text-center text-sm font-semibold rounded-xl disabled:opacity-60 disabled:cursor-not-allowed"
+                className="flex-1 py-3 px-4 bg-navy text-white text-center text-sm font-semibold rounded-xl disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
               >
                 {contactLoading ? "Vänta..." : "Kontakta hyresvärd"}
               </button>
