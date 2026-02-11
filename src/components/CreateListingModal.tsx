@@ -516,7 +516,10 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
                           className={`px-4 py-2.5 text-[13px] cursor-pointer transition-colors ${
                             i === selectedSuggestIndex ? "bg-navy/10 text-navy" : "text-gray-700 hover:bg-muted/50"
                           }`}
-                          onClick={() => handleSelectSuggestion(item)}
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            handleSelectSuggestion(item);
+                          }}
                         >
                           {item.display_name}
                           {item.city && (

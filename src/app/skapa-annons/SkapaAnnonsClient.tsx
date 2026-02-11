@@ -401,15 +401,18 @@ export default function SkapaAnnonsClient() {
                 {suggestionsOpen && suggestions.length > 0 && (
                   <ul className="absolute z-10 left-0 right-0 mt-1 py-1 bg-white border border-border/60 rounded-xl shadow-lg max-h-[50vh] sm:max-h-56 overflow-y-auto">
                     {suggestions.map((item, i) => (
-                      <li
-                        key={`${item.display_name}-${i}`}
-                        role="option"
-                        aria-selected={i === selectedSuggestIndex}
-                        className={`px-4 py-2.5 text-[13px] cursor-pointer transition-colors ${
-                          i === selectedSuggestIndex ? "bg-navy/10 text-navy" : "text-gray-700 hover:bg-muted/50"
-                        }`}
-                        onClick={() => handleSelectSuggestion(item)}
-                      >
+                        <li
+                          key={`${item.display_name}-${i}`}
+                          role="option"
+                          aria-selected={i === selectedSuggestIndex}
+                          className={`px-4 py-2.5 text-[13px] cursor-pointer transition-colors ${
+                            i === selectedSuggestIndex ? "bg-navy/10 text-navy" : "text-gray-700 hover:bg-muted/50"
+                          }`}
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            handleSelectSuggestion(item);
+                          }}
+                        >
                         {item.display_name}
                         {item.city && <span className="block text-[11px] text-gray-400 mt-0.5">{item.city}</span>}
                       </li>
