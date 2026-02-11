@@ -81,7 +81,7 @@ export default function Header() {
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-18">
+            <div className="flex items-center justify-between h-14 sm:h-[72px]">
             <Link href="/" className="flex items-center gap-2 group shrink-0">
               <Image
                 src="/HYlogo.png"
@@ -190,10 +190,10 @@ export default function Header() {
 
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="md:hidden p-2 text-gray-500 hover:text-navy transition-colors"
+              className="md:hidden flex items-center justify-center w-11 h-11 text-gray-500 hover:text-navy transition-colors rounded-lg"
               aria-label="Meny"
             >
-              <span className="text-xl">{mobileOpen ? "\u00D7" : "\u2261"}</span>
+              <span className="text-2xl">{mobileOpen ? "\u00D7" : "\u2261"}</span>
             </button>
           </div>
         </div>

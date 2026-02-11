@@ -543,7 +543,7 @@ export default function ChatWindow({
                     </div>
 
                     {/* Bubble */}
-                    <div className="max-w-[70%] group">
+                    <div className="max-w-[85%] sm:max-w-[70%] group">
                       <div
                         className={`px-3.5 py-2 ${
                           isOwn

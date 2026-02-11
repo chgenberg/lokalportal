@@ -35,7 +35,7 @@ export default function ListingDetailContent({
       {showBackLink && (
         <div className="bg-navy relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-navy via-navy to-navy-light opacity-90" />
-          <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-4">
+          <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-28 pb-4">
             <Link
               href="/annonser"
               className="inline-block text-[12px] text-white/40 hover:text-white/70 mb-4 transition-colors tracking-wide"

@@ -9,19 +9,19 @@ const features = [
 
 export default function FeaturesSection() {
   return (
-    <section className="py-24 bg-white relative">
+    <section className="py-14 sm:py-20 md:py-24 bg-white relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <ScrollReveal>
-          <div className="text-center mb-16">
+          <div className="text-center mb-10 sm:mb-16">
             <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-gray-400 mb-3">Hur det fungerar</p>
-            <h2 className="text-3xl font-bold text-navy tracking-tight">Allt du behöver</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold text-navy tracking-tight">Allt du behöver</h2>
           </div>
         </ScrollReveal>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {features.map((feature, i) => (
             <ScrollReveal key={feature.title} delay={i * 100}>
-              <div className="group py-10 px-6 bg-white rounded-2xl border border-border/60 cursor-default text-center transition-all duration-500 hover:border-navy/15 hover:shadow-md hover:-translate-y-1">
+              <div className="group py-6 sm:py-10 px-4 sm:px-6 bg-white rounded-2xl border border-border/60 cursor-default text-center transition-all duration-500 hover:border-navy/15 hover:shadow-md hover:-translate-y-1">
                 <h3 className="text-base font-bold text-navy mb-2 tracking-tight">{feature.title}</h3>
                 <p className="text-[12px] text-gray-400 leading-relaxed max-w-[200px] mx-auto">{feature.description}</p>
               </div>

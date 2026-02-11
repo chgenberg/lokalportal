@@ -24,12 +24,12 @@ export default function FeaturedListings() {
   }, []);
 
   return (
-    <section className="py-24 bg-muted/50 relative">
+    <section className="py-14 sm:py-20 md:py-24 bg-muted/50 relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-end justify-between mb-14">
+        <div className="flex items-end justify-between mb-10 sm:mb-14">
           <div>
             <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-gray-400 mb-3">Utvalda</p>
-            <h2 className="text-3xl font-bold text-navy tracking-tight">Utvalda lokaler</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold text-navy tracking-tight">Utvalda lokaler</h2>
           </div>
           <Link href="/annonser" className="hidden sm:inline-block text-[13px] font-semibold text-navy/50 hover:text-navy transition-colors tracking-wide">
             Visa alla &rarr;

@@ -31,9 +31,9 @@ export default function AnnonspaketPage() {
   return (
     <div className="min-h-screen bg-white">
       <div className="bg-muted/50 border-b border-border/40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
           <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-gray-400 mb-2">Priser</p>
-          <h1 className="text-3xl font-bold text-navy tracking-tight mb-2">Annonspaket</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-navy tracking-tight mb-2">Annonspaket</h1>
           <p className="text-gray-400 text-[15px]">Välj det paket som passar din verksamhet bäst</p>
         </div>
       </div>
@@ -63,11 +63,11 @@ export default function AnnonspaketPage() {
               {pkg.highlighted && (
                 <div className="bg-navy text-white text-center py-1.5 text-[10px] font-semibold uppercase tracking-[0.15em]">Mest populär</div>
               )}
-              <div className="p-8">
+              <div className="p-6 sm:p-8">
                 <h3 className="text-lg font-bold text-navy mb-1 tracking-tight">{pkg.name}</h3>
                 <p className="text-[13px] text-gray-400 mb-6">{pkg.description}</p>
                 <div className="mb-7">
-                  <span className="text-4xl font-bold text-navy tracking-tight">{getPrice(pkg.price)}</span>
+                  <span className="text-3xl sm:text-4xl font-bold text-navy tracking-tight">{getPrice(pkg.price)}</span>
                   <span className="text-[13px] text-gray-400 ml-1">kr/{pkg.period}</span>
                 </div>
                 <a

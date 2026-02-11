@@ -65,7 +65,7 @@ function MeddelandenContent() {
       <div className="bg-white rounded-2xl border border-border overflow-hidden shadow-sm">
         <div
           className="flex flex-col md:flex-row"
-          style={{ height: "calc(100vh - 280px)", minHeight: "400px" }}
+          style={{ height: "calc(100vh - 220px)", minHeight: "400px" }}
         >
           {/* Conversation list */}
           <div
@@ -107,7 +107,7 @@ function MeddelandenContent() {
                   <button
                     type="button"
                     onClick={() => setSelectedId(undefined)}
-                    className="flex items-center gap-1.5 text-navy font-medium text-sm hover:bg-navy/[0.04] rounded-lg px-2 py-1.5 -ml-1 transition-colors"
+                    className="flex items-center gap-1.5 text-navy font-medium text-sm hover:bg-navy/[0.04] rounded-lg px-3 py-2.5 -ml-2 transition-colors min-h-[44px]"
                     aria-label="Tillbaka till konversationer"
                   >
                     <svg

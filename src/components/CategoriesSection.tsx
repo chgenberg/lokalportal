@@ -28,21 +28,21 @@ export default function CategoriesSection() {
   }, []);
 
   return (
-    <section className="py-24 bg-white relative">
+    <section className="py-14 sm:py-20 md:py-24 bg-white relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <ScrollReveal>
-          <div className="text-center mb-16">
+          <div className="text-center mb-10 sm:mb-16">
             <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-gray-400 mb-3">Kategorier</p>
-            <h2 className="text-3xl font-bold text-navy tracking-tight">Utforska lokaler</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold text-navy tracking-tight">Utforska lokaler</h2>
           </div>
         </ScrollReveal>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {categoryConfig.map((cat, i) => (
             <ScrollReveal key={cat.key} delay={i * 80}>
               <Link
                 href={`/annonser?category=${cat.key}`}
-                className="group relative block py-10 px-6 bg-white rounded-2xl border border-border/60 text-center transition-all duration-500 hover:border-navy/15 hover:shadow-md hover:-translate-y-1"
+                className="group relative block py-6 sm:py-10 px-4 sm:px-6 bg-white rounded-2xl border border-border/60 text-center transition-all duration-500 hover:border-navy/15 hover:shadow-md hover:-translate-y-1"
               >
                 <h3 className="text-lg font-bold text-navy mb-2 tracking-tight group-hover:text-navy-light transition-colors">
                   {cat.label}

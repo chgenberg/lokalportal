@@ -20,12 +20,12 @@ const testimonials = [
 
 export default function SocialProofSection() {
   return (
-    <section className="py-24 bg-muted/30">
+    <section className="py-14 sm:py-20 md:py-24 bg-muted/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <ScrollReveal>
-          <div className="text-center mb-14">
+          <div className="text-center mb-10 sm:mb-14">
             <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-gray-400 mb-3">Vad andra säger</p>
-            <h2 className="text-3xl font-bold text-navy tracking-tight">Så upplever våra användare</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold text-navy tracking-tight">Så upplever våra användare</h2>
           </div>
         </ScrollReveal>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

@@ -5,9 +5,9 @@ import NewsletterSignup from "./NewsletterSignup";
 export default function Footer() {
   return (
     <footer className="bg-navy text-white relative">
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
-          <div className="md:col-span-1">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 sm:gap-12">
+          <div className="col-span-2 md:col-span-1">
             <div className="mb-5">
               <Image
                 src="/HYlogo.png"
@@ -54,7 +54,7 @@ export default function Footer() {
           <p className="text-[12px] text-white/20">
             &copy; {new Date().getFullYear()} Hittayta.se
           </p>
-          <div className="flex items-center gap-6">
+          <div className="flex items-center flex-wrap gap-x-6 gap-y-2">
             <Link href="/om-oss" className="text-[12px] text-white/20 hover:text-white/50 transition-colors duration-200">Om oss</Link>
             <Link href="/integritetspolicy" className="text-[12px] text-white/20 hover:text-white/50 transition-colors duration-200">Integritetspolicy</Link>
             <Link href="/cookies" className="text-[12px] text-white/20 hover:text-white/50 transition-colors duration-200">Cookies</Link>

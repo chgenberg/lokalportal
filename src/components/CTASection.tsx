@@ -3,16 +3,16 @@ import ScrollReveal from "./ScrollReveal";
 
 export default function CTASection() {
   return (
-    <section className="py-24 bg-muted/50">
+    <section className="py-14 sm:py-20 md:py-24 bg-muted/50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <ScrollReveal>
           <div className="relative bg-navy rounded-3xl overflow-hidden">
             <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-white/[0.02] rounded-full -translate-y-1/2 translate-x-1/3" />
             <div className="absolute bottom-0 left-0 w-80 h-80 bg-white/[0.015] rounded-full translate-y-1/2 -translate-x-1/3" />
 
-            <div className="relative z-10 px-8 py-20 md:px-16 md:py-24 text-center">
+            <div className="relative z-10 px-6 py-12 sm:px-8 sm:py-16 md:px-16 md:py-24 text-center">
               <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-white/25 mb-4">För fastighetsägare</p>
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 tracking-tight">Hyr ut din lokal</h2>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-4 tracking-tight">Hyr ut din lokal</h2>
               <p className="text-base text-white/40 mb-10 max-w-lg mx-auto leading-relaxed">
                 Nå tusentals potentiella hyresgäster. Logga in säkert med BankID och publicera din annons idag.
               </p>

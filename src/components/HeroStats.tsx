@@ -29,11 +29,11 @@ export default function HeroStats() {
   ];
 
   return (
-    <div className="mt-16 flex items-center justify-center flex-wrap gap-y-4">
+    <div className="mt-10 sm:mt-16 flex items-center justify-center flex-wrap gap-y-4">
       {items.map((item, i) => (
         <div key={i} className="flex items-center">
-          <div className="text-center px-8 md:px-12">
-            <div className="text-2xl font-bold text-white tracking-tight">{item.value}</div>
+          <div className="text-center px-4 sm:px-8 md:px-12">
+            <div className="text-xl sm:text-2xl font-bold text-white tracking-tight">{item.value}</div>
             <div className="text-[11px] font-medium text-white/80 mt-1 tracking-[0.15em] uppercase">{item.label}</div>
           </div>
           {i < items.length - 1 && (

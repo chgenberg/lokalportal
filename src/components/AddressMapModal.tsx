@@ -133,7 +133,7 @@ export default function AddressMapModal({
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-muted transition-colors text-gray-400 hover:text-navy"
+            className="w-11 h-11 flex items-center justify-center rounded-lg hover:bg-muted transition-colors text-gray-400 hover:text-navy"
             aria-label="Stäng"
           >
             &times;

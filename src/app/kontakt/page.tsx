@@ -41,9 +41,9 @@ export default function KontaktPage() {
       <div className="bg-navy relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-navy via-navy to-navy-light opacity-90" />
         <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: "radial-gradient(circle at 1px 1px, white 1px, transparent 0)", backgroundSize: "24px 24px" }} />
-        <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-16 text-center">
+        <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-28 md:pt-32 pb-12 sm:pb-16 text-center">
           <p className="text-[11px] font-semibold tracking-[0.25em] uppercase text-white/40 mb-3">Kontakt</p>
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-4 tracking-tight">Thomas väntar på ditt mejl</h1>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-4 tracking-tight">Thomas väntar på ditt mejl</h1>
           <p className="text-white/50 text-[15px] max-w-lg mx-auto leading-relaxed">
             Har du frågor, förslag eller bara vill prata takhöjder? Fyll i formuläret nedan. Thomas svarar personligen – oftast med utropstecken.
           </p>

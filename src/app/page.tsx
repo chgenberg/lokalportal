@@ -12,15 +12,15 @@ import ScrollReveal from "@/components/ScrollReveal";
 export default function Home() {
   return (
     <>
-      <section className="relative overflow-hidden min-h-[640px] md:min-h-[720px] flex items-center">
+      <section className="relative overflow-hidden min-h-[520px] sm:min-h-[640px] md:min-h-[720px] flex items-center">
         <HeroCarousel />
 
-        <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-24 md:pt-36 md:pb-32">
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16 sm:pt-28 sm:pb-24 md:pt-36 md:pb-32">
           <div className="text-center mb-12">
             <p className="text-[13px] font-semibold tracking-[0.2em] uppercase text-white mb-4">
               Sveriges marknadsplats för kommersiella lokaler
             </p>
-            <h1 className="text-4xl md:text-5xl lg:text-[3.5rem] font-bold text-white mb-6 leading-[1.1] tracking-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[3.5rem] font-bold text-white mb-6 leading-[1.1] tracking-tight">
               Hitta rätt lokal
               <br />
               <span className="text-white">snabbare</span>
@@ -39,7 +39,7 @@ export default function Home() {
       <CategoriesSection />
       <FeaturedListings />
 
-      <section className="py-20 bg-white border-y border-border/40">
+      <section className="py-12 sm:py-16 md:py-20 bg-white border-y border-border/40">
         <ScrollReveal>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-gray-400 mb-3">Testa vårt AI-verktyg</p>
