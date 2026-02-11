@@ -88,6 +88,7 @@ export default function AnnonspaketPage() {
                 </ul>
               </div>
             </div>
+            </ScrollReveal>
           ))}
         </div>
 
