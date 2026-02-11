@@ -1,16 +1,16 @@
 const testimonials = [
   {
-    quote: "Göran och hans team hjälpte oss hitta kontor på rekordtid. AI-verktyget skrev annonserna åt oss – sparade flera timmar.",
+    quote: "Thomas och hans team hjälpte oss hitta kontor på rekordtid. AI-verktyget skrev annonserna åt oss – sparade flera timmar.",
     author: "Maria K.",
     role: "Fastighetsförvaltare, Stockholm",
   },
   {
-    quote: "Vi fick fler seriösa förfrågningar på HittaYta än på någon annan plats. Göran svarade personligen på alla våra frågor.",
+    quote: "Vi fick fler seriösa förfrågningar på HittaYta än på någon annan plats. Thomas svarade personligen på alla våra frågor.",
     author: "Johan L.",
     role: "Hyresvärd, Göteborg",
   },
   {
-    quote: "Hittade ett kontor med 4 meters takhöjd – precis som Göran lovade. Bra sökfilter och snabb kontakt med annonsören.",
+    quote: "Hittade ett kontor med 4 meters takhöjd – precis som Thomas lovade. Bra sökfilter och snabb kontakt med annonsören.",
     author: "Anna S.",
     role: "Företagare",
   },
