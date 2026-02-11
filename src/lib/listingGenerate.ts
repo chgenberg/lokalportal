@@ -1,6 +1,6 @@
 import OpenAI from "openai";
 
-const FETCH_TIMEOUT_MS = 8000;
+const FETCH_TIMEOUT_MS = 5000;
 const NOMINATIM_USER_AGENT = "HittaYta.se/1.0 (commercial; listing generator)";
 
 export const VALID_TYPES = ["sale", "rent"] as const;
@@ -213,11 +213,11 @@ export async function generateListingContent(
     lng = geocode?.lng ?? 0;
   }
 
-  let weatherSummary: string | null = null;
-  if (geocode) {
-    weatherSummary = await fetchSmhiWeather(geocode.lat, geocode.lng);
-  }
-  const demographicsSummary = await fetchScbDemographics(city);
+  // Run weather + demographics in parallel to reduce total latency
+  const [weatherSummary, demographicsSummary] = await Promise.all([
+    (lat && lng) ? fetchSmhiWeather(lat, lng) : Promise.resolve(null),
+    fetchScbDemographics(city),
+  ]);
 
   const userContent = [
     `Adress: ${address.trim()}`,
@@ -233,17 +233,70 @@ export async function generateListingContent(
     .filter(Boolean)
     .join("\n");
 
-  const openai = new OpenAI({ apiKey: openaiApiKey });
-  const completion = await openai.chat.completions.create({
-    model: "gpt-4o",
-    messages: [
-      { role: "system", content: GPT_SYSTEM },
-      { role: "user", content: userContent },
-    ],
-    response_format: { type: "json_object" },
-    max_tokens: 1500,
-  });
-  const raw = completion.choices[0]?.message?.content?.trim();
+  const openai = new OpenAI({ apiKey: openaiApiKey, timeout: 20_000 });
+
+  let raw: string | undefined;
+  try {
+    // Use Responses API with gpt-5.2 (most capable frontier model)
+    const response = await openai.responses.create({
+      model: "gpt-5.2",
+      instructions: GPT_SYSTEM,
+      input: userContent,
+      text: {
+        format: {
+          type: "json_schema",
+          name: "listing",
+          strict: true,
+          schema: {
+            type: "object",
+            properties: {
+              title: { type: "string", description: "Säljande rubrik, max 80 tecken" },
+              description: { type: "string", description: "Annonstext, 300-600 ord, flera stycken" },
+              tags: {
+                type: "array",
+                items: { type: "string" },
+                description: "Relevanta taggar, max 10",
+              },
+            },
+            required: ["title", "description", "tags"],
+            additionalProperties: false,
+          },
+        },
+      },
+    });
+    raw = response.output_text?.trim();
+  } catch (primaryErr) {
+    // Fallback to gpt-4.1-mini if gpt-5.2 fails
+    console.warn("gpt-5.2 failed, falling back to gpt-4.1-mini:", primaryErr);
+    try {
+      const fallback = await openai.responses.create({
+        model: "gpt-4.1-mini",
+        instructions: GPT_SYSTEM,
+        input: userContent,
+        text: {
+          format: {
+            type: "json_schema",
+            name: "listing_fallback",
+            strict: true,
+            schema: {
+              type: "object",
+              properties: {
+                title: { type: "string" },
+                description: { type: "string" },
+                tags: { type: "array", items: { type: "string" } },
+              },
+              required: ["title", "description", "tags"],
+              additionalProperties: false,
+            },
+          },
+        },
+      });
+      raw = fallback.output_text?.trim();
+    } catch (fallbackErr) {
+      console.error("gpt-4.1-mini also failed:", fallbackErr);
+      throw new Error("Kunde inte generera annons");
+    }
+  }
   if (!raw) throw new Error("Kunde inte generera annons");
   const parsed = JSON.parse(raw) as { title?: string; description?: string; tags?: string[] };
   const title = String(parsed.title ?? "").trim().slice(0, 200) || "Kommersiell lokal";

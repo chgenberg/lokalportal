@@ -8,6 +8,8 @@ import {
   type GenerateInput,
 } from "@/lib/listingGenerate";
 
+export const maxDuration = 30;
+
 const GENERATE_PUBLIC_MAX = 3;
 const GENERATE_PUBLIC_WINDOW_MS = 24 * 60 * 60 * 1000; // 24 h per email
 

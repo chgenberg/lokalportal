@@ -8,6 +8,8 @@ import {
   type GenerateInput,
 } from "@/lib/listingGenerate";
 
+export const maxDuration = 30;
+
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user) return NextResponse.json({ error: "Ej inloggad" }, { status: 401 });
