@@ -56,14 +56,9 @@ export default function KontaktPage() {
           <div className="lg:col-span-1 space-y-4">
             {/* Thomas card */}
             <div className="bg-white rounded-2xl border border-border/40 p-6 shadow-sm">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 rounded-xl bg-navy/[0.06] flex items-center justify-center shrink-0">
-                  <span className="text-xl">🏢</span>
-                </div>
-                <div>
-                  <p className="text-[14px] font-semibold text-navy">Thomas Claesson</p>
-                  <p className="text-[11px] text-gray-400">Grundare & Chefslokalletare</p>
-                </div>
+              <div className="mb-4">
+                <p className="text-[14px] font-semibold text-navy">Thomas Claesson</p>
+                <p className="text-[11px] text-gray-400">Grundare & Chefslokalletare</p>
               </div>
               <p className="text-[13px] text-gray-500 leading-relaxed italic">
                 &ldquo;Skriv till mig. Jag läser varje meddelande. Ibland två gånger om det handlar om skyltfönster.&rdquo;

@@ -221,12 +221,11 @@ export default function OmOssClient() {
         {/* Values */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
           {[
-            { title: "Transparens", text: "Inga dolda avgifter, inga överraskningar. Förutom att Thomas ibland dyker upp med tårta.", icon: "🔍" },
-            { title: "Enkelhet", text: "Från sökning till kontrakt – allt ska vara så smidigt att till och med Thomas klarar det.", icon: "✨" },
-            { title: "Trygghet", text: "BankID-verifiering, tydliga villkor och en grundare som tar ditt förtroende på allvar.", icon: "🛡️" },
+            { title: "Transparens", text: "Inga dolda avgifter, inga överraskningar. Förutom att Thomas ibland dyker upp med tårta." },
+            { title: "Enkelhet", text: "Från sökning till kontrakt – allt ska vara så smidigt att till och med Thomas klarar det." },
+            { title: "Trygghet", text: "BankID-verifiering, tydliga villkor och en grundare som tar ditt förtroende på allvar." },
           ].map((v) => (
             <div key={v.title} className="bg-white rounded-2xl border border-border/40 p-6 shadow-sm text-center">
-              <span className="text-2xl mb-3 block">{v.icon}</span>
               <h3 className="text-base font-bold text-navy mb-2 tracking-tight">{v.title}</h3>
               <p className="text-[13px] text-gray-400 leading-relaxed">{v.text}</p>
             </div>

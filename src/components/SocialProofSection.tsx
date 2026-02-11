@@ -1,3 +1,5 @@
+import ScrollReveal from "./ScrollReveal";
+
 const testimonials = [
   {
     quote: "Thomas och hans team hjälpte oss hitta kontor på rekordtid. AI-verktyget skrev annonserna åt oss – sparade flera timmar.",
@@ -20,20 +22,23 @@ export default function SocialProofSection() {
   return (
     <section className="py-24 bg-muted/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-14">
-          <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-gray-400 mb-3">Vad andra säger</p>
-          <h2 className="text-3xl font-bold text-navy tracking-tight">Så upplever våra användare</h2>
-        </div>
+        <ScrollReveal>
+          <div className="text-center mb-14">
+            <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-gray-400 mb-3">Vad andra säger</p>
+            <h2 className="text-3xl font-bold text-navy tracking-tight">Så upplever våra användare</h2>
+          </div>
+        </ScrollReveal>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {testimonials.map((t) => (
-            <div
-              key={t.author}
-              className="bg-white rounded-2xl border border-border/60 p-6 shadow-sm"
-            >
-              <p className="text-[15px] text-navy/90 leading-relaxed mb-5">&ldquo;{t.quote}&rdquo;</p>
-              <p className="text-[13px] font-semibold text-navy">{t.author}</p>
-              <p className="text-[12px] text-gray-400">{t.role}</p>
-            </div>
+          {testimonials.map((t, i) => (
+            <ScrollReveal key={t.author} delay={i * 120}>
+              <div className="bg-white rounded-2xl border border-border/60 p-6 shadow-sm transition-all duration-500 hover:border-navy/15 hover:shadow-md hover:-translate-y-1">
+                <p className="text-[15px] text-navy/90 leading-relaxed mb-5">&ldquo;{t.quote}&rdquo;</p>
+                <div className="pt-4 border-t border-border/40">
+                  <p className="text-[13px] font-semibold text-navy">{t.author}</p>
+                  <p className="text-[12px] text-gray-400">{t.role}</p>
+                </div>
+              </div>
+            </ScrollReveal>
           ))}
         </div>
       </div>

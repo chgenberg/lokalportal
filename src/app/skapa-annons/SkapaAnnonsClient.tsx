@@ -305,7 +305,7 @@ export default function SkapaAnnonsClient() {
 
   return (
     <div className="min-h-screen bg-muted/30">
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-12 md:py-16">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-12 md:py-16">
         <div className="mb-10">
           <Link href="/" className="text-[12px] text-gray-500 hover:text-navy transition-colors tracking-wide">
             &larr; Tillbaka till startsidan
