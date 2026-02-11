@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { title, description, city, address, type, category, price, size, tags, imageUrl } = body;
+    const { title, description, city, address, type, category, price, size, tags, imageUrl, lat, lng } = body;
 
     if (!title || !description || !city || !address || !type || !category || price == null || price === "" || size == null || size === "") {
       return NextResponse.json({ error: "Alla obligatoriska fält måste fyllas i" }, { status: 400 });
@@ -44,6 +44,17 @@ export async function POST(request: NextRequest) {
     const user = await prisma.user.findUnique({ where: { id: session.user.id } });
 
     const imageUrlStr = typeof imageUrl === "string" ? imageUrl.trim().slice(0, 2000) : "";
+    const latNum = lat != null && lat !== "" ? Number(lat) : undefined;
+    const lngNum = lng != null && lng !== "" ? Number(lng) : undefined;
+    const hasValidCoords =
+      typeof latNum === "number" &&
+      !Number.isNaN(latNum) &&
+      typeof lngNum === "number" &&
+      !Number.isNaN(lngNum) &&
+      latNum >= -90 &&
+      latNum <= 90 &&
+      lngNum >= -180 &&
+      lngNum <= 180;
 
     const listing = await prisma.listing.create({
       data: {
@@ -61,6 +72,7 @@ export async function POST(request: NextRequest) {
         contactName: user?.name || session.user.name || "",
         contactEmail: user?.email || session.user.email || "",
         contactPhone: user?.phone || "",
+        ...(hasValidCoords && { lat: latNum, lng: lngNum }),
       },
     });
 
