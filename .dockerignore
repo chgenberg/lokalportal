@@ -1,0 +1,22 @@
+# Dependencies and build output (reinstalled/built in image)
+node_modules
+.next
+npm-debug.log*
+
+# Git and IDE
+.git
+.gitignore
+.cursor
+.vscode
+*.md
+
+# Env (use Railway env vars, not repo files)
+.env
+.env.*
+!.env.example
+
+# Misc
+Dockerfile*
+.dockerignore
+*.log
+.DS_Store
