@@ -282,7 +282,7 @@ export default function ChatWindow({
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const pollRef = useRef<NodeJS.Timeout | null>(null);
@@ -311,7 +311,8 @@ export default function ChatWindow({
   }, [fetchMessages]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    const el = messagesContainerRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
   }, [messages]);
 
   /* ── auto-resize textarea ─── */
@@ -464,7 +465,7 @@ export default function ChatWindow({
       </div>
 
       {/* ── Messages ─── */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 bg-muted/30">
+      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto px-4 py-4 bg-muted/30">
         {loading ? (
           <div className="flex items-center justify-center h-full">
             <div className="flex items-center gap-2">
@@ -600,7 +601,6 @@ export default function ChatWindow({
             })}
           </div>
         )}
-        <div ref={messagesEndRef} />
       </div>
 
       {/* ── File preview ─── */}
