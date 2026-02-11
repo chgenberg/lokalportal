@@ -65,7 +65,7 @@ function MeddelandenContent() {
       <div className="bg-white rounded-2xl border border-border overflow-hidden shadow-sm">
         <div
           className="flex flex-col md:flex-row"
-          style={{ height: "calc(100vh - 280px)", minHeight: "520px" }}
+          style={{ height: "calc(100vh - 280px)", minHeight: "400px" }}
         >
           {/* Conversation list */}
           <div

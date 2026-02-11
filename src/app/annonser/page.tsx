@@ -255,7 +255,7 @@ function AnnonserContent() {
                 { value: "price_desc", label: sortLabel.price_desc },
                 { value: "size", label: sortLabel.size },
               ]}
-              className="w-48"
+              className="w-full sm:w-48"
             />
           </div>
         </div>

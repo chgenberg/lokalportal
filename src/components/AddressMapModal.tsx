@@ -122,10 +122,10 @@ export default function AddressMapModal({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[110] flex items-center justify-center p-2 sm:p-4">
       <div className="absolute inset-0 bg-navy/50 backdrop-blur-sm" onClick={onClose} />
       <div
-        className="relative w-full max-w-2xl bg-white rounded-2xl shadow-xl overflow-hidden animate-scale-in flex flex-col"
+        className="relative w-full max-w-full sm:max-w-2xl bg-white rounded-2xl shadow-xl overflow-hidden animate-scale-in flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-4 py-3 border-b border-border/60">
@@ -139,7 +139,7 @@ export default function AddressMapModal({
             &times;
           </button>
         </div>
-        <div ref={mapRef} className="h-80 w-full" />
+        <div ref={mapRef} className="h-64 sm:h-80 w-full" />
         {loading && (
           <div className="absolute bottom-12 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-white/95 rounded-lg shadow text-xs text-gray-600">
             Hämtar adress...

@@ -502,7 +502,7 @@ function DashboardContent() {
             <select
               value={listingsSort}
               onChange={(e) => setListingsSort(e.target.value as "date" | "inquiries" | "views" | "favorites")}
-              className="px-3 py-2 rounded-xl border border-border text-sm text-navy bg-white focus:border-navy outline-none"
+              className="w-full sm:w-48 px-3 py-2 rounded-xl border border-border text-sm text-navy bg-white focus:border-navy outline-none"
             >
               <option value="date">Senast skapade</option>
               <option value="inquiries">Flest förfrågningar</option>
@@ -1004,7 +1004,7 @@ function StatisticsTab({
     return (
       <div className="space-y-6">
         <h1 className="text-2xl font-bold text-navy">Statistik</h1>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[...Array(4)].map((_, i) => <div key={i} className="bg-white rounded-2xl border border-border p-5 animate-pulse"><div className="h-4 bg-muted rounded w-2/3 mb-3" /><div className="h-8 bg-muted rounded w-1/2" /></div>)}
         </div>
         <div className="bg-white rounded-2xl border border-border p-6 animate-pulse"><div className="h-48 bg-muted rounded" /></div>
@@ -1057,7 +1057,7 @@ function StatisticsTab({
       )}
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {kpis.map((kpi) => (
           <div key={kpi.label} className="bg-white rounded-2xl border border-border p-5 hover:shadow-md transition-shadow group">
             <div className="flex items-center justify-between mb-3">
@@ -1117,7 +1117,7 @@ function StatisticsTab({
           </div>
 
           {/* Daily summary row */}
-          <div className="flex items-center gap-6 mt-4 pt-4 border-t border-border/40">
+          <div className="flex flex-wrap items-center gap-3 sm:gap-6 mt-4 pt-4 border-t border-border/40">
             <div>
               <p className="text-[10px] text-gray-400 uppercase tracking-wider">Idag</p>
               <p className="text-lg font-bold text-navy">{daily[daily.length - 1]?.[chartMetric] ?? 0}</p>
@@ -1187,6 +1187,7 @@ function StatisticsTab({
       {(ts?.perListingDaily ?? []).length > 0 && (
         <div className="bg-white rounded-2xl border border-border p-6">
           <h2 className="font-semibold text-navy mb-4">Visningstrender per annons</h2>
+          <p className="sm:hidden text-xs text-gray-400 mb-2">Svep för att se mer</p>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>

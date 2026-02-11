@@ -444,15 +444,15 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
 
   return (
     <>
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4">
       <div className="absolute inset-0 bg-navy/40 backdrop-blur-sm" onClick={handleClose} />
 
       <div
         ref={modalRef}
-        className={`relative w-full max-h-[90vh] bg-white rounded-2xl shadow-2xl overflow-hidden animate-scale-in flex flex-col ${step === "preview" ? "max-w-5xl" : "max-w-2xl"}`}
+        className={`relative w-full max-h-[90vh] bg-white rounded-2xl shadow-2xl overflow-hidden animate-scale-in flex flex-col ${step === "preview" ? "max-w-full sm:max-w-5xl" : "max-w-full sm:max-w-2xl"}`}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between px-8 py-5 border-b border-border/40">
+        <div className="flex items-center justify-between px-4 sm:px-8 py-5 border-b border-border/40">
           <div>
             <h2 className="text-lg font-bold text-navy tracking-tight">Skapa annons</h2>
             <p className="text-[11px] text-gray-400 mt-0.5 tracking-wide">
@@ -469,7 +469,7 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto overflow-x-hidden px-8 py-6">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 sm:px-8 py-6">
           {step === "input" && (
             <>
               {(generateError || publishError) && (
@@ -538,7 +538,7 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
                   </button>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-[11px] font-semibold text-gray-400 mb-1.5 tracking-[0.1em] uppercase">
                       Typ
@@ -549,7 +549,7 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
                           key={t}
                           type="button"
                           onClick={() => updateInput({ type: t })}
-                          className={`py-3 rounded-xl text-[13px] font-semibold transition-all border ${
+                          className={`py-2.5 rounded-xl text-[13px] font-semibold transition-all border ${
                             input.type === t
                               ? "bg-navy text-white border-navy"
                               : "bg-white text-gray-500 border-border/60 hover:border-navy/20"
@@ -573,7 +573,7 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-[11px] font-semibold text-gray-400 mb-1.5 tracking-[0.1em] uppercase">
                       Pris {input.type === "sale" ? "(kr)" : "(kr/mån)"}
@@ -768,7 +768,7 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
           })()}
         </div>
 
-        <div className="flex items-center justify-between px-8 py-5 border-t border-border/40 bg-muted/30">
+        <div className="flex items-center justify-between px-4 sm:px-8 py-5 border-t border-border/40 bg-muted/30">
           <div>
             {step === "preview" && (
               <button

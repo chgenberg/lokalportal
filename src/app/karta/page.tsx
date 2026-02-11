@@ -50,8 +50,8 @@ export default function KartaPage() {
         </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row" style={{ height: "calc(100vh - 180px)" }}>
-        <div className="lg:w-80 xl:w-96 overflow-y-auto border-r border-border bg-white">
+      <div className="flex flex-col lg:flex-row min-h-0" style={{ height: "calc(100vh - 180px)" }}>
+        <div className="lg:w-80 xl:w-96 overflow-y-auto border-r border-border bg-white shrink-0 max-h-[45vh] lg:max-h-none">
           <div className="p-4">
             <p className="text-xs font-medium text-gray-500 mb-3">{listings.length} lokaler</p>
             {error && (
@@ -88,7 +88,7 @@ export default function KartaPage() {
           </div>
         </div>
 
-        <div className="flex-1 relative">
+        <div className="flex-1 relative min-h-[55vh] lg:min-h-0">
           {loading ? (
             <div className="w-full h-full bg-muted flex items-center justify-center"><div className="text-gray-400">Laddar karta...</div></div>
           ) : (

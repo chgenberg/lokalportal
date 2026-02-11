@@ -47,7 +47,7 @@ export default function ListingDetailContent({
       )}
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 -mt-2 pb-16">
-        <div className="relative h-72 sm:h-96 rounded-2xl overflow-hidden border border-border/40 shadow-lg shadow-navy/[0.06] mb-8">
+        <div className={`relative rounded-2xl overflow-hidden border border-border/40 shadow-lg shadow-navy/[0.06] mb-8 ${compact ? "h-48 sm:h-72" : "h-72 sm:h-96"}`}>
           {hasImage ? (
             <Image
               src={listing.imageUrl}
@@ -82,14 +82,14 @@ export default function ListingDetailContent({
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
             <div className="bg-white rounded-2xl border border-border/40 p-6 shadow-sm">
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="text-center">
                   <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-1">Pris</p>
-                  <p className="text-xl font-bold text-navy tracking-tight">{formatPrice(listing.price, listing.type)}</p>
+                  <p className="text-lg sm:text-xl font-bold text-navy tracking-tight">{formatPrice(listing.price, listing.type)}</p>
                 </div>
-                <div className="text-center border-x border-border/40">
+                <div className="text-center sm:border-x border-border/40">
                   <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-1">Storlek</p>
-                  <p className="text-xl font-bold text-navy tracking-tight">{listing.size} m²</p>
+                  <p className="text-lg sm:text-xl font-bold text-navy tracking-tight">{listing.size} m²</p>
                 </div>
                 <div className="text-center">
                   <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-1">Plats</p>
