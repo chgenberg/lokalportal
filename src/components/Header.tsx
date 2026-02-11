@@ -140,7 +140,7 @@ export default function Header() {
                     </button>
 
                     {userMenuOpen && (
-                      <div className="absolute right-0 top-full mt-2 w-52 glass rounded-xl border border-border/60 shadow-xl py-1.5 animate-scale-in">
+                      <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-xl border border-border/60 shadow-xl py-1.5 animate-scale-in">
                         <div className="px-4 py-2.5 border-b border-border/60">
                           <p className="text-sm font-semibold text-navy">{session.user.name}</p>
                           <p className="text-[11px] text-gray-400 tracking-wide">
