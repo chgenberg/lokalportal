@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -10,6 +10,18 @@ import type { Listing } from "@/lib/types";
 import CustomSelect from "./CustomSelect";
 import ListingDetailContent from "./ListingDetailContent";
 import { downloadListingPdf } from "@/lib/pdf-listing";
+
+const AddressMapModal = dynamic(() => import("./AddressMapModal"), { ssr: false });
+
+const SUGGEST_DEBOUNCE_MS = 350;
+const MIN_CHARS_FOR_SUGGEST = 3;
+
+interface SuggestItem {
+  display_name: string;
+  lat: number;
+  lon: number;
+  city?: string;
+}
 
 interface CreateListingModalProps {
   open: boolean;
@@ -25,6 +37,8 @@ interface InputForm {
   price: string;
   size: string;
   highlights: string;
+  lat?: number;
+  lng?: number;
 }
 
 interface GeneratedListing {
@@ -63,7 +77,14 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
   const [submitted, setSubmitted] = useState(false);
   const [generateError, setGenerateError] = useState("");
   const [imageUploading, setImageUploading] = useState(false);
+  const [suggestions, setSuggestions] = useState<SuggestItem[]>([]);
+  const [suggestionsOpen, setSuggestionsOpen] = useState(false);
+  const [suggestionsLoading, setSuggestionsLoading] = useState(false);
+  const [mapOpen, setMapOpen] = useState(false);
+  const [selectedSuggestIndex, setSelectedSuggestIndex] = useState(-1);
   const imageInputRef = useRef<HTMLInputElement>(null);
+  const addressWrapperRef = useRef<HTMLDivElement>(null);
+  const suggestDebounceRef = useRef<NodeJS.Timeout | null>(null);
   const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -86,6 +107,90 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
   const updateInput = (partial: Partial<InputForm>) => {
     setInput((prev) => ({ ...prev, ...partial }));
     setGenerateError("");
+  };
+
+  const fetchSuggestions = useCallback(async (query: string) => {
+    if (query.length < MIN_CHARS_FOR_SUGGEST) {
+      setSuggestions([]);
+      setSuggestionsOpen(false);
+      return;
+    }
+    setSuggestionsLoading(true);
+    try {
+      const res = await fetch(`/api/geocode/suggest?q=${encodeURIComponent(query)}`);
+      const data = await res.json();
+      setSuggestions(data.suggestions || []);
+      setSuggestionsOpen(true);
+      setSelectedSuggestIndex(-1);
+    } catch {
+      setSuggestions([]);
+    } finally {
+      setSuggestionsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (suggestDebounceRef.current) clearTimeout(suggestDebounceRef.current);
+    const q = input.address.trim();
+    if (q.length < MIN_CHARS_FOR_SUGGEST) {
+      setSuggestions([]);
+      setSuggestionsOpen(false);
+      return;
+    }
+    suggestDebounceRef.current = setTimeout(() => {
+      fetchSuggestions(q);
+      suggestDebounceRef.current = null;
+    }, SUGGEST_DEBOUNCE_MS);
+    return () => {
+      if (suggestDebounceRef.current) clearTimeout(suggestDebounceRef.current);
+    };
+  }, [input.address, fetchSuggestions]);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (addressWrapperRef.current && !addressWrapperRef.current.contains(e.target as Node)) {
+        setSuggestionsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleSelectSuggestion = (item: SuggestItem) => {
+    updateInput({
+      address: item.display_name,
+      lat: item.lat,
+      lng: item.lon,
+    });
+    setSuggestionsOpen(false);
+    setSuggestions([]);
+  };
+
+  const handleAddressKeyDown = (e: React.KeyboardEvent) => {
+    if (!suggestionsOpen || suggestions.length === 0) return;
+    if (e.key === "Escape") {
+      setSuggestionsOpen(false);
+      return;
+    }
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setSelectedSuggestIndex((i) => (i < suggestions.length - 1 ? i + 1 : 0));
+      return;
+    }
+    if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setSelectedSuggestIndex((i) => (i > 0 ? i - 1 : suggestions.length - 1));
+      return;
+    }
+    if (e.key === "Enter" && selectedSuggestIndex >= 0 && suggestions[selectedSuggestIndex]) {
+      e.preventDefault();
+      handleSelectSuggestion(suggestions[selectedSuggestIndex]);
+    }
+  };
+
+  const handleMapSelect = (displayName: string, lat: number, lng: number) => {
+    updateInput({ address: displayName, lat, lng });
+    setMapOpen(false);
   };
 
   const toggleTag = (tag: string) => {
@@ -129,17 +234,22 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
     setGenerateError("");
 
     try {
+      const body: Record<string, unknown> = {
+        address: input.address.trim(),
+        type: input.type,
+        category: input.category,
+        price: priceNum,
+        size: sizeNum,
+        highlights: input.highlights.trim() || undefined,
+      };
+      if (input.lat != null && input.lng != null && !Number.isNaN(input.lat) && !Number.isNaN(input.lng)) {
+        body.lat = input.lat;
+        body.lng = input.lng;
+      }
       const res = await fetch("/api/listings/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          address: input.address.trim(),
-          type: input.type,
-          category: input.category,
-          price: priceNum,
-          size: sizeNum,
-          highlights: input.highlights.trim() || undefined,
-        }),
+        body: JSON.stringify(body),
       });
 
       const data = await res.json();
@@ -333,6 +443,7 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
   }
 
   return (
+    <>
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-navy/40 backdrop-blur-sm" onClick={handleClose} />
 
@@ -371,18 +482,60 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
               )}
 
               <div className="space-y-5 animate-fade-in">
-                <div>
+                <div ref={addressWrapperRef} className="relative">
                   <label className="block text-[11px] font-semibold text-gray-400 mb-1.5 tracking-[0.1em] uppercase">
                     Adress
                   </label>
-                  <input
-                    type="text"
-                    value={input.address}
-                    onChange={(e) => updateInput({ address: e.target.value })}
-                    placeholder="T.ex. Storgatan 12, Göteborg"
-                    className="w-full px-4 py-3 bg-muted/50 rounded-xl text-sm border border-border/60 focus:border-navy/30 focus:bg-white outline-none transition-all"
-                    autoFocus
-                  />
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={input.address}
+                      onChange={(e) => updateInput({ address: e.target.value })}
+                      onKeyDown={handleAddressKeyDown}
+                      placeholder="T.ex. Storgatan 12, Göteborg"
+                      className="w-full px-4 py-3 bg-muted/50 rounded-xl text-sm border border-border/60 focus:border-navy/30 focus:bg-white outline-none transition-all"
+                      autoFocus
+                      autoComplete="off"
+                      aria-autocomplete="list"
+                      aria-expanded={suggestionsOpen}
+                    />
+                    {suggestionsLoading && (
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 border-2 border-navy/20 border-t-navy rounded-full animate-spin" />
+                    )}
+                  </div>
+                  {suggestionsOpen && suggestions.length > 0 && (
+                    <ul
+                      className="absolute z-10 left-0 right-0 mt-1 py-1 bg-white border border-border/60 rounded-xl shadow-lg max-h-56 overflow-y-auto"
+                      role="listbox"
+                    >
+                      {suggestions.map((item, i) => (
+                        <li
+                          key={`${item.display_name}-${i}`}
+                          role="option"
+                          aria-selected={i === selectedSuggestIndex}
+                          className={`px-4 py-2.5 text-[13px] cursor-pointer transition-colors ${
+                            i === selectedSuggestIndex ? "bg-navy/10 text-navy" : "text-gray-700 hover:bg-muted/50"
+                          }`}
+                          onClick={() => handleSelectSuggestion(item)}
+                        >
+                          {item.display_name}
+                          {item.city && (
+                            <span className="block text-[11px] text-gray-400 mt-0.5">{item.city}</span>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setMapOpen(true)}
+                    className="mt-2 flex items-center gap-2 px-3 py-2 text-[12px] font-medium text-gray-500 hover:text-navy hover:bg-muted/50 rounded-lg transition-colors"
+                  >
+                    <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                    </svg>
+                    Välj plats på karta
+                  </button>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -653,5 +806,15 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
         </div>
       </div>
     </div>
+
+    <AddressMapModal
+      open={mapOpen}
+      onClose={() => setMapOpen(false)}
+      initialLat={input.lat}
+      initialLng={input.lng}
+      initialAddress={input.address.trim() || undefined}
+      onSelect={handleMapSelect}
+    />
+    </>
   );
 }

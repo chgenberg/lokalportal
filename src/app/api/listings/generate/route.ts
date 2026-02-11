@@ -19,6 +19,8 @@ interface GenerateBody {
   price: number;
   size: number;
   highlights?: string;
+  lat?: number;
+  lng?: number;
 }
 
 interface NominatimResult {
@@ -198,10 +200,19 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Ogiltig JSON" }, { status: 400 });
   }
 
-  const { address, type, category, price, size, highlights = "" } = body;
+  const { address, type, category, price, size, highlights = "", lat: bodyLat, lng: bodyLng } = body;
   if (!address || typeof address !== "string" || !address.trim()) {
     return NextResponse.json({ error: "Adress krävs" }, { status: 400 });
   }
+  const hasBodyCoords =
+    bodyLat != null &&
+    bodyLng != null &&
+    !Number.isNaN(Number(bodyLat)) &&
+    !Number.isNaN(Number(bodyLng)) &&
+    Number(bodyLat) >= -90 &&
+    Number(bodyLat) <= 90 &&
+    Number(bodyLng) >= -180 &&
+    Number(bodyLng) <= 180;
   if (!VALID_TYPES.includes(type)) {
     return NextResponse.json({ error: "Ogiltig typ. Använd sale eller rent." }, { status: 400 });
   }
@@ -221,10 +232,22 @@ export async function POST(request: NextRequest) {
   const categoryLabel = { butik: "butik", kontor: "kontor", lager: "lager", ovrigt: "övrigt" }[category];
 
   let geocode: GeocodeResult | null = null;
-  geocode = await geocodeAddress(address);
-  const city = geocode?.city ?? address.split(",")[0]?.trim() ?? "Okänd ort";
-  const lat = geocode?.lat ?? 0;
-  const lng = geocode?.lng ?? 0;
+  let city: string;
+  let lat: number;
+  let lng: number;
+
+  if (hasBodyCoords) {
+    lat = Number(bodyLat);
+    lng = Number(bodyLng);
+    const parts = address.trim().split(",").map((p) => p.trim()).filter(Boolean);
+    city = parts.length > 1 ? (parts[parts.length - 1] ?? parts[0] ?? "Okänd ort") : (parts[0] ?? "Okänd ort");
+    city = city.slice(0, 100);
+  } else {
+    geocode = await geocodeAddress(address);
+    city = geocode?.city ?? address.split(",")[0]?.trim() ?? "Okänd ort";
+    lat = geocode?.lat ?? 0;
+    lng = geocode?.lng ?? 0;
+  }
 
   let weatherSummary: string | null = null;
   if (geocode) {
