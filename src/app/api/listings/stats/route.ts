@@ -180,9 +180,6 @@ export async function GET() {
 
     // Category distribution
     const categoryDistribution: Record<string, number> = {};
-    for (const listing of myListings) {
-      // We need category - fetch it
-    }
     const listingsWithCategory = await prisma.listing.findMany({
       where: { ownerId: userId },
       select: { category: true },

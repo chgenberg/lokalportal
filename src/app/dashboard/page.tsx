@@ -638,7 +638,7 @@ function DashboardContent() {
   }
 
   if (tab === "statistics" && isLandlord) {
-    return <StatisticsTab overview={statsOverview} perListing={perListingStats} timeSeries={timeSeries} formatPrice={formatPrice} />;
+    return <StatisticsTab overview={statsOverview} perListing={perListingStats} timeSeries={timeSeries} formatPrice={formatPrice} listings={listings} />;
   }
 
   if (tab === "create" && isLandlord) {
@@ -926,40 +926,115 @@ function StatisticsTab({
   perListing,
   timeSeries,
   formatPrice,
+  listings,
 }: {
   overview: { totalListings: number; totalInquiries: number; totalFavorites: number; totalViews?: number; responseRate: number; topListingId: string | null; topListingTitle: string | null } | null;
   perListing: { listingId: string; inquiryCount: number; favoriteCount: number; viewCount: number }[];
   timeSeries: { dailyStats: { date: string; views: number; inquiries: number; favorites: number }[]; perListingDaily: { listingId: string; title: string; daily: number[] }[]; weeklyComparison: { thisWeek: { views: number; inquiries: number; favorites: number }; lastWeek: { views: number; inquiries: number; favorites: number } }; categoryDistribution: Record<string, number> } | null;
   formatPrice: (price: number, type: string) => string;
+  listings: Listing[];
 }) {
   const [chartMetric, setChartMetric] = useState<"views" | "inquiries" | "favorites">("views");
+  const [statsLoading, setStatsLoading] = useState(false);
+  const [localOverview, setLocalOverview] = useState(overview);
+  const [localTimeSeries, setLocalTimeSeries] = useState(timeSeries);
+  const [localPerListing, setLocalPerListing] = useState(perListing);
+  const [statsError, setStatsError] = useState<string | null>(null);
 
-  if (!overview || !timeSeries) {
+  // Sync from parent
+  useEffect(() => { setLocalOverview(overview); }, [overview]);
+  useEffect(() => { setLocalTimeSeries(timeSeries); }, [timeSeries]);
+  useEffect(() => { setLocalPerListing(perListing); }, [perListing]);
+
+  const fetchStats = async () => {
+    setStatsLoading(true);
+    setStatsError(null);
+    try {
+      const res = await fetch("/api/listings/stats");
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setStatsError(data.error || `Fel ${res.status}`);
+        return;
+      }
+      const data = await res.json();
+      setLocalOverview(data.overview ?? null);
+      setLocalPerListing(data.perListing ?? []);
+      setLocalTimeSeries(data.timeSeries ?? null);
+    } catch {
+      setStatsError("Kunde inte hämta statistik. Kontrollera anslutningen.");
+    } finally {
+      setStatsLoading(false);
+    }
+  };
+
+  // Auto-fetch if data is missing
+  useEffect(() => {
+    if (!localOverview && !statsLoading && !statsError) {
+      fetchStats();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const ov = localOverview;
+  const ts = localTimeSeries;
+  const pl = localPerListing;
+
+  if (!ov && !statsLoading) {
     return (
       <div className="space-y-6">
         <h1 className="text-2xl font-bold text-navy">Statistik</h1>
         <div className="bg-white rounded-2xl border border-border p-12 text-center">
-          <p className="text-gray-500">Laddar statistik...</p>
+          {statsError ? (
+            <>
+              <p className="text-red-500 mb-4">{statsError}</p>
+              <button onClick={fetchStats} className="px-5 py-2.5 bg-navy text-white text-sm font-medium rounded-xl hover:bg-navy-light transition-colors">Försök igen</button>
+            </>
+          ) : (
+            <>
+              <p className="text-gray-500 mb-4">Ingen statistik tillgänglig ännu.</p>
+              <button onClick={fetchStats} className="px-5 py-2.5 bg-navy text-white text-sm font-medium rounded-xl hover:bg-navy-light transition-colors">Ladda statistik</button>
+            </>
+          )}
         </div>
       </div>
     );
   }
 
-  const wc = timeSeries.weeklyComparison;
-  const daily = timeSeries.dailyStats;
+  if (statsLoading && !ov) {
+    return (
+      <div className="space-y-6">
+        <h1 className="text-2xl font-bold text-navy">Statistik</h1>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => <div key={i} className="bg-white rounded-2xl border border-border p-5 animate-pulse"><div className="h-4 bg-muted rounded w-2/3 mb-3" /><div className="h-8 bg-muted rounded w-1/2" /></div>)}
+        </div>
+        <div className="bg-white rounded-2xl border border-border p-6 animate-pulse"><div className="h-48 bg-muted rounded" /></div>
+      </div>
+    );
+  }
+
+  // Build data with fallbacks
+  const totalViews = ov?.totalViews ?? pl.reduce((s, p) => s + p.viewCount, 0);
+  const wc = ts?.weeklyComparison ?? { thisWeek: { views: 0, inquiries: 0, favorites: 0 }, lastWeek: { views: 0, inquiries: 0, favorites: 0 } };
+  const daily = ts?.dailyStats ?? [];
   const chartData = daily.map((d) => d[chartMetric]);
 
   const kpis = [
-    { label: "Totala visningar", value: overview.totalViews ?? 0, thisWeek: wc.thisWeek.views, lastWeek: wc.lastWeek.views, color: "#1a2744" },
-    { label: "Förfrågningar", value: overview.totalInquiries, thisWeek: wc.thisWeek.inquiries, lastWeek: wc.lastWeek.inquiries, color: "#3b82f6" },
-    { label: "Sparade", value: overview.totalFavorites, thisWeek: wc.thisWeek.favorites, lastWeek: wc.lastWeek.favorites, color: "#f59e0b" },
-    { label: "Svarsfrekvens", value: overview.responseRate, thisWeek: overview.responseRate, lastWeek: overview.responseRate, color: "#10b981", suffix: "%" },
+    { label: "Totala visningar", value: totalViews, thisWeek: wc.thisWeek.views, lastWeek: wc.lastWeek.views, color: "#1a2744" },
+    { label: "Förfrågningar", value: ov?.totalInquiries ?? 0, thisWeek: wc.thisWeek.inquiries, lastWeek: wc.lastWeek.inquiries, color: "#3b82f6" },
+    { label: "Sparade", value: ov?.totalFavorites ?? 0, thisWeek: wc.thisWeek.favorites, lastWeek: wc.lastWeek.favorites, color: "#f59e0b" },
+    { label: "Svarsfrekvens", value: ov?.responseRate ?? 0, thisWeek: ov?.responseRate ?? 0, lastWeek: ov?.responseRate ?? 0, color: "#10b981", suffix: "%" },
   ];
 
-  const maxInquiries = Math.max(...perListing.map((p) => p.inquiryCount), 1);
-  const maxViews = Math.max(...perListing.map((p) => p.viewCount), 1);
+  const maxInquiries = Math.max(...pl.map((p) => p.inquiryCount), 1);
+  const maxViews = Math.max(...pl.map((p) => p.viewCount), 1);
 
-  const catData = Object.entries(timeSeries.categoryDistribution).map(([key, val]) => ({
+  const catData = ts ? Object.entries(ts.categoryDistribution).map(([key, val]) => ({
+    label: categoryNames[key] ?? key,
+    value: val,
+    color: categoryColors[key] ?? "#94a3b8",
+  })) : Object.entries(
+    listings.reduce<Record<string, number>>((acc, l) => { acc[l.category] = (acc[l.category] ?? 0) + 1; return acc; }, {})
+  ).map(([key, val]) => ({
     label: categoryNames[key] ?? key,
     value: val,
     color: categoryColors[key] ?? "#94a3b8",
@@ -967,10 +1042,19 @@ function StatisticsTab({
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-navy mb-1">Statistik</h1>
-        <p className="text-sm text-gray-500">Översikt över dina annonsers prestanda de senaste 30 dagarna</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-navy mb-1">Statistik</h1>
+          <p className="text-sm text-gray-500">Översikt över dina annonsers prestanda de senaste 30 dagarna</p>
+        </div>
+        <button onClick={fetchStats} disabled={statsLoading} className="px-4 py-2 text-xs font-medium text-gray-500 border border-border rounded-xl hover:bg-muted transition-colors disabled:opacity-50">
+          {statsLoading ? "Uppdaterar..." : "Uppdatera"}
+        </button>
       </div>
+
+      {statsError && (
+        <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600">{statsError}</div>
+      )}
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -978,73 +1062,77 @@ function StatisticsTab({
           <div key={kpi.label} className="bg-white rounded-2xl border border-border p-5 hover:shadow-md transition-shadow group">
             <div className="flex items-center justify-between mb-3">
               <p className="text-[11px] font-semibold text-gray-400 tracking-[0.1em] uppercase">{kpi.label}</p>
-              <TrendArrow current={kpi.thisWeek} previous={kpi.lastWeek} />
+              {wc.thisWeek.views > 0 || wc.lastWeek.views > 0 ? <TrendArrow current={kpi.thisWeek} previous={kpi.lastWeek} /> : null}
             </div>
             <p className="text-3xl font-bold text-navy tracking-tight">
               {kpi.value.toLocaleString("sv-SE")}{kpi.suffix ?? ""}
             </p>
-            <div className="mt-2 flex items-center gap-2 text-[11px] text-gray-400">
-              <span>Denna vecka: {kpi.thisWeek}</span>
-            </div>
+            {wc.thisWeek.views > 0 && (
+              <div className="mt-2 flex items-center gap-2 text-[11px] text-gray-400">
+                <span>Denna vecka: {kpi.thisWeek}</span>
+              </div>
+            )}
           </div>
         ))}
       </div>
 
       {/* Main Chart */}
-      <div className="bg-white rounded-2xl border border-border p-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
-          <h2 className="font-semibold text-navy">Utveckling (30 dagar)</h2>
-          <div className="flex gap-1 bg-muted rounded-xl p-1">
-            {(["views", "inquiries", "favorites"] as const).map((m) => (
-              <button
-                key={m}
-                type="button"
-                onClick={() => setChartMetric(m)}
-                className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
-                  chartMetric === m
-                    ? "bg-navy text-white shadow-sm"
-                    : "text-gray-500 hover:text-navy"
-                }`}
-              >
-                {m === "views" ? "Visningar" : m === "inquiries" ? "Förfrågningar" : "Sparade"}
-              </button>
-            ))}
+      {daily.length > 0 && (
+        <div className="bg-white rounded-2xl border border-border p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+            <h2 className="font-semibold text-navy">Utveckling (30 dagar)</h2>
+            <div className="flex gap-1 bg-muted rounded-xl p-1">
+              {(["views", "inquiries", "favorites"] as const).map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => setChartMetric(m)}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
+                    chartMetric === m
+                      ? "bg-navy text-white shadow-sm"
+                      : "text-gray-500 hover:text-navy"
+                  }`}
+                >
+                  {m === "views" ? "Visningar" : m === "inquiries" ? "Förfrågningar" : "Sparade"}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
 
-        <div className="relative h-48">
-          <MiniLineChart
-            data={chartData}
-            color={chartMetric === "views" ? "#1a2744" : chartMetric === "inquiries" ? "#3b82f6" : "#f59e0b"}
-            height={192}
-            className="w-full h-full"
-          />
-          {/* X-axis labels */}
-          <div className="absolute bottom-0 left-0 right-0 flex justify-between px-1">
-            {[0, 7, 14, 21, 29].map((idx) => (
-              <span key={idx} className="text-[10px] text-gray-400">
-                {daily[idx] ? new Date(daily[idx].date).toLocaleDateString("sv-SE", { day: "numeric", month: "short" }) : ""}
-              </span>
-            ))}
+          <div className="relative h-48">
+            <MiniLineChart
+              data={chartData}
+              color={chartMetric === "views" ? "#1a2744" : chartMetric === "inquiries" ? "#3b82f6" : "#f59e0b"}
+              height={192}
+              className="w-full h-full"
+            />
+            {/* X-axis labels */}
+            <div className="absolute bottom-0 left-0 right-0 flex justify-between px-1">
+              {[0, 7, 14, 21, 29].map((idx) => (
+                <span key={idx} className="text-[10px] text-gray-400">
+                  {daily[idx] ? new Date(daily[idx].date).toLocaleDateString("sv-SE", { day: "numeric", month: "short" }) : ""}
+                </span>
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* Daily summary row */}
-        <div className="flex items-center gap-6 mt-4 pt-4 border-t border-border/40">
-          <div>
-            <p className="text-[10px] text-gray-400 uppercase tracking-wider">Idag</p>
-            <p className="text-lg font-bold text-navy">{daily[daily.length - 1]?.[chartMetric] ?? 0}</p>
-          </div>
-          <div>
-            <p className="text-[10px] text-gray-400 uppercase tracking-wider">Genomsnitt/dag</p>
-            <p className="text-lg font-bold text-navy">{Math.round(chartData.reduce((a, b) => a + b, 0) / chartData.length)}</p>
-          </div>
-          <div>
-            <p className="text-[10px] text-gray-400 uppercase tracking-wider">Totalt 30d</p>
-            <p className="text-lg font-bold text-navy">{chartData.reduce((a, b) => a + b, 0)}</p>
+          {/* Daily summary row */}
+          <div className="flex items-center gap-6 mt-4 pt-4 border-t border-border/40">
+            <div>
+              <p className="text-[10px] text-gray-400 uppercase tracking-wider">Idag</p>
+              <p className="text-lg font-bold text-navy">{daily[daily.length - 1]?.[chartMetric] ?? 0}</p>
+            </div>
+            <div>
+              <p className="text-[10px] text-gray-400 uppercase tracking-wider">Genomsnitt/dag</p>
+              <p className="text-lg font-bold text-navy">{chartData.length > 0 ? Math.round(chartData.reduce((a, b) => a + b, 0) / chartData.length) : 0}</p>
+            </div>
+            <div>
+              <p className="text-[10px] text-gray-400 uppercase tracking-wider">Totalt 30d</p>
+              <p className="text-lg font-bold text-navy">{chartData.reduce((a, b) => a + b, 0)}</p>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Two-column: Per-listing bars + Category donut */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -1055,8 +1143,8 @@ function StatisticsTab({
             <div>
               <p className="text-[11px] text-gray-400 uppercase tracking-wider mb-3">Visningar</p>
               <BarChart
-                items={[...perListing].sort((a, b) => b.viewCount - a.viewCount).map((p) => ({
-                  label: timeSeries.perListingDaily.find((pl) => pl.listingId === p.listingId)?.title ?? p.listingId.slice(0, 8),
+                items={[...pl].sort((a, b) => b.viewCount - a.viewCount).map((p) => ({
+                  label: ts?.perListingDaily.find((pld) => pld.listingId === p.listingId)?.title ?? listings.find((l) => l.id === p.listingId)?.title ?? p.listingId.slice(0, 8),
                   value: p.viewCount,
                   color: "#1a2744",
                 }))}
@@ -1066,8 +1154,8 @@ function StatisticsTab({
             <div>
               <p className="text-[11px] text-gray-400 uppercase tracking-wider mb-3">Förfrågningar</p>
               <BarChart
-                items={[...perListing].sort((a, b) => b.inquiryCount - a.inquiryCount).map((p) => ({
-                  label: timeSeries.perListingDaily.find((pl) => pl.listingId === p.listingId)?.title ?? p.listingId.slice(0, 8),
+                items={[...pl].sort((a, b) => b.inquiryCount - a.inquiryCount).map((p) => ({
+                  label: ts?.perListingDaily.find((pld) => pld.listingId === p.listingId)?.title ?? listings.find((l) => l.id === p.listingId)?.title ?? p.listingId.slice(0, 8),
                   value: p.inquiryCount,
                   color: "#3b82f6",
                 }))}
@@ -1096,56 +1184,58 @@ function StatisticsTab({
       </div>
 
       {/* Per-listing sparklines table */}
-      <div className="bg-white rounded-2xl border border-border p-6">
-        <h2 className="font-semibold text-navy mb-4">Visningstrender per annons</h2>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-border/40">
-                <th className="text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider pb-3">Annons</th>
-                <th className="text-right text-[11px] font-semibold text-gray-400 uppercase tracking-wider pb-3">Visningar</th>
-                <th className="text-right text-[11px] font-semibold text-gray-400 uppercase tracking-wider pb-3">Förfrågn.</th>
-                <th className="text-right text-[11px] font-semibold text-gray-400 uppercase tracking-wider pb-3">Sparade</th>
-                <th className="text-right text-[11px] font-semibold text-gray-400 uppercase tracking-wider pb-3 pr-2">Trend (30d)</th>
-              </tr>
-            </thead>
-            <tbody>
-              {timeSeries.perListingDaily.map((pl) => {
-                const stats = perListing.find((p) => p.listingId === pl.listingId);
-                return (
-                  <tr key={pl.listingId} className="border-b border-border/20 hover:bg-muted/30 transition-colors">
-                    <td className="py-3 pr-4">
-                      <Link href={`/annonser/${pl.listingId}`} className="text-sm font-medium text-navy hover:text-navy-light transition-colors truncate block max-w-[240px]">
-                        {pl.title}
-                      </Link>
-                    </td>
-                    <td className="py-3 text-right text-sm font-semibold text-navy">{stats?.viewCount ?? 0}</td>
-                    <td className="py-3 text-right text-sm text-gray-600">{stats?.inquiryCount ?? 0}</td>
-                    <td className="py-3 text-right text-sm text-gray-600">{stats?.favoriteCount ?? 0}</td>
-                    <td className="py-3 text-right pr-2">
-                      <div className="flex justify-end">
-                        <Sparkline data={pl.daily} color={pl.daily[pl.daily.length - 1] >= pl.daily[0] ? "#10b981" : "#ef4444"} />
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+      {(ts?.perListingDaily ?? []).length > 0 && (
+        <div className="bg-white rounded-2xl border border-border p-6">
+          <h2 className="font-semibold text-navy mb-4">Visningstrender per annons</h2>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-border/40">
+                  <th className="text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider pb-3">Annons</th>
+                  <th className="text-right text-[11px] font-semibold text-gray-400 uppercase tracking-wider pb-3">Visningar</th>
+                  <th className="text-right text-[11px] font-semibold text-gray-400 uppercase tracking-wider pb-3">Förfrågn.</th>
+                  <th className="text-right text-[11px] font-semibold text-gray-400 uppercase tracking-wider pb-3">Sparade</th>
+                  <th className="text-right text-[11px] font-semibold text-gray-400 uppercase tracking-wider pb-3 pr-2">Trend (30d)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {ts!.perListingDaily.map((pld) => {
+                  const stats = pl.find((p) => p.listingId === pld.listingId);
+                  return (
+                    <tr key={pld.listingId} className="border-b border-border/20 hover:bg-muted/30 transition-colors">
+                      <td className="py-3 pr-4">
+                        <Link href={`/annonser/${pld.listingId}`} className="text-sm font-medium text-navy hover:text-navy-light transition-colors truncate block max-w-[240px]">
+                          {pld.title}
+                        </Link>
+                      </td>
+                      <td className="py-3 text-right text-sm font-semibold text-navy">{stats?.viewCount ?? 0}</td>
+                      <td className="py-3 text-right text-sm text-gray-600">{stats?.inquiryCount ?? 0}</td>
+                      <td className="py-3 text-right text-sm text-gray-600">{stats?.favoriteCount ?? 0}</td>
+                      <td className="py-3 text-right pr-2">
+                        <div className="flex justify-end">
+                          <Sparkline data={pld.daily} color={pld.daily[pld.daily.length - 1] >= pld.daily[0] ? "#10b981" : "#ef4444"} />
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Top performer highlight */}
-      {overview.topListingId && overview.topListingTitle && (
+      {ov?.topListingId && ov?.topListingTitle && (
         <div className="bg-gradient-to-r from-navy to-navy-light rounded-2xl p-6 text-white">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <p className="text-[11px] font-semibold text-white/50 uppercase tracking-wider mb-1">Toppresterande annons</p>
-              <p className="text-lg font-bold">{overview.topListingTitle}</p>
+              <p className="text-lg font-bold">{ov!.topListingTitle}</p>
               <p className="text-sm text-white/70 mt-1">Flest förfrågningar bland dina annonser</p>
             </div>
             <Link
-              href={`/annonser/${overview.topListingId}`}
+              href={`/annonser/${ov!.topListingId}`}
               className="px-5 py-2.5 bg-white/20 text-white text-sm font-medium rounded-xl hover:bg-white/30 transition-colors backdrop-blur-sm whitespace-nowrap"
             >
               Visa annons
