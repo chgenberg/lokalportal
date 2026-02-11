@@ -8,8 +8,8 @@ import dynamic from "next/dynamic";
 import { availableTags, categoryLabels, typeLabels } from "@/lib/types";
 import type { Listing } from "@/lib/types";
 import CustomSelect from "./CustomSelect";
-
-const ListingMap = dynamic(() => import("./ListingMap"), { ssr: false });
+import ListingDetailContent from "./ListingDetailContent";
+import { downloadListingPdf } from "@/lib/pdf-listing";
 
 interface CreateListingModalProps {
   open: boolean;
@@ -272,11 +272,6 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
     }, 300);
   };
 
-  const formatPrice = (price: number, type: string) => {
-    if (type === "sale") return `${(price / 1_000_000).toFixed(1)} mkr`;
-    return `${price.toLocaleString("sv-SE")} kr/mån`;
-  };
-
   if (!open) return null;
 
   if (!session?.user) {
@@ -343,7 +338,7 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
 
       <div
         ref={modalRef}
-        className="relative w-full max-w-2xl max-h-[90vh] bg-white rounded-2xl shadow-2xl overflow-hidden animate-scale-in flex flex-col"
+        className={`relative w-full max-h-[90vh] bg-white rounded-2xl shadow-2xl overflow-hidden animate-scale-in flex flex-col ${step === "preview" ? "max-w-5xl" : "max-w-2xl"}`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-8 py-5 border-b border-border/40">
@@ -363,7 +358,7 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-8 py-6">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden px-8 py-6">
           {step === "input" && (
             <>
               {(generateError || publishError) && (
@@ -480,180 +475,144 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
             </div>
           )}
 
-          {step === "preview" && generated && (
-            <div className="space-y-6 animate-fade-in">
-              {publishError && (
-                <div
-                  role="alert"
-                  className="p-3 bg-red-50 border border-red-200 rounded-xl text-[13px] text-red-700"
-                >
-                  {publishError}
-                </div>
-              )}
-
-              <div>
-                <label className="block text-[11px] font-semibold text-gray-400 mb-1.5 tracking-[0.1em] uppercase">
-                  Rubrik
-                </label>
-                <input
-                  type="text"
-                  value={generated.title}
-                  onChange={(e) => setGenerated((g) => (g ? { ...g, title: e.target.value } : g))}
-                  className="w-full px-4 py-3 bg-muted/50 rounded-xl text-sm border border-border/60 focus:border-navy/30 focus:bg-white outline-none transition-all"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-semibold text-gray-400 mb-1.5 tracking-[0.1em] uppercase">
-                  Beskrivning
-                </label>
-                <textarea
-                  value={generated.description}
-                  onChange={(e) => setGenerated((g) => (g ? { ...g, description: e.target.value } : g))}
-                  rows={8}
-                  className="w-full px-4 py-3 bg-muted/50 rounded-xl text-sm border border-border/60 focus:border-navy/30 focus:bg-white outline-none transition-all resize-none leading-relaxed"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-semibold text-gray-400 mb-2 tracking-[0.1em] uppercase">
-                  Bild (obligatorisk)
-                </label>
-                <input
-                  ref={imageInputRef}
-                  type="file"
-                  accept="image/jpeg,image/png,image/gif,image/webp"
-                  className="hidden"
-                  onChange={(e) => {
-                    const f = e.target.files?.[0];
-                    if (f) handleImageUpload(f);
-                    e.target.value = "";
-                  }}
-                />
-                {generated.imageUrl ? (
-                  <div className="relative inline-block">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={generated.imageUrl}
-                      alt="Förhandsgranskning"
-                      className="h-40 w-full max-w-xs rounded-xl border border-border object-cover"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setGenerated((g) => (g ? { ...g, imageUrl: "" } : g))}
-                      className="absolute top-2 right-2 w-8 h-8 rounded-full bg-navy text-white flex items-center justify-center text-sm hover:bg-navy/90 transition-colors shadow"
-                      aria-label="Ta bort bild"
-                    >
-                      &times;
-                    </button>
+          {step === "preview" && generated && (() => {
+            const previewListing: Listing = {
+              id: "preview",
+              title: generated.title,
+              description: generated.description,
+              city: generated.city,
+              address: generated.address,
+              type: generated.type,
+              category: generated.category,
+              price: generated.price,
+              size: generated.size,
+              imageUrl: generated.imageUrl,
+              featured: false,
+              createdAt: new Date().toISOString(),
+              lat: generated.lat,
+              lng: generated.lng,
+              tags: generated.tags,
+              contact: {
+                name: session?.user?.name ?? "",
+                email: session?.user?.email ?? "",
+                phone: "",
+              },
+            };
+            return (
+              <div className="animate-fade-in">
+                {publishError && (
+                  <div role="alert" className="mb-6 p-3 bg-red-50 border border-red-200 rounded-xl text-[13px] text-red-700">
+                    {publishError}
                   </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => imageInputRef.current?.click()}
-                    disabled={imageUploading}
-                    className="w-full py-8 border-2 border-dashed border-border rounded-xl text-sm text-gray-500 hover:border-navy hover:text-navy transition-colors disabled:opacity-50"
-                  >
-                    {imageUploading ? "Laddar upp..." : "Klicka eller släpp en bild här (max 10 MB)"}
-                  </button>
                 )}
-              </div>
 
-              <div>
-                <label className="block text-[11px] font-semibold text-gray-400 mb-2 tracking-[0.1em] uppercase">
-                  Egenskaper (klicka för att lägga till/ta bort)
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {availableTags.map((tag) => {
-                    const active = generated.tags.includes(tag);
-                    return (
-                      <button
-                        key={tag}
-                        type="button"
-                        onClick={() => toggleTag(tag)}
-                        className={`px-3.5 py-2 rounded-xl text-[12px] font-semibold transition-all border ${
-                          active
-                            ? "bg-navy text-white border-navy"
-                            : "bg-white text-gray-500 border-border/60 hover:border-navy/20 hover:text-navy"
-                        }`}
-                      >
-                        {tag}
-                      </button>
-                    );
-                  })}
-                  {generated.tags.filter((t) => !availableTags.includes(t as (typeof availableTags)[number])).length > 0 && (
-                    <span className="text-[12px] text-gray-400 self-center">
-                      + {generated.tags.filter((t) => !availableTags.includes(t as (typeof availableTags)[number])).join(", ")}
-                    </span>
-                  )}
+                <div className="mb-8 p-5 rounded-2xl border border-border/60 bg-muted/20">
+                  <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-4">Redigera innan du publicerar</p>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-[11px] font-semibold text-gray-400 mb-1 tracking-[0.1em] uppercase">Rubrik</label>
+                      <input
+                        type="text"
+                        value={generated.title}
+                        onChange={(e) => setGenerated((g) => (g ? { ...g, title: e.target.value } : g))}
+                        className="w-full px-4 py-2.5 bg-white rounded-xl text-sm border border-border/60 focus:border-navy/30 outline-none transition-all"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-semibold text-gray-400 mb-1 tracking-[0.1em] uppercase">Beskrivning</label>
+                      <textarea
+                        value={generated.description}
+                        onChange={(e) => setGenerated((g) => (g ? { ...g, description: e.target.value } : g))}
+                        rows={5}
+                        className="w-full px-4 py-2.5 bg-white rounded-xl text-sm border border-border/60 focus:border-navy/30 outline-none transition-all resize-none leading-relaxed"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-semibold text-gray-400 mb-1.5 tracking-[0.1em] uppercase">Egenskaper</label>
+                      <div className="flex flex-wrap gap-2">
+                        {availableTags.map((tag) => {
+                          const active = generated.tags.includes(tag);
+                          return (
+                            <button
+                              key={tag}
+                              type="button"
+                              onClick={() => toggleTag(tag)}
+                              className={`px-3 py-1.5 rounded-xl text-[12px] font-semibold transition-all border ${
+                                active ? "bg-navy text-white border-navy" : "bg-white text-gray-500 border-border/60 hover:border-navy/20 hover:text-navy"
+                              }`}
+                            >
+                              {tag}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-semibold text-gray-400 mb-1.5 tracking-[0.1em] uppercase">Bild (obligatorisk)</label>
+                      <input
+                        ref={imageInputRef}
+                        type="file"
+                        accept="image/jpeg,image/png,image/gif,image/webp"
+                        className="hidden"
+                        onChange={(e) => {
+                          const f = e.target.files?.[0];
+                          if (f) handleImageUpload(f);
+                          e.target.value = "";
+                        }}
+                      />
+                      {generated.imageUrl ? (
+                        <div className="relative inline-block">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={generated.imageUrl} alt="Förhandsgranskning" className="h-32 rounded-xl border border-border object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => setGenerated((g) => (g ? { ...g, imageUrl: "" } : g))}
+                            className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-navy text-white flex items-center justify-center text-sm hover:bg-navy/90 transition-colors shadow"
+                            aria-label="Ta bort bild"
+                          >
+                            &times;
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => imageInputRef.current?.click()}
+                          disabled={imageUploading}
+                          className="py-6 px-4 border-2 border-dashed border-border rounded-xl text-sm text-gray-500 hover:border-navy hover:text-navy transition-colors disabled:opacity-50"
+                        >
+                          {imageUploading ? "Laddar upp..." : "Ladda upp bild (max 10 MB)"}
+                        </button>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              </div>
 
-              {generated.areaSummary && (
-                <div className="rounded-xl border border-border/40 p-4 bg-muted/20">
-                  <p className="text-[11px] font-semibold text-gray-400 mb-1.5 tracking-[0.1em] uppercase">
-                    Områdesinformation (används i annonsen)
-                  </p>
-                  <p className="text-[13px] text-gray-600 leading-relaxed">{generated.areaSummary}</p>
-                </div>
-              )}
-
-              {(generated.lat !== 0 || generated.lng !== 0) && (
-                <div className="rounded-xl border border-border/60 overflow-hidden h-48">
-                  <ListingMap
-                    listings={
-                      [
-                        {
-                          id: "preview",
-                          title: generated.title,
-                          description: "",
-                          city: generated.city,
-                          address: generated.address,
-                          type: generated.type,
-                          category: generated.category,
-                          price: generated.price,
-                          size: generated.size,
-                          imageUrl: "",
-                          featured: false,
-                          createdAt: new Date().toISOString(),
-                          lat: generated.lat,
-                          lng: generated.lng,
-                          tags: generated.tags,
-                          contact: { name: "", email: "", phone: "" },
-                        },
-                      ] as Listing[]
+                <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-4">Så här ser annonsen ut för besökare</p>
+                <div className="rounded-2xl border border-border/60 overflow-hidden bg-muted/30">
+                  <ListingDetailContent
+                    listing={previewListing}
+                    showBackLink={false}
+                    compact
+                    contactSlot={
+                      <>
+                        <p className="text-[13px] text-gray-500 py-2">Kontaktknappar visas för besökare efter publicering.</p>
+                        <button
+                          type="button"
+                          onClick={() => downloadListingPdf(previewListing)}
+                          className="w-full py-3 px-4 border border-border/60 text-gray-600 text-center text-sm font-medium rounded-xl hover:bg-muted/50 hover:border-navy/20 hover:text-navy transition-colors flex items-center justify-center gap-2"
+                        >
+                          <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                          Ladda ner PDF
+                        </button>
+                      </>
                     }
-                    singleMarker
-                    center={[generated.lat, generated.lng]}
-                    zoom={14}
                   />
                 </div>
-              )}
-
-              <div className="rounded-2xl border border-border/60 overflow-hidden glow-light">
-                <div className="h-32 bg-gradient-to-br from-navy/[0.06] to-navy/[0.12] flex items-center justify-center overflow-hidden">
-                  {generated.imageUrl ? (
-                    /* eslint-disable-next-line @next/next/no-img-element */
-                    <img src={generated.imageUrl} alt="" className="h-full w-full object-cover" />
-                  ) : (
-                    <span className="text-[11px] font-semibold text-navy/25 tracking-[0.2em] uppercase">
-                      {categoryLabels[generated.category]}
-                    </span>
-                  )}
-                </div>
-                <div className="p-5">
-                  <h3 className="font-semibold text-navy text-[15px] mb-1.5">{generated.title || "Rubrik"}</h3>
-                  <p className="text-[12px] text-gray-400 mb-3">
-                    {generated.address}, {generated.city}
-                  </p>
-                  <div className="flex items-center justify-between pt-3 border-t border-border/40">
-                    <span className="text-[12px] text-gray-400">{generated.size} m²</span>
-                    <span className="text-base font-bold text-navy">{formatPrice(generated.price, generated.type)}</span>
-                  </div>
-                </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
         </div>
 
         <div className="flex items-center justify-between px-8 py-5 border-t border-border/40 bg-muted/30">
