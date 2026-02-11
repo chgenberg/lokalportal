@@ -233,11 +233,24 @@ export async function generateListingContent(
     .filter(Boolean)
     .join("\n");
 
-  const openai = new OpenAI({ apiKey: openaiApiKey, timeout: 20_000 });
+  const openai = new OpenAI({ apiKey: openaiApiKey, timeout: 25_000 });
+
+  const JSON_SCHEMA = {
+    type: "object" as const,
+    properties: {
+      title: { type: "string" as const },
+      description: { type: "string" as const },
+      tags: { type: "array" as const, items: { type: "string" as const } },
+    },
+    required: ["title", "description", "tags"] as const,
+    additionalProperties: false as const,
+  };
 
   let raw: string | undefined;
+
+  // Strategy 1: Responses API with gpt-5.2
   try {
-    // Use Responses API with gpt-5.2 (most capable frontier model)
+    console.log("[generate] Trying gpt-5.2 via Responses API...");
     const response = await openai.responses.create({
       model: "gpt-5.2",
       instructions: GPT_SYSTEM,
@@ -247,57 +260,60 @@ export async function generateListingContent(
           type: "json_schema",
           name: "listing",
           strict: true,
-          schema: {
-            type: "object",
-            properties: {
-              title: { type: "string", description: "Säljande rubrik, max 80 tecken" },
-              description: { type: "string", description: "Annonstext, 300-600 ord, flera stycken" },
-              tags: {
-                type: "array",
-                items: { type: "string" },
-                description: "Relevanta taggar, max 10",
-              },
-            },
-            required: ["title", "description", "tags"],
-            additionalProperties: false,
-          },
+          schema: JSON_SCHEMA,
         },
       },
     });
     raw = response.output_text?.trim();
-  } catch (primaryErr) {
-    // Fallback to gpt-4.1-mini if gpt-5.2 fails
-    console.warn("gpt-5.2 failed, falling back to gpt-4.1-mini:", primaryErr);
+    if (raw) console.log("[generate] gpt-5.2 succeeded");
+  } catch (err1: unknown) {
+    const msg = err1 instanceof Error ? err1.message : String(err1);
+    console.warn("[generate] gpt-5.2 Responses API failed:", msg);
+
+    // Strategy 2: Responses API with gpt-4.1-mini
     try {
-      const fallback = await openai.responses.create({
+      console.log("[generate] Trying gpt-4.1-mini via Responses API...");
+      const response2 = await openai.responses.create({
         model: "gpt-4.1-mini",
         instructions: GPT_SYSTEM,
         input: userContent,
         text: {
           format: {
             type: "json_schema",
-            name: "listing_fallback",
+            name: "listing_fb",
             strict: true,
-            schema: {
-              type: "object",
-              properties: {
-                title: { type: "string" },
-                description: { type: "string" },
-                tags: { type: "array", items: { type: "string" } },
-              },
-              required: ["title", "description", "tags"],
-              additionalProperties: false,
-            },
+            schema: JSON_SCHEMA,
           },
         },
       });
-      raw = fallback.output_text?.trim();
-    } catch (fallbackErr) {
-      console.error("gpt-4.1-mini also failed:", fallbackErr);
-      throw new Error("Kunde inte generera annons");
+      raw = response2.output_text?.trim();
+      if (raw) console.log("[generate] gpt-4.1-mini succeeded");
+    } catch (err2: unknown) {
+      const msg2 = err2 instanceof Error ? err2.message : String(err2);
+      console.warn("[generate] gpt-4.1-mini Responses API failed:", msg2);
+
+      // Strategy 3: Chat Completions API fallback (widest compatibility)
+      try {
+        console.log("[generate] Trying gpt-4o via Chat Completions API...");
+        const completion = await openai.chat.completions.create({
+          model: "gpt-4o",
+          messages: [
+            { role: "system", content: GPT_SYSTEM },
+            { role: "user", content: userContent },
+          ],
+          response_format: { type: "json_object" },
+          max_tokens: 1500,
+        });
+        raw = completion.choices[0]?.message?.content?.trim();
+        if (raw) console.log("[generate] gpt-4o Chat Completions succeeded");
+      } catch (err3: unknown) {
+        const msg3 = err3 instanceof Error ? err3.message : String(err3);
+        console.error("[generate] All strategies failed. Last error:", msg3);
+        throw new Error("Kunde inte generera annons – alla modeller misslyckades");
+      }
     }
   }
-  if (!raw) throw new Error("Kunde inte generera annons");
+  if (!raw) throw new Error("Kunde inte generera annons – tomt svar");
   const parsed = JSON.parse(raw) as { title?: string; description?: string; tags?: string[] };
   const title = String(parsed.title ?? "").trim().slice(0, 200) || "Kommersiell lokal";
   const description = String(parsed.description ?? "").trim().slice(0, 5000) || "";
