@@ -751,7 +751,7 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
                         <p className="text-[13px] text-gray-500 py-2">Kontaktknappar visas för besökare efter publicering.</p>
                         <button
                           type="button"
-                          onClick={() => downloadListingPdf(previewListing)}
+                          onClick={async () => { await downloadListingPdf(previewListing); }}
                           className="w-full py-3 px-4 border border-border/60 text-gray-600 text-center text-sm font-medium rounded-xl hover:bg-muted/50 hover:border-navy/20 hover:text-navy transition-colors flex items-center justify-center gap-2"
                         >
                           <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

@@ -61,11 +61,13 @@ export default function Header() {
     ? [
         { href: "/annonser", label: "Alla annonser" },
         { href: "/karta", label: "Karta" },
+        { href: "/skapa-annons", label: "Skapa PDF" },
       ]
     : [
         { href: "/annonser", label: "Alla annonser" },
         { href: "/karta", label: "Karta" },
         { href: "/kategorier", label: "Kategorier" },
+        { href: "/skapa-annons", label: "Skapa PDF" },
         { href: "/annonspaket", label: "Annonspaket" },
       ];
 

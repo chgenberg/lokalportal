@@ -119,3 +119,14 @@ model Favorite {
   @@index([userId])
   @@map("favorites")
 }
+
+model Lead {
+  id        String   @id @default(cuid())
+  email     String
+  name      String?
+  source    String   @default("pdf-generator")
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@map("leads")
+}

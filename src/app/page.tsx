@@ -1,9 +1,11 @@
+import Link from "next/link";
 import HeroSearch from "@/components/HeroSearch";
 import HeroStats from "@/components/HeroStats";
 import HeroCarousel from "@/components/HeroCarousel";
 import CategoriesSection from "@/components/CategoriesSection";
 import FeaturedListings from "@/components/FeaturedListings";
 import FeaturesSection from "@/components/FeaturesSection";
+import SocialProofSection from "@/components/SocialProofSection";
 import CTASection from "@/components/CTASection";
 
 export default function Home() {
@@ -35,7 +37,25 @@ export default function Home() {
 
       <CategoriesSection />
       <FeaturedListings />
+
+      <section className="py-20 bg-white border-y border-border/40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-gray-400 mb-3">Testa vårt AI-verktyg</p>
+          <h2 className="text-2xl md:text-3xl font-bold text-navy tracking-tight mb-3">Skapa en professionell annons på minuter</h2>
+          <p className="text-[13px] text-gray-500 max-w-lg mx-auto mb-8">
+            Ange din e-post och grunduppgifter – vår AI genererar en säljande annonstext som du laddar ner som PDF. Ingen registrering krävs.
+          </p>
+          <Link
+            href="/skapa-annons"
+            className="inline-flex items-center gap-2 px-8 py-3.5 bg-navy text-white text-sm font-semibold rounded-xl hover:bg-navy/90 transition-colors tracking-wide"
+          >
+            Skapa gratis annons-PDF
+          </Link>
+        </div>
+      </section>
+
       <FeaturesSection />
+      <SocialProofSection />
       <CTASection />
     </>
   );

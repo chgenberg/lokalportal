@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { checkRateLimit } from "@/lib/rateLimit";
+import prisma from "@/lib/db";
 import {
   VALID_TYPES,
   VALID_CATEGORIES,
@@ -8,23 +8,48 @@ import {
   type GenerateInput,
 } from "@/lib/listingGenerate";
 
-export async function POST(request: NextRequest) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) return NextResponse.json({ error: "Ej inloggad" }, { status: 401 });
-  if (session.user.role !== "landlord")
-    return NextResponse.json({ error: "Endast hyresvärdar kan skapa annonser" }, { status: 403 });
+const GENERATE_PUBLIC_MAX = 3;
+const GENERATE_PUBLIC_WINDOW_MS = 24 * 60 * 60 * 1000; // 24 h per email
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+export async function POST(request: NextRequest) {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey?.trim()) return NextResponse.json({ error: "OpenAI är inte konfigurerad" }, { status: 503 });
 
-  let body: unknown;
+  let body: Record<string, unknown>;
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: "Ogiltig JSON" }, { status: 400 });
   }
 
-  const { address, type, category, price, size, highlights = "", lat: bodyLat, lng: bodyLng } = body as Record<string, unknown>;
+  const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
+  if (!email || !EMAIL_REGEX.test(email)) {
+    return NextResponse.json({ error: "Giltig e-post krävs. Ange din e-post från föregående steg." }, { status: 400 });
+  }
+
+  const rateKey = `generate-public:${email}`;
+  const { limited, retryAfter } = checkRateLimit(rateKey, GENERATE_PUBLIC_MAX, GENERATE_PUBLIC_WINDOW_MS);
+  if (limited) {
+    return NextResponse.json(
+      { error: "Du har nått max antal genereringar (3 per dag). Försök igen imorgon." },
+      { status: 429, headers: retryAfter ? { "Retry-After": String(retryAfter) } : undefined }
+    );
+  }
+
+  const lead = await prisma.lead.findFirst({
+    where: { email },
+    orderBy: { createdAt: "desc" },
+  });
+  if (!lead) {
+    return NextResponse.json(
+      { error: "Ange din e-post på föregående steg först för att använda verktyget." },
+      { status: 403 }
+    );
+  }
+
+  const { address, type, category, price, size, highlights = "", lat: bodyLat, lng: bodyLng } = body;
   if (!address || typeof address !== "string" || !address.trim()) {
     return NextResponse.json({ error: "Adress krävs" }, { status: 400 });
   }
@@ -53,7 +78,7 @@ export async function POST(request: NextRequest) {
   }
 
   const input: GenerateInput = {
-    address: address.trim(),
+    address: (address as string).trim(),
     type: type as GenerateInput["type"],
     category: category as GenerateInput["category"],
     price: priceNum,
@@ -67,7 +92,7 @@ export async function POST(request: NextRequest) {
     const result = await generateListingContent(input, apiKey);
     return NextResponse.json(result);
   } catch (e) {
-    console.error("OpenAI generate error:", e);
+    console.error("OpenAI generate-public error:", e);
     return NextResponse.json(
       { error: "AI-generering misslyckades. Försök igen." },
       { status: 502 }

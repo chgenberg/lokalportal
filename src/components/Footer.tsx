@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import NewsletterSignup from "./NewsletterSignup";
 
 export default function Footer() {
   return (
@@ -16,9 +17,10 @@ export default function Footer() {
                 className="h-9 w-auto object-contain brightness-0 invert opacity-80"
               />
             </div>
-            <p className="text-[13px] text-white/30 leading-relaxed">
+            <p className="text-[13px] text-white/30 leading-relaxed mb-6">
               Sveriges ledande marknadsplats för kommersiella lokaler.
             </p>
+            <NewsletterSignup />
           </div>
 
           <div>
