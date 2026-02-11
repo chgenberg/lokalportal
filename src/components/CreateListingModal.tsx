@@ -40,6 +40,7 @@ interface GeneratedListing {
   price: number;
   size: number;
   areaSummary?: string;
+  imageUrl: string;
 }
 
 const initialInput: InputForm = {
@@ -61,6 +62,8 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [generateError, setGenerateError] = useState("");
+  const [imageUploading, setImageUploading] = useState(false);
+  const imageInputRef = useRef<HTMLInputElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -160,6 +163,7 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
         price: data.price ?? priceNum,
         size: data.size ?? sizeNum,
         areaSummary: data.areaSummary,
+        imageUrl: "",
       });
       setStep("preview");
     } catch {
@@ -173,8 +177,42 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
     setPublishError("");
   };
 
+  const handleImageUpload = async (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      setPublishError("Endast bilder (JPEG, PNG, GIF, WebP) stöds.");
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setPublishError("Bilden får max vara 10 MB.");
+      return;
+    }
+    setImageUploading(true);
+    setPublishError("");
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      const data = await res.json();
+      if (!res.ok) {
+        setPublishError(data.error || "Kunde inte ladda upp bilden.");
+        return;
+      }
+      if (data.url && generated) {
+        setGenerated((g) => (g ? { ...g, imageUrl: data.url } : g));
+      }
+    } catch {
+      setPublishError("Uppladdning misslyckades. Försök igen.");
+    } finally {
+      setImageUploading(false);
+    }
+  };
+
   const handlePublish = async () => {
     if (!session?.user || !generated) return;
+    if (!generated.imageUrl?.trim()) {
+      setPublishError("Ladda upp en bild innan du publicerar.");
+      return;
+    }
     setSubmitting(true);
     setPublishError("");
     try {
@@ -191,6 +229,7 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
           price: generated.price,
           size: generated.size,
           tags: generated.tags,
+          imageUrl: generated.imageUrl.trim(),
           lat: generated.lat,
           lng: generated.lng,
         }),
@@ -478,6 +517,50 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
 
               <div>
                 <label className="block text-[11px] font-semibold text-gray-400 mb-2 tracking-[0.1em] uppercase">
+                  Bild (obligatorisk)
+                </label>
+                <input
+                  ref={imageInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/gif,image/webp"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) handleImageUpload(f);
+                    e.target.value = "";
+                  }}
+                />
+                {generated.imageUrl ? (
+                  <div className="relative inline-block">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={generated.imageUrl}
+                      alt="Förhandsgranskning"
+                      className="h-40 w-full max-w-xs rounded-xl border border-border object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setGenerated((g) => (g ? { ...g, imageUrl: "" } : g))}
+                      className="absolute top-2 right-2 w-8 h-8 rounded-full bg-navy text-white flex items-center justify-center text-sm hover:bg-navy/90 transition-colors shadow"
+                      aria-label="Ta bort bild"
+                    >
+                      &times;
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => imageInputRef.current?.click()}
+                    disabled={imageUploading}
+                    className="w-full py-8 border-2 border-dashed border-border rounded-xl text-sm text-gray-500 hover:border-navy hover:text-navy transition-colors disabled:opacity-50"
+                  >
+                    {imageUploading ? "Laddar upp..." : "Klicka eller släpp en bild här (max 10 MB)"}
+                  </button>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-gray-400 mb-2 tracking-[0.1em] uppercase">
                   Egenskaper (klicka för att lägga till/ta bort)
                 </label>
                 <div className="flex flex-wrap gap-2">
@@ -548,10 +631,15 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
               )}
 
               <div className="rounded-2xl border border-border/60 overflow-hidden glow-light">
-                <div className="h-32 bg-gradient-to-br from-navy/[0.06] to-navy/[0.12] flex items-center justify-center">
-                  <span className="text-[11px] font-semibold text-navy/25 tracking-[0.2em] uppercase">
-                    {categoryLabels[generated.category]}
-                  </span>
+                <div className="h-32 bg-gradient-to-br from-navy/[0.06] to-navy/[0.12] flex items-center justify-center overflow-hidden">
+                  {generated.imageUrl ? (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img src={generated.imageUrl} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    <span className="text-[11px] font-semibold text-navy/25 tracking-[0.2em] uppercase">
+                      {categoryLabels[generated.category]}
+                    </span>
+                  )}
                 </div>
                 <div className="p-5">
                   <h3 className="font-semibold text-navy text-[15px] mb-1.5">{generated.title || "Rubrik"}</h3>
@@ -596,10 +684,10 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
               <button
                 type="button"
                 onClick={handlePublish}
-                disabled={submitting}
+                disabled={submitting || !generated?.imageUrl?.trim()}
                 className="btn-glow px-6 py-2.5 bg-navy text-white text-[13px] font-semibold rounded-xl tracking-wide disabled:opacity-50"
               >
-                {submitting ? "Publicerar..." : "Publicera annons"}
+                {submitting ? "Publicerar..." : generated?.imageUrl?.trim() ? "Publicera annons" : "Ladda upp bild först"}
               </button>
             )}
           </div>
