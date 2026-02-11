@@ -55,12 +55,19 @@ export default function Header() {
     setShowCreateModal(true);
   };
 
-  const navLinks = [
-    { href: "/annonser", label: "Alla annonser" },
-    { href: "/karta", label: "Karta" },
-    { href: "/kategorier", label: "Kategorier" },
-    { href: "/annonspaket", label: "Annonspaket" },
-  ];
+  const isLandlord = session?.user?.role === "landlord";
+
+  const navLinks = session?.user
+    ? [
+        { href: "/annonser", label: "Alla annonser" },
+        { href: "/karta", label: "Karta" },
+      ]
+    : [
+        { href: "/annonser", label: "Alla annonser" },
+        { href: "/karta", label: "Karta" },
+        { href: "/kategorier", label: "Kategorier" },
+        { href: "/annonspaket", label: "Annonspaket" },
+      ];
 
   return (
     <>
@@ -99,40 +106,23 @@ export default function Header() {
             <div className="hidden md:flex items-center gap-2">
               {session?.user ? (
                 <>
-                  <Link
-                    href="/dashboard/meddelanden"
-                    className="relative px-3 py-2 text-[13px] font-medium text-gray-500 hover:text-navy rounded-lg hover:bg-navy/[0.03] transition-all"
-                  >
-                    Meddelanden
-                    {unreadCount > 0 && (
-                      <span className="absolute -top-0.5 -right-0.5 w-[18px] h-[18px] bg-navy text-white text-[9px] font-bold rounded-full flex items-center justify-center">
-                        {unreadCount}
-                      </span>
-                    )}
-                  </Link>
+                  {isLandlord && (
+                    <button
+                      onClick={handleAnnonsera}
+                      className="btn-glow px-5 py-2 bg-navy text-white text-[13px] font-semibold rounded-lg"
+                    >
+                      Annonsera
+                    </button>
+                  )}
 
-                  <Link
-                    href="/dashboard"
-                    className="px-3 py-2 text-[13px] font-medium text-gray-500 hover:text-navy rounded-lg hover:bg-navy/[0.03] transition-all"
-                  >
-                    Dashboard
-                  </Link>
-
-                  <button
-                    onClick={handleAnnonsera}
-                    className="btn-glow px-5 py-2 bg-navy text-white text-[13px] font-semibold rounded-lg ml-1"
-                  >
-                    Annonsera
-                  </button>
-
-                  <div className="relative ml-1" ref={userMenuRef}>
+                  <div className="relative" ref={userMenuRef}>
                     <button
                       type="button"
                       onClick={() => setUserMenuOpen(!userMenuOpen)}
                       aria-expanded={userMenuOpen}
                       aria-haspopup="menu"
                       aria-label="Användarmenyn"
-                      className="flex items-center gap-2.5 pl-3 pr-2 py-1.5 rounded-full border border-border/60 hover:border-navy/20 hover:shadow-sm transition-all duration-200"
+                      className="relative flex items-center gap-2.5 pl-3 pr-2 py-1.5 rounded-full border border-border/60 hover:border-navy/20 hover:shadow-sm transition-all duration-200"
                     >
                       <span className="text-[13px] font-medium text-navy hidden lg:inline">
                         {session.user.name}
@@ -142,6 +132,11 @@ export default function Header() {
                           {session.user.name?.charAt(0).toUpperCase()}
                         </span>
                       </div>
+                      {unreadCount > 0 && (
+                        <span className="absolute -top-1 -right-1 w-[18px] h-[18px] bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+                          {unreadCount}
+                        </span>
+                      )}
                     </button>
 
                     {userMenuOpen && (
@@ -149,7 +144,7 @@ export default function Header() {
                         <div className="px-4 py-2.5 border-b border-border/60">
                           <p className="text-sm font-semibold text-navy">{session.user.name}</p>
                           <p className="text-[11px] text-gray-400 tracking-wide">
-                            {session.user.role === "landlord" ? "Hyresvärd" : "Hyresgäst"}
+                            {isLandlord ? "Hyresvärd" : "Hyresgäst"}
                           </p>
                         </div>
                         <Link href="/dashboard" onClick={() => setUserMenuOpen(false)} className="block px-4 py-2.5 text-[13px] text-gray-500 hover:text-navy hover:bg-navy/[0.03] transition-all">
@@ -161,18 +156,13 @@ export default function Header() {
                             <span className="w-5 h-5 bg-navy text-white text-[10px] font-bold rounded-full flex items-center justify-center">{unreadCount}</span>
                           )}
                         </Link>
-                        {session.user.role === "landlord" && (
-                          <button
-                            onClick={() => { setUserMenuOpen(false); setShowCreateModal(true); }}
-                            className="block w-full text-left px-4 py-2.5 text-[13px] text-gray-500 hover:text-navy hover:bg-navy/[0.03] transition-all"
-                          >
-                            Skapa annons
-                          </button>
-                        )}
+                        <Link href="/dashboard?tab=settings" onClick={() => setUserMenuOpen(false)} className="block px-4 py-2.5 text-[13px] text-gray-500 hover:text-navy hover:bg-navy/[0.03] transition-all">
+                          Inställningar
+                        </Link>
                         <div className="border-t border-border/60 mt-1 pt-1">
                           <button
                             onClick={() => { setUserMenuOpen(false); signOut({ callbackUrl: "/" }); }}
-                            className="block w-full text-left px-4 py-2.5 text-[13px] text-gray-400 hover:text-navy hover:bg-navy/[0.03] transition-all"
+                            className="block w-full text-left px-4 py-2.5 text-[13px] text-gray-400 hover:text-red-500 hover:bg-red-50/50 transition-all"
                           >
                             Logga ut
                           </button>
@@ -222,13 +212,15 @@ export default function Header() {
                       Meddelanden
                       {unreadCount > 0 && <span className="w-5 h-5 bg-navy text-white text-[10px] font-bold rounded-full flex items-center justify-center">{unreadCount}</span>}
                     </Link>
-                    <button
-                      onClick={() => { setMobileOpen(false); handleAnnonsera(); }}
-                      className="block w-full py-2.5 px-4 bg-navy text-white text-sm font-semibold rounded-lg text-center mt-2"
-                    >
-                      Annonsera
-                    </button>
-                    <button onClick={() => { setMobileOpen(false); signOut({ callbackUrl: "/" }); }} className="block w-full text-left py-2.5 px-4 text-sm font-medium text-gray-400 hover:text-navy hover:bg-navy/[0.03] rounded-lg transition-all mt-1">Logga ut</button>
+                    {isLandlord && (
+                      <button
+                        onClick={() => { setMobileOpen(false); handleAnnonsera(); }}
+                        className="block w-full py-2.5 px-4 bg-navy text-white text-sm font-semibold rounded-lg text-center mt-2"
+                      >
+                        Annonsera
+                      </button>
+                    )}
+                    <button onClick={() => { setMobileOpen(false); signOut({ callbackUrl: "/" }); }} className="block w-full text-left py-2.5 px-4 text-sm font-medium text-gray-400 hover:text-red-500 hover:bg-red-50/50 rounded-lg transition-all mt-1">Logga ut</button>
                   </>
                 ) : (
                   <>
