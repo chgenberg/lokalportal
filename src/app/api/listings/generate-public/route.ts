@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { checkRateLimit } from "@/lib/rateLimit";
 import prisma from "@/lib/db";
 import {
   VALID_TYPES,
@@ -9,9 +8,6 @@ import {
 } from "@/lib/listingGenerate";
 
 export const maxDuration = 30;
-
-const GENERATE_PUBLIC_MAX = 3;
-const GENERATE_PUBLIC_WINDOW_MS = 24 * 60 * 60 * 1000; // 24 h per email
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -29,15 +25,6 @@ export async function POST(request: NextRequest) {
   const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
   if (!email || !EMAIL_REGEX.test(email)) {
     return NextResponse.json({ error: "Giltig e-post krävs. Ange din e-post från föregående steg." }, { status: 400 });
-  }
-
-  const rateKey = `generate-public:${email}`;
-  const { limited, retryAfter } = checkRateLimit(rateKey, GENERATE_PUBLIC_MAX, GENERATE_PUBLIC_WINDOW_MS);
-  if (limited) {
-    return NextResponse.json(
-      { error: "Du har nått max antal genereringar (3 per dag). Försök igen imorgon." },
-      { status: 429, headers: retryAfter ? { "Retry-After": String(retryAfter) } : undefined }
-    );
   }
 
   const lead = await prisma.lead.findFirst({
