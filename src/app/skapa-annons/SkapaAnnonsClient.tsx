@@ -4,9 +4,8 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { availableTags, categoryLabels, allCategories, typeLabels } from "@/lib/types";
-import type { Listing } from "@/lib/types";
+import type { Listing, NearbyData, PriceContext, DemographicsData } from "@/lib/types";
 import { formatPriceInput, parsePriceInput } from "@/lib/formatPrice";
-import CustomSelect from "@/components/CustomSelect";
 import ListingDetailContent from "@/components/ListingDetailContent";
 import { downloadListingPdf } from "@/lib/pdf-listing";
 
@@ -49,6 +48,9 @@ interface GeneratedListing {
   size: number;
   areaSummary?: string;
   imageUrl: string;
+  nearby?: NearbyData;
+  priceContext?: PriceContext | null;
+  demographics?: DemographicsData | null;
 }
 
 const initialInput: InputForm = {
@@ -73,8 +75,11 @@ export default function SkapaAnnonsClient() {
   const [suggestionsLoading, setSuggestionsLoading] = useState(false);
   const [mapOpen, setMapOpen] = useState(false);
   const [selectedSuggestIndex, setSelectedSuggestIndex] = useState(-1);
+  const [imageUploading, setImageUploading] = useState(false);
+  const [imageError, setImageError] = useState("");
   const addressWrapperRef = useRef<HTMLDivElement>(null);
   const suggestDebounceRef = useRef<NodeJS.Timeout | null>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
 
   const updateInput = (partial: Partial<InputForm>) => {
     setInput((prev) => ({ ...prev, ...partial }));
@@ -155,6 +160,36 @@ export default function SkapaAnnonsClient() {
   const handleMapSelect = (displayName: string, lat: number, lng: number) => {
     updateInput({ address: displayName, lat, lng });
     setMapOpen(false);
+  };
+
+  const handleImageUpload = async (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      setImageError("Endast bilder (JPEG, PNG, GIF, WebP) stöds.");
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setImageError("Bilden får max vara 10 MB.");
+      return;
+    }
+    setImageUploading(true);
+    setImageError("");
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      const data = await res.json();
+      if (!res.ok) {
+        setImageError(data.error || "Kunde inte ladda upp bilden.");
+        return;
+      }
+      if (data.url && generated) {
+        setGenerated((g) => (g ? { ...g, imageUrl: data.url } : g));
+      }
+    } catch {
+      setImageError("Uppladdning misslyckades. Försök igen.");
+    } finally {
+      setImageUploading(false);
+    }
   };
 
   const handleSubmitEmail = async (e: React.FormEvent) => {
@@ -256,6 +291,9 @@ export default function SkapaAnnonsClient() {
         size: data.size ?? sizeNum,
         areaSummary: data.areaSummary,
         imageUrl: "",
+        nearby: data.nearby,
+        priceContext: data.priceContext ?? null,
+        demographics: data.demographics ?? null,
       });
       setStep("preview");
     } catch {
@@ -275,7 +313,7 @@ export default function SkapaAnnonsClient() {
 
   const handleDownloadPdf = async () => {
     if (!generated) return;
-    const previewListing: Listing = {
+    const previewListing = {
       id: "pdf-preview",
       title: generated.title,
       description: generated.description,
@@ -296,6 +334,9 @@ export default function SkapaAnnonsClient() {
         email: leadEmail.trim(),
         phone: "",
       },
+      nearby: generated.nearby,
+      priceContext: generated.priceContext ?? null,
+      demographics: generated.demographics ?? null,
     };
     await downloadListingPdf(previewListing);
   };
@@ -583,6 +624,46 @@ export default function SkapaAnnonsClient() {
                       );
                     })}
                   </div>
+                </div>
+                <div>
+                  <label className="block text-[11px] font-semibold text-gray-400 mb-1.5 tracking-[0.1em] uppercase">Bild (valfritt – visas i PDF)</label>
+                  <input
+                    ref={imageInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/gif,image/webp"
+                    className="hidden"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) handleImageUpload(f);
+                      e.target.value = "";
+                    }}
+                  />
+                  {imageError && (
+                    <p className="text-[12px] text-red-600 mb-2">{imageError}</p>
+                  )}
+                  {generated.imageUrl ? (
+                    <div className="relative inline-block">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={generated.imageUrl} alt="Förhandsgranskning" className="h-32 rounded-xl border border-border object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => setGenerated((g) => (g ? { ...g, imageUrl: "" } : g))}
+                        className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-navy text-white flex items-center justify-center text-sm hover:bg-navy/90 transition-colors shadow"
+                        aria-label="Ta bort bild"
+                      >
+                        &times;
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => imageInputRef.current?.click()}
+                      disabled={imageUploading}
+                      className="py-6 px-4 border-2 border-dashed border-border rounded-xl text-sm text-gray-500 hover:border-navy hover:text-navy transition-colors disabled:opacity-50"
+                    >
+                      {imageUploading ? "Laddar upp..." : "Ladda upp bild (max 10 MB)"}
+                    </button>
+                  )}
                 </div>
               </div>
 

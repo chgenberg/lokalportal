@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { availableTags, categoryLabels, allCategories, typeLabels } from "@/lib/types";
-import type { Listing } from "@/lib/types";
+import type { Listing, NearbyData, PriceContext, DemographicsData } from "@/lib/types";
 import { formatPriceInput, parsePriceInput } from "@/lib/formatPrice";
 import CustomSelect from "./CustomSelect";
 import ListingDetailContent from "./ListingDetailContent";
@@ -56,6 +56,9 @@ interface GeneratedListing {
   size: number;
   areaSummary?: string;
   imageUrl: string;
+  nearby?: NearbyData;
+  priceContext?: PriceContext | null;
+  demographics?: DemographicsData | null;
 }
 
 const initialInput: InputForm = {
@@ -275,6 +278,9 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
         size: data.size ?? sizeNum,
         areaSummary: data.areaSummary,
         imageUrl: "",
+        nearby: data.nearby,
+        priceContext: data.priceContext ?? null,
+        demographics: data.demographics ?? null,
       });
       setStep("preview");
     } catch {
@@ -652,7 +658,7 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
           )}
 
           {step === "preview" && generated && (() => {
-            const previewListing: Listing = {
+            const previewListing = {
               id: "preview",
               title: generated.title,
               description: generated.description,
@@ -673,6 +679,9 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
                 email: session?.user?.email ?? "",
                 phone: "",
               },
+              nearby: generated.nearby,
+              priceContext: generated.priceContext ?? null,
+              demographics: generated.demographics ?? null,
             };
             return (
               <div className="animate-fade-in">

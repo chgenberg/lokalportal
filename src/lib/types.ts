@@ -110,3 +110,29 @@ export interface SearchFilters {
   type: string;
   category: string;
 }
+
+/** Structured nearby amenities from Overpass API */
+export interface NearbyData {
+  restaurants: number;
+  shops: number;
+  gyms: number;
+  busStops: { count: number; nearest?: string };
+  trainStations: { count: number; nearest?: string };
+  parking: number;
+  schools: number;
+  healthcare: number;
+}
+
+/** Price context from comparable listings in same area */
+export interface PriceContext {
+  medianPrice: number;
+  count: number;
+  minPrice: number;
+  maxPrice: number;
+}
+
+/** Demographics from SCB */
+export interface DemographicsData {
+  population: number;
+  city: string;
+}

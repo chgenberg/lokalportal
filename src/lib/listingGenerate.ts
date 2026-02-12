@@ -1,4 +1,6 @@
 import OpenAI from "openai";
+import type { NearbyData, PriceContext, DemographicsData } from "@/lib/types";
+import prisma from "@/lib/db";
 
 const FETCH_TIMEOUT_MS = 5000;
 const NOMINATIM_USER_AGENT = "HittaYta.se/1.0 (commercial; listing generator)";
@@ -33,6 +35,9 @@ export interface GenerateResult {
   price: number;
   size: number;
   areaSummary?: string;
+  nearby: NearbyData;
+  priceContext: PriceContext | null;
+  demographics: DemographicsData | null;
 }
 
 interface NominatimResult {
@@ -111,14 +116,54 @@ async function geocodeAddress(address: string): Promise<GeocodeResult | null> {
 interface OverpassElement {
   type?: string;
   tags?: Record<string, string>;
+  lat?: number;
+  lon?: number;
 }
 
 interface OverpassResponse {
   elements?: OverpassElement[];
 }
 
-/** Fetch nearby amenities via Overpass API (OpenStreetMap). Returns a short summary string or null. */
-async function fetchNearbyAmenities(lat: number, lng: number): Promise<string | null> {
+function haversineDistance(
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number
+): number {
+  const R = 6371000; // metres
+  const φ1 = (lat1 * Math.PI) / 180;
+  const φ2 = (lat2 * Math.PI) / 180;
+  const Δφ = ((lat2 - lat1) * Math.PI) / 180;
+  const Δλ = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+    Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+function getName(el: OverpassElement): string {
+  const tags = el.tags ?? {};
+  return (
+    tags.name ||
+    tags["name:sv"] ||
+    tags.ref ||
+    ""
+  ).trim();
+}
+
+/** Fetch nearby amenities via Overpass API. Returns structured NearbyData. */
+async function fetchNearbyData(lat: number, lng: number): Promise<NearbyData> {
+  const empty: NearbyData = {
+    restaurants: 0,
+    shops: 0,
+    gyms: 0,
+    busStops: { count: 0 },
+    trainStations: { count: 0 },
+    parking: 0,
+    schools: 0,
+    healthcare: 0,
+  };
   const query = `
 [out:json][timeout:8];
 (
@@ -128,41 +173,99 @@ async function fetchNearbyAmenities(lat: number, lng: number): Promise<string | 
   node["highway"="bus_stop"](around:500,${lat},${lng});
   node["railway"="station"](around:1000,${lat},${lng});
   node["amenity"="parking"](around:300,${lat},${lng});
+  node["amenity"="school"](around:1000,${lat},${lng});
+  node["amenity"~"pharmacy|clinic|doctors"](around:500,${lat},${lng});
 );
 out;
   `.trim();
   try {
-    const res = await fetchWithTimeout("https://overpass-api.de/api/interpreter", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: `data=${encodeURIComponent(query)}`,
-    }, 8000);
-    if (!res.ok) return null;
+    const res = await fetchWithTimeout(
+      "https://overpass-api.de/api/interpreter",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: `data=${encodeURIComponent(query)}`,
+      },
+      8000
+    );
+    if (!res.ok) return empty;
     const data = (await res.json()) as OverpassResponse;
     const elements = data?.elements;
-    if (!Array.isArray(elements)) return null;
-    let restaurants = 0, shops = 0, gyms = 0, busStops = 0, stations = 0, parking = 0;
+    if (!Array.isArray(elements)) return empty;
+
+    const busStopElements: OverpassElement[] = [];
+    const stationElements: OverpassElement[] = [];
+    let restaurants = 0,
+      shops = 0,
+      gyms = 0,
+      busStops = 0,
+      stations = 0,
+      parking = 0,
+      schools = 0,
+      healthcare = 0;
+
     for (const el of elements) {
       const tags = el.tags ?? {};
-      if (tags.amenity && /restaurant|cafe|bar/i.test(String(tags.amenity))) restaurants++;
-      else if (tags.shop) shops++;
-      else if (tags.amenity && /gym|fitness_centre/i.test(String(tags.amenity))) gyms++;
-      else if (tags.highway === "bus_stop") busStops++;
-      else if (tags.railway === "station") stations++;
-      else if (tags.amenity === "parking") parking++;
+      if (tags.amenity && /restaurant|cafe|bar/i.test(String(tags.amenity))) {
+        restaurants++;
+      } else if (tags.shop) {
+        shops++;
+      } else if (tags.amenity && /gym|fitness_centre/i.test(String(tags.amenity))) {
+        gyms++;
+      } else if (tags.highway === "bus_stop") {
+        busStops++;
+        busStopElements.push(el);
+      } else if (tags.railway === "station") {
+        stations++;
+        stationElements.push(el);
+      } else if (tags.amenity === "parking") {
+        parking++;
+      } else if (tags.amenity === "school") {
+        schools++;
+      } else if (tags.amenity && /pharmacy|clinic|doctors/i.test(String(tags.amenity))) {
+        healthcare++;
+      }
     }
-    const parts: string[] = [];
-    if (restaurants > 0) parts.push(`${restaurants} restauranger/caféer`);
-    if (shops > 0) parts.push(`${shops} butiker`);
-    if (gyms > 0) parts.push(`${gyms} gym`);
-    if (busStops > 0) parts.push(`${busStops} busshållplatser`);
-    if (stations > 0) parts.push(`${stations} tågstation(er)`);
-    if (parking > 0) parts.push(`${parking} parkeringar`);
-    if (parts.length === 0) return null;
-    return `Inom 500 m: ${parts.join(", ")}.`;
+
+    const sortByDistance = (arr: OverpassElement[]) =>
+      arr
+        .filter((e) => e.lat != null && e.lon != null)
+        .sort((a, b) => {
+          const d1 = haversineDistance(lat, lng, a.lat!, a.lon!);
+          const d2 = haversineDistance(lat, lng, b.lat!, b.lon!);
+          return d1 - d2;
+        });
+    const nearestBus = sortByDistance(busStopElements)[0];
+    const nearestStation = sortByDistance(stationElements)[0];
+
+    return {
+      restaurants,
+      shops,
+      gyms,
+      busStops: { count: busStops, nearest: getName(nearestBus) || undefined },
+      trainStations: { count: stations, nearest: getName(nearestStation) || undefined },
+      parking,
+      schools,
+      healthcare,
+    };
   } catch {
-    return null;
+    return empty;
   }
+}
+
+/** Build summary string from NearbyData for GPT prompt */
+function nearbyToSummary(nearby: NearbyData): string | null {
+  const parts: string[] = [];
+  if (nearby.restaurants > 0) parts.push(`${nearby.restaurants} restauranger/caféer`);
+  if (nearby.shops > 0) parts.push(`${nearby.shops} butiker`);
+  if (nearby.gyms > 0) parts.push(`${nearby.gyms} gym`);
+  if (nearby.busStops.count > 0) parts.push(`${nearby.busStops.count} busshållplatser`);
+  if (nearby.trainStations.count > 0) parts.push(`${nearby.trainStations.count} tågstation(er)`);
+  if (nearby.parking > 0) parts.push(`${nearby.parking} parkeringar`);
+  if (nearby.schools > 0) parts.push(`${nearby.schools} skolor`);
+  if (nearby.healthcare > 0) parts.push(`${nearby.healthcare} vård/apotek`);
+  if (parts.length === 0) return null;
+  return `Inom 500 m: ${parts.join(", ")}.`;
 }
 
 /** SCB kommunkoder (4 siffror) för kommunspecifik befolkning. Normaliserad stadskey = lowercase, utan diakritika. */
@@ -233,10 +336,9 @@ function normalizeCityForLookup(name: string): string {
     .trim();
 }
 
-async function fetchScbDemographics(cityName: string): Promise<string | null> {
+async function fetchScbDemographics(cityName: string): Promise<DemographicsData | null> {
   const key = normalizeCityForLookup(cityName);
   const kommunCode = KOMMUN_CODES[key] ?? KOMMUN_CODES[key.replace(/\s+kommun$/i, "")] ?? "00";
-  const isNational = kommunCode === "00";
 
   try {
     const tableUrl =
@@ -263,9 +365,43 @@ async function fetchScbDemographics(cityName: string): Promise<string | null> {
     if (!pop) return null;
     const num = Number(pop);
     if (Number.isNaN(num)) return null;
-    if (isNational) return `Sverige har cirka ${num.toLocaleString("sv-SE")} invånare (2024).`;
     const label = cityName.trim() || "Kommunen";
-    return `${label} har cirka ${num.toLocaleString("sv-SE")} invånare (2024).`;
+    return { population: num, city: label };
+  } catch {
+    return null;
+  }
+}
+
+/** Fetch price context from comparable listings in same city/category/type */
+async function fetchAreaPriceContext(
+  city: string,
+  category: string,
+  type: string
+): Promise<PriceContext | null> {
+  try {
+    const primaryCategory = category.split(",")[0]?.trim() || category;
+    const listings = await prisma.listing.findMany({
+      where: {
+        city: { equals: city, mode: "insensitive" },
+        type,
+        category: { contains: primaryCategory },
+      },
+      select: { price: true },
+      take: 500,
+    });
+    if (listings.length < 2) return null;
+    const prices = listings.map((l) => l.price).sort((a, b) => a - b);
+    const mid = Math.floor(prices.length / 2);
+    const medianPrice =
+      prices.length % 2 === 0
+        ? Math.round((prices[mid - 1]! + prices[mid]!) / 2)
+        : prices[mid]!;
+    return {
+      medianPrice,
+      count: listings.length,
+      minPrice: prices[0]!,
+      maxPrice: prices[prices.length - 1]!,
+    };
   } catch {
     return null;
   }
@@ -324,12 +460,30 @@ export async function generateListingContent(
     lng = geocode?.lng ?? 0;
   }
 
-  const [demographicsSummary, amenitiesSummary] = await Promise.all([
+  const primaryCategory = category.split(",")[0]?.trim() || category;
+  const [demographics, nearby, priceContext] = await Promise.all([
     fetchScbDemographics(city),
-    lat && lng ? fetchNearbyAmenities(lat, lng) : Promise.resolve(null),
+    lat && lng ? fetchNearbyData(lat, lng) : Promise.resolve(null),
+    fetchAreaPriceContext(city, primaryCategory, type),
   ]);
 
-  const userContent = [
+  const nearbyResolved = nearby ?? {
+    restaurants: 0,
+    shops: 0,
+    gyms: 0,
+    busStops: { count: 0 },
+    trainStations: { count: 0 },
+    parking: 0,
+    schools: 0,
+    healthcare: 0,
+  };
+
+  const demographicsSummary = demographics
+    ? `${demographics.city} har cirka ${demographics.population.toLocaleString("sv-SE")} invånare (2024).`
+    : null;
+  const amenitiesSummary = nearbyToSummary(nearbyResolved);
+
+  const userContentParts = [
     `Adress: ${address.trim()}`,
     `Typ: ${typeLabel}`,
     `Kategori: ${categoryLabel}`,
@@ -339,9 +493,16 @@ export async function generateListingContent(
     geocode ? `Plats: ${geocode.displayName}` : "",
     demographicsSummary ? `Demografi: ${demographicsSummary}` : "",
     amenitiesSummary ? `Närliggande faciliteter: ${amenitiesSummary}` : "",
-  ]
-    .filter(Boolean)
-    .join("\n");
+  ];
+  if (priceContext && priceContext.count >= 2) {
+    userContentParts.push(
+      `Marknadsjämförelse: Medianpris i ${city} för liknande lokaler: ${priceContext.medianPrice.toLocaleString("sv-SE")} kr${type === "rent" ? "/mån" : ""}. Antal aktiva annonser: ${priceContext.count}. Prisspann: ${priceContext.minPrice.toLocaleString("sv-SE")}–${priceContext.maxPrice.toLocaleString("sv-SE")} kr.`
+    );
+  }
+  userContentParts.push(
+    `Använd exakt antal där det ges: ${nearbyResolved.restaurants} restauranger, ${nearbyResolved.shops} butiker, ${nearbyResolved.gyms} gym, ${nearbyResolved.busStops.count} busshållplatser, ${nearbyResolved.trainStations.count} tågstationer, ${nearbyResolved.parking} parkeringar, ${nearbyResolved.schools} skolor, ${nearbyResolved.healthcare} vård/apotek.`
+  );
+  const userContent = userContentParts.filter(Boolean).join("\n");
 
   const openai = new OpenAI({ apiKey: openaiApiKey, timeout: 25_000 });
 
@@ -447,5 +608,8 @@ export async function generateListingContent(
     price: Math.floor(priceNum),
     size: Math.floor(sizeNum),
     areaSummary: [demographicsSummary, amenitiesSummary].filter(Boolean).join(" ") || undefined,
+    nearby: nearbyResolved,
+    priceContext: priceContext ?? null,
+    demographics: demographics ?? null,
   };
 }
