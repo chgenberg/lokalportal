@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { checkRateLimit, getClientKey } from "@/lib/rateLimit";
 
 const NOMINATIM_USER_AGENT = "HittaYta.se/1.0 (commercial; address suggestions)";
+const MAX_QUERY_LENGTH = 500;
 const LIMIT = 8;
 
 export interface SuggestItem {
@@ -35,11 +37,21 @@ function buildShortAddress(
 }
 
 export async function GET(request: NextRequest) {
+  const key = `geocode-suggest:${getClientKey(request)}`;
+  const { limited, retryAfter } = checkRateLimit(key, 30);
+  if (limited) {
+    return NextResponse.json(
+      { suggestions: [], error: "För många förfrågningar" },
+      { status: 429, headers: retryAfter ? { "Retry-After": String(retryAfter) } : undefined }
+    );
+  }
+
   const { searchParams } = new URL(request.url);
   const q = searchParams.get("q")?.trim();
   if (!q || q.length < 3) {
     return NextResponse.json({ suggestions: [] });
   }
+  if (q.length > MAX_QUERY_LENGTH) return NextResponse.json({ suggestions: [] });
 
   const houseNumberFromQuery = extractHouseNumberFromQuery(q);
   const encoded = encodeURIComponent(q);

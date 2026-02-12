@@ -65,6 +65,16 @@ export default function KartaPage() {
             <div className="space-y-2">
               {loading
                 ? [...Array(5)].map((_, i) => <div key={i} className="p-3 rounded-xl bg-muted animate-pulse h-20" />)
+                : !error && listings.length === 0
+                ? (
+                    <div className="p-6 rounded-xl bg-muted/50 border border-border/40 text-center">
+                      <p className="text-sm text-gray-500 mb-2">Inga lokaler hittades</p>
+                      <p className="text-xs text-gray-400 mb-4">Använd sökning och filter för att hitta lokaler.</p>
+                      <Link href="/annonser" className="inline-block px-4 py-2 bg-navy text-white text-sm font-medium rounded-lg hover:bg-navy/90 transition-colors">
+                        Sök lokaler
+                      </Link>
+                    </div>
+                  )
                 : listings.map((listing) => (
                     <button
                       key={listing.id}

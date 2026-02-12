@@ -26,7 +26,6 @@ export default function RegisterPage() {
       const res = await fetch("/api/auth/register", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, password, name, role, phone }) });
       const data = await res.json();
       if (!res.ok) { setError(data.error || "Kunde inte skapa konto"); setStep("details"); return; }
-      await new Promise((resolve) => setTimeout(resolve, 1500));
       const result = await signIn("credentials", { email, password, redirect: false });
       if (result?.error) { router.push("/logga-in"); } else { router.push("/dashboard"); router.refresh(); }
     } catch { setError("Något gick fel. Försök igen."); setStep("details"); }
@@ -40,7 +39,7 @@ export default function RegisterPage() {
             <div className="w-12 h-12 rounded-full border-2 border-navy/20 border-t-navy animate-spin" />
           </div>
           <h1 className="text-xl font-bold text-navy mb-2 tracking-tight">Skapar ditt konto...</h1>
-          <p className="text-[13px] text-gray-400">Verifierar med BankID</p>
+          <p className="text-[13px] text-gray-400">Vänta medan kontot skapas...</p>
         </div>
       </div>
     );

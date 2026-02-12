@@ -9,9 +9,31 @@ import SocialProofSection from "@/components/SocialProofSection";
 import CTASection from "@/components/CTASection";
 import ScrollReveal from "@/components/ScrollReveal";
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://hittayta.se";
+
+const websiteJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "HittaYta.se",
+  url: siteUrl,
+  description: "Sveriges ledande marknadsplats för kommersiella lokaler.",
+  potentialAction: {
+    "@type": "SearchAction",
+    target: {
+      "@type": "EntryPoint",
+      urlTemplate: `${siteUrl}/annonser?search={search_term_string}`,
+    },
+    "query-input": "required name=search_term_string",
+  },
+};
+
 export default function Home() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
+      />
       <section className="relative overflow-hidden min-h-[520px] sm:min-h-[640px] md:min-h-[720px] flex items-center">
         <HeroCarousel />
 

@@ -6,6 +6,7 @@ import {
   generateListingContent,
   type GenerateInput,
 } from "@/lib/listingGenerate";
+import { checkRateLimit, getClientKey } from "@/lib/rateLimit";
 
 export const maxDuration = 30;
 
@@ -14,6 +15,15 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export async function POST(request: NextRequest) {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey?.trim()) return NextResponse.json({ error: "OpenAI är inte konfigurerad" }, { status: 503 });
+
+  const key = `generate-public:${getClientKey(request)}`;
+  const { limited, retryAfter } = checkRateLimit(key, 5);
+  if (limited) {
+    return NextResponse.json(
+      { error: "För många förfrågningar. Försök igen om en stund." },
+      { status: 429, headers: retryAfter ? { "Retry-After": String(retryAfter) } : undefined }
+    );
+  }
 
   let body: Record<string, unknown>;
   try {

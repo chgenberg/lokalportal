@@ -436,15 +436,21 @@ export default function SkapaAnnonsClient() {
                   placeholder="T.ex. Storgatan 12, Göteborg"
                   className="w-full px-4 py-3 bg-muted/50 rounded-xl text-sm border border-border/60 focus:border-navy/30 focus:bg-white outline-none transition-all"
                   autoComplete="off"
+                  role="combobox"
+                  aria-expanded={suggestionsOpen && suggestions.length > 0}
+                  aria-autocomplete="list"
+                  aria-controls="skapa-address-suggestions"
+                  aria-activedescendant={selectedSuggestIndex >= 0 ? `skapa-address-opt-${selectedSuggestIndex}` : undefined}
                 />
                 {suggestionsLoading && (
                   <div className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 border-2 border-navy/20 border-t-navy rounded-full animate-spin" />
                 )}
                 {suggestionsOpen && suggestions.length > 0 && (
-                  <ul className="absolute z-10 left-0 right-0 mt-1 py-1 bg-white border border-border/60 rounded-xl shadow-lg max-h-[50vh] sm:max-h-56 overflow-y-auto">
+                  <ul id="skapa-address-suggestions" role="listbox" className="absolute z-10 left-0 right-0 mt-1 py-1 bg-white border border-border/60 rounded-xl shadow-lg max-h-[50vh] sm:max-h-56 overflow-y-auto">
                     {suggestions.map((item, i) => (
                         <li
                           key={`${item.display_name}-${i}`}
+                          id={`skapa-address-opt-${i}`}
                           role="option"
                           aria-selected={i === selectedSuggestIndex}
                           className={`px-4 py-2.5 text-[13px] cursor-pointer transition-colors ${

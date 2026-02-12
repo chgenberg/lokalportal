@@ -1,6 +1,10 @@
 /**
  * Simple in-memory rate limiter. Use for low-traffic or single-instance apps.
  * For multi-instance production, use Redis or similar.
+ *
+ * When behind a trusted reverse proxy (e.g. Railway), set TRUST_PROXY=true so
+ * we use x-forwarded-for. The first (leftmost) IP is the client. Without
+ * TRUST_PROXY, forwarded headers can be spoofed by clients.
  */
 
 const store = new Map<string, { count: number; resetAt: number }>();
@@ -40,6 +44,9 @@ export function checkRateLimit(
 }
 
 export function getClientKey(request: Request): string {
+  if (process.env.TRUST_PROXY !== "true" && process.env.TRUST_PROXY !== "1") {
+    return "unknown";
+  }
   const forwarded = request.headers.get("x-forwarded-for");
   const ip = forwarded?.split(",")[0]?.trim() || request.headers.get("x-real-ip") || "unknown";
   return ip;

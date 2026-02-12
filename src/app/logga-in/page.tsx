@@ -10,7 +10,7 @@ function LoginContent() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callback") || "/dashboard";
 
-  const [step, setStep] = useState<"form" | "bankid" | "error">("form");
+  const [step, setStep] = useState<"form" | "loading" | "error">("form");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -21,22 +21,21 @@ function LoginContent() {
     e.preventDefault();
     setError("");
     setSubmitting(true);
-    setStep("bankid");
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    setStep("loading");
     const result = await signIn("credentials", { email, password, redirect: false });
     if (result?.error) { setStep("error"); setSubmitting(false); setError("Felaktig e-post eller lösenord"); }
     else { router.push(callbackUrl); router.refresh(); }
   };
 
-  if (step === "bankid") {
+  if (step === "loading") {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center px-4">
         <div className="w-full max-w-sm text-center animate-fade-in">
           <div className="w-20 h-20 mx-auto mb-8 rounded-full bg-navy/[0.03] border border-navy/10 shadow-sm flex items-center justify-center">
             <div className="w-12 h-12 rounded-full border-2 border-navy/20 border-t-navy animate-spin" />
           </div>
-          <h1 className="text-xl font-bold text-navy mb-2 tracking-tight">Startar BankID...</h1>
-          <p className="text-[13px] text-gray-400">Öppna BankID-appen på din enhet</p>
+          <h1 className="text-xl font-bold text-navy mb-2 tracking-tight">Loggar in...</h1>
+          <p className="text-[13px] text-gray-400">Vänta medan vi verifierar dina uppgifter</p>
         </div>
       </div>
     );

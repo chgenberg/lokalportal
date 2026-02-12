@@ -424,7 +424,7 @@ function DashboardContent() {
             <button type="button" onClick={cancelEdit} className="px-4 py-2.5 text-navy border border-border rounded-xl text-sm font-medium hover:bg-muted transition-colors">Avbryt</button>
           </div>
           <form onSubmit={handleSaveEdit} className="bg-white rounded-2xl border border-border p-6 space-y-5">
-            {editError && <div className="p-3 bg-navy/5 border border-navy/10 rounded-xl text-sm text-navy">{editError}</div>}
+            {editError && <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">{editError}</div>}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="sm:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Bild (valfritt)</label>
@@ -512,6 +512,7 @@ function DashboardContent() {
           });
 
     return (
+      <>
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <h1 className="text-2xl font-bold text-navy">Mina annonser</h1>
@@ -572,14 +573,7 @@ function DashboardContent() {
                       <span className="px-2.5 py-1 text-xs font-medium rounded-full bg-navy/10 text-navy">{typeLabels[listing.type]}</span>
                       <button type="button" onClick={() => renewListing(listing.id)} disabled={renewingId === listing.id} className="px-3 py-1.5 text-xs font-medium text-gray-600 border border-border rounded-lg hover:bg-muted transition-colors disabled:opacity-50" title="Förnya annons (visas längst upp)">{renewingId === listing.id ? "..." : "Förnya"}</button>
                       <button type="button" onClick={() => startEdit(listing)} className="px-3 py-1.5 text-xs font-medium text-navy border border-border rounded-lg hover:bg-muted transition-colors">Redigera</button>
-                      {deleteConfirmId === listing.id ? (
-                        <span className="flex items-center gap-1">
-                          <button type="button" onClick={() => deleteListing(listing.id)} className="px-3 py-1.5 text-xs font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50">Ta bort</button>
-                          <button type="button" onClick={() => setDeleteConfirmId(null)} className="px-3 py-1.5 text-xs text-gray-500">Avbryt</button>
-                        </span>
-                      ) : (
-                        <button type="button" onClick={() => setDeleteConfirmId(listing.id)} className="px-3 py-1.5 text-xs text-gray-500 hover:text-red-600 border border-border rounded-lg hover:border-red-200 transition-colors">Ta bort</button>
-                      )}
+                      <button type="button" onClick={() => setDeleteConfirmId(listing.id)} className="px-3 py-1.5 text-xs text-gray-500 hover:text-red-600 border border-border rounded-lg hover:border-red-200 transition-colors">Ta bort</button>
                     </div>
                   </div>
                 </div>
@@ -588,6 +582,40 @@ function DashboardContent() {
           </div>
         )}
       </div>
+      {deleteConfirmId && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          onClick={() => setDeleteConfirmId(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="delete-modal-title"
+        >
+          <div
+            className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 id="delete-modal-title" className="font-semibold text-navy mb-2">Är du säker?</h2>
+            <p className="text-sm text-gray-500 mb-6">Annonsen tas bort permanent.</p>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => setDeleteConfirmId(null)}
+                className="flex-1 py-2.5 border border-border rounded-xl text-sm font-medium text-gray-600 hover:bg-muted transition-colors"
+              >
+                Avbryt
+              </button>
+              <button
+                type="button"
+                onClick={() => deleteListing(deleteConfirmId)}
+                className="flex-1 py-2.5 bg-red-600 text-white rounded-xl text-sm font-semibold hover:bg-red-700 transition-colors"
+              >
+                Ta bort
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      </>
     );
   }
 
@@ -663,7 +691,7 @@ function DashboardContent() {
       <div className="space-y-6">
         <h1 className="text-2xl font-bold text-navy">Skapa ny annons</h1>
         <form onSubmit={handleCreateListing} className="bg-white rounded-2xl border border-border p-6 space-y-5">
-          {createError && <div className="p-3 bg-navy/5 border border-navy/10 rounded-xl text-sm text-navy">{createError}</div>}
+          {createError && <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">{createError}</div>}
           {createSuccess && <div className="p-3 bg-navy/5 border border-navy/10 rounded-xl text-sm text-navy">Annons skapad! Du kan se den under &quot;Mina annonser&quot;.</div>}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

@@ -503,8 +503,11 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
                       className="w-full px-4 py-3 bg-muted/50 rounded-xl text-sm border border-border/60 focus:border-navy/30 focus:bg-white outline-none transition-all"
                       autoFocus
                       autoComplete="off"
+                      role="combobox"
                       aria-autocomplete="list"
-                      aria-expanded={suggestionsOpen}
+                      aria-expanded={suggestionsOpen && suggestions.length > 0}
+                      aria-controls="create-address-suggestions"
+                      aria-activedescendant={selectedSuggestIndex >= 0 ? `create-address-opt-${selectedSuggestIndex}` : undefined}
                     />
                     {suggestionsLoading && (
                       <div className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 border-2 border-navy/20 border-t-navy rounded-full animate-spin" />
@@ -512,12 +515,14 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
                   </div>
                   {suggestionsOpen && suggestions.length > 0 && (
                     <ul
-                      className="absolute z-10 left-0 right-0 mt-1 py-1 bg-white border border-border/60 rounded-xl shadow-lg max-h-56 overflow-y-auto"
+                      id="create-address-suggestions"
                       role="listbox"
+                      className="absolute z-10 left-0 right-0 mt-1 py-1 bg-white border border-border/60 rounded-xl shadow-lg max-h-56 overflow-y-auto"
                     >
                       {suggestions.map((item, i) => (
                         <li
                           key={`${item.display_name}-${i}`}
+                          id={`create-address-opt-${i}`}
                           role="option"
                           aria-selected={i === selectedSuggestIndex}
                           className={`px-4 py-2.5 text-[13px] cursor-pointer transition-colors ${

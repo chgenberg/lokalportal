@@ -38,6 +38,47 @@ const MIME_TO_EXT: Record<string, string> = {
   "text/csv": ".csv",
 };
 
+/** Magic bytes (hex) for MIME verification. Only verify when client MIME is in this map. */
+const MIME_MAGIC: Record<string, (buf: Buffer) => boolean> = {
+  "image/jpeg": (b) => b.length >= 3 && b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff,
+  "image/png": (b) =>
+    b.length >= 8 &&
+    b[0] === 0x89 &&
+    b[1] === 0x50 &&
+    b[2] === 0x4e &&
+    b[3] === 0x47 &&
+    b[4] === 0x0d &&
+    b[5] === 0x0a &&
+    b[6] === 0x1a &&
+    b[7] === 0x0a,
+  "image/gif": (b) =>
+    b.length >= 6 &&
+    b[0] === 0x47 &&
+    b[1] === 0x49 &&
+    b[2] === 0x46 &&
+    b[3] === 0x38 &&
+    (b[4] === 0x37 || b[4] === 0x39) &&
+    b[5] === 0x61,
+  "image/webp": (b) =>
+    b.length >= 12 &&
+    b[0] === 0x52 &&
+    b[1] === 0x49 &&
+    b[2] === 0x46 &&
+    b[3] === 0x46 &&
+    b[8] === 0x57 &&
+    b[9] === 0x45 &&
+    b[10] === 0x42 &&
+    b[11] === 0x50,
+  "application/pdf": (b) =>
+    b.length >= 4 && b[0] === 0x25 && b[1] === 0x50 && b[2] === 0x44 && b[3] === 0x46,
+};
+
+function verifyFileContent(mime: string, buffer: Buffer): boolean {
+  const checker = MIME_MAGIC[mime];
+  if (!checker) return true;
+  return checker(buffer);
+}
+
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user) {
@@ -66,13 +107,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const buffer = Buffer.from(await file.arrayBuffer());
+    if (!verifyFileContent(file.type, buffer)) {
+      return NextResponse.json(
+        { error: "Filens innehåll matchar inte den angivna filtypen." },
+        { status: 400 }
+      );
+    }
+
     const ext = MIME_TO_EXT[file.type] ?? ".bin";
     const uniqueName = `${randomUUID()}${ext}`;
     const uploadsDir = path.join(process.cwd(), "uploads");
 
     await mkdir(uploadsDir, { recursive: true });
 
-    const buffer = Buffer.from(await file.arrayBuffer());
     const filePath = path.join(uploadsDir, uniqueName);
     await writeFile(filePath, buffer);
 

@@ -137,3 +137,25 @@ html {
   box-shadow: 0 4px 14px rgba(10, 22, 40, 0.08);
   transform: translateY(-4px);
 }
+
+/* Respect user preference to reduce motion */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in-up,
+  .animate-slide-up,
+  .animate-fade-in,
+  .animate-slide-down,
+  .animate-scale-in {
+    animation: none;
+  }
+  .shimmer {
+    animation: none;
+    opacity: 0.6;
+  }
+  .btn-glow:hover,
+  .card-glow:hover {
+    transform: none;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+}

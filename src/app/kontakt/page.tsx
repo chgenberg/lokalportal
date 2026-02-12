@@ -13,6 +13,7 @@ type FormState = {
 export default function KontaktPage() {
   const [form, setForm] = useState<FormState>({ name: "", email: "", subject: "", message: "" });
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [errorMessage, setErrorMessage] = useState<string>("");
 
   const isValid = form.name.trim() && form.email.trim() && form.subject.trim() && form.message.trim();
 
@@ -21,16 +22,23 @@ export default function KontaktPage() {
     if (!isValid) return;
 
     setStatus("sending");
+    setErrorMessage("");
     try {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
+      if (res.status === 429) {
+        setErrorMessage("Du har skickat för många meddelanden. Försök igen om en stund.");
+        setStatus("error");
+        return;
+      }
       if (!res.ok) throw new Error("Något gick fel");
       setStatus("sent");
       setForm({ name: "", email: "", subject: "", message: "" });
     } catch {
+      setErrorMessage("");
       setStatus("error");
     }
   };
@@ -198,7 +206,9 @@ export default function KontaktPage() {
                   {status === "error" && (
                     <div role="alert" className="bg-red-50 border border-red-200 rounded-xl p-4">
                       <p className="text-[13px] text-red-600">
-                        Något gick fel. Thomas skyller på servern. Försök igen eller mejla direkt till <a href="mailto:info@hittayta.se" className="underline">info@hittayta.se</a>.
+                        {errorMessage || (
+                          <>Något gick fel. Thomas skyller på servern. Försök igen eller mejla direkt till <a href="mailto:info@hittayta.se" className="underline">info@hittayta.se</a>.</>
+                        )}
                       </p>
                     </div>
                   )}

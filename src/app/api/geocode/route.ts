@@ -1,11 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
+import { checkRateLimit, getClientKey } from "@/lib/rateLimit";
 
 const NOMINATIM_USER_AGENT = "HittaYta.se/1.0 (commercial; geocode)";
+const MAX_QUERY_LENGTH = 500;
 
 export async function GET(request: NextRequest) {
+  const key = `geocode:${getClientKey(request)}`;
+  const { limited, retryAfter } = checkRateLimit(key, 30);
+  if (limited) {
+    return NextResponse.json(
+      { error: "För många förfrågningar. Försök igen senare." },
+      { status: 429, headers: retryAfter ? { "Retry-After": String(retryAfter) } : undefined }
+    );
+  }
+
   const { searchParams } = new URL(request.url);
   const q = searchParams.get("q")?.trim();
   if (!q) return NextResponse.json({ error: "q krävs" }, { status: 400 });
+  if (q.length > MAX_QUERY_LENGTH) return NextResponse.json({ error: "Sökningen är för lång" }, { status: 400 });
 
   const encoded = encodeURIComponent(q);
   const url = `https://nominatim.openstreetmap.org/search?q=${encoded}&format=json&limit=1&addressdetails=1`;

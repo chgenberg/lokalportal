@@ -10,7 +10,7 @@ const inter = Inter({
   subsets: ["latin", "latin-ext"],
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://ledigyta.se";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://hittayta.se";
 
 export const metadata: Metadata = {
   title: "Hittayta.se – Hitta rätt lokal snabbare",
@@ -23,11 +23,13 @@ export const metadata: Metadata = {
     siteName: "Hittayta.se",
     locale: "sv_SE",
     type: "website",
+    images: [{ url: "/logohittayta.jpeg", width: 1200, height: 630, alt: "HittaYta.se – Hitta rätt lokal snabbare" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Hittayta.se – Hitta rätt lokal snabbare",
     description: "Sveriges ledande marknadsplats för kommersiella lokaler.",
+    images: [{ url: "/logohittayta.jpeg" }],
   },
   metadataBase: new URL(siteUrl),
 };
@@ -48,7 +50,7 @@ const organizationJsonLd = {
   contactPoint: {
     "@type": "ContactPoint",
     contactType: "customer service",
-    email: "info@ledigyta.se",
+    email: "info@hittayta.se",
   },
 };
 
@@ -65,8 +67,14 @@ export default function RootLayout({
             type="application/ld+json"
             dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
           />
+          <a
+            href="#main-content"
+            className="absolute -top-16 left-4 z-[100] px-4 py-2 bg-navy text-white rounded-lg text-sm font-medium transition-all focus:top-4 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-white"
+          >
+            Hoppa till innehåll
+          </a>
           <Header />
-          <main className="min-h-screen pt-16 w-full min-w-0 overflow-x-hidden">{children}</main>
+          <main id="main-content" className="min-h-screen pt-16 w-full min-w-0 overflow-x-hidden">{children}</main>
           <Footer />
         </SessionProvider>
       </body>

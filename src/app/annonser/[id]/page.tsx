@@ -108,19 +108,28 @@ export default function ListingDetailPage() {
     );
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://ledigyta.se";
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://hittayta.se";
   const listingJsonLd = {
     "@context": "https://schema.org",
-    "@type": "Product",
+    "@type": "RealEstateListing",
     name: listing.title,
     description: listing.description,
-    category: formatCategories(listing.category),
-    offers: { "@type": "Offer", price: listing.price, priceCurrency: "SEK" },
-    additionalProperty: [
-      { "@type": "PropertyValue", name: "Storlek", value: `${listing.size} m²` },
-      { "@type": "PropertyValue", name: "Adress", value: `${listing.address}, ${listing.city}` },
-    ],
     url: `${baseUrl}/annonser/${listing.id}`,
+    datePosted: listing.createdAt,
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: listing.address,
+      addressLocality: listing.city,
+    },
+    offers: { "@type": "Offer", price: listing.price, priceCurrency: "SEK" },
+    floorSize: {
+      "@type": "QuantitativeValue",
+      value: listing.size,
+      unitCode: "MTK",
+    },
+    additionalProperty: [
+      { "@type": "PropertyValue", name: "Kategori", value: formatCategories(listing.category) },
+    ],
   };
   const jsonLdStr = JSON.stringify(listingJsonLd).replace(/<\/script/gi, "<\\/script").replace(/<\//g, "<\\/");
 
