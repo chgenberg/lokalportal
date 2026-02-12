@@ -7,6 +7,7 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { availableTags, categoryLabels, typeLabels } from "@/lib/types";
 import type { Listing } from "@/lib/types";
+import { formatPriceInput, parsePriceInput } from "@/lib/formatPrice";
 import CustomSelect from "./CustomSelect";
 import ListingDetailContent from "./ListingDetailContent";
 import { downloadListingPdf } from "@/lib/pdf-listing";
@@ -582,11 +583,11 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
                       Pris {input.type === "sale" ? "(kr)" : "(kr/mån)"}
                     </label>
                     <input
-                      type="number"
-                      value={input.price}
-                      onChange={(e) => updateInput({ price: e.target.value })}
-                      placeholder={input.type === "sale" ? "3500000" : "25000"}
-                      min="0"
+                      type="text"
+                      inputMode="numeric"
+                      value={formatPriceInput(input.price)}
+                      onChange={(e) => updateInput({ price: parsePriceInput(e.target.value) })}
+                      placeholder={input.type === "sale" ? "3 500 000" : "25 000"}
                       className="w-full px-4 py-3 bg-muted/50 rounded-xl text-sm border border-border/60 focus:border-navy/30 focus:bg-white outline-none transition-all"
                     />
                   </div>

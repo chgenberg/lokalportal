@@ -10,7 +10,7 @@ import PlaceholderImage from "@/components/PlaceholderImage";
 const ListingMap = lazy(() => import("@/components/ListingMap"));
 
 function formatPrice(price: number, type: string) {
-  return type === "sale" ? `${(price / 1_000_000).toFixed(1)} mkr` : `${price.toLocaleString("sv-SE")} kr/mån`;
+  return `${price.toLocaleString("sv-SE")} ${type === "sale" ? "kr" : "kr/mån"}`;
 }
 
 interface ListingDetailContentProps {

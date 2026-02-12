@@ -7,6 +7,7 @@ import Link from "next/link";
 import Image from "next/image";
 import type { Listing } from "@/lib/types";
 import { categoryLabels, typeLabels, availableTags } from "@/lib/types";
+import { formatPrice, formatPriceInput, parsePriceInput } from "@/lib/formatPrice";
 import CustomSelect from "@/components/CustomSelect";
 import ListingCard from "@/components/ListingCard";
 import PlaceholderImage from "@/components/PlaceholderImage";
@@ -261,7 +262,7 @@ function DashboardContent() {
     } catch { /* */ } finally { setRenewingId(null); }
   };
 
-  const formatPrice = (price: number, type: string) => type === "sale" ? `${(price / 1000000).toFixed(1)} mkr` : `${price.toLocaleString("sv-SE")} kr/mån`;
+  // formatPrice imported from @/lib/formatPrice
 
   function formatRelativeTime(iso: string): string {
     const d = new Date(iso);
@@ -453,7 +454,7 @@ function DashboardContent() {
               <CustomSelect label="Kategori" value={editForm.category} onChange={(v) => setEditForm((p) => (p ? { ...p, category: v as "butik" | "kontor" | "lager" | "ovrigt" } : p))} options={Object.entries(categoryLabels).map(([k, v]) => ({ value: k, label: v }))} />
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Pris (kr)</label>
-                <input type="number" value={editForm.price} onChange={(e) => setEditForm((p) => (p ? { ...p, price: e.target.value } : p))} required min="0" className="w-full px-4 py-3 bg-muted rounded-xl text-sm border border-border focus:border-navy outline-none" />
+                <input type="text" inputMode="numeric" value={formatPriceInput(editForm.price)} onChange={(e) => setEditForm((p) => (p ? { ...p, price: parsePriceInput(e.target.value) } : p))} required className="w-full px-4 py-3 bg-muted rounded-xl text-sm border border-border focus:border-navy outline-none" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Storlek (m²)</label>
@@ -703,7 +704,7 @@ function DashboardContent() {
             />
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Pris (kr)</label>
-              <input type="number" value={createForm.price} onChange={(e) => setCreateForm((p) => ({ ...p, price: e.target.value }))} required min="0" className="w-full px-4 py-3 bg-muted rounded-xl text-sm border border-border focus:border-navy outline-none" placeholder={createForm.type === "rent" ? "kr/månad" : "Totalpris"} />
+              <input type="text" inputMode="numeric" value={formatPriceInput(createForm.price)} onChange={(e) => setCreateForm((p) => ({ ...p, price: parsePriceInput(e.target.value) }))} required className="w-full px-4 py-3 bg-muted rounded-xl text-sm border border-border focus:border-navy outline-none" placeholder={createForm.type === "rent" ? "25 000" : "3 500 000"} />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Storlek (m²)</label>

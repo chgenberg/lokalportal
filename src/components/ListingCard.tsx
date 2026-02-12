@@ -13,9 +13,8 @@ interface ListingCardProps {
 }
 
 export default function ListingCard({ listing, favorited: initialFavorited }: ListingCardProps) {
-  const formatPrice = (price: number, type: string) => {
-    if (type === "sale") return `${(price / 1000000).toFixed(1)} mkr`;
-    return `${price.toLocaleString("sv-SE")} kr/mån`;
+  const formatPriceDisplay = (price: number, type: string) => {
+    return price.toLocaleString("sv-SE") + (type === "sale" ? " kr" : " kr/mån");
   };
 
   const hasImage = listing.imageUrl && listing.imageUrl.trim() !== "";
@@ -64,7 +63,7 @@ export default function ListingCard({ listing, favorited: initialFavorited }: Li
           {/* Price overlay on hover */}
           <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-1 group-hover:translate-y-0">
             <span className="px-3 py-1.5 text-sm font-bold text-white bg-navy/90 rounded-lg backdrop-blur-sm">
-              {formatPrice(listing.price, listing.type)}
+              {formatPriceDisplay(listing.price, listing.type)}
             </span>
           </div>
         </div>
@@ -86,7 +85,7 @@ export default function ListingCard({ listing, favorited: initialFavorited }: Li
                 <span className="text-[11px] text-navy/30 tracking-wide">{listing.tags[0]}</span>
               )}
             </div>
-            <span className="text-base font-bold text-navy tracking-tight">{formatPrice(listing.price, listing.type)}</span>
+            <span className="text-base font-bold text-navy tracking-tight">{formatPriceDisplay(listing.price, listing.type)}</span>
           </div>
         </div>
       </div>
