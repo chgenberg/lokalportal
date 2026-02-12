@@ -118,6 +118,7 @@ interface OverpassElement {
   tags?: Record<string, string>;
   lat?: number;
   lon?: number;
+  center?: { lat: number; lon: number };
 }
 
 interface OverpassResponse {
@@ -152,7 +153,9 @@ function getName(el: OverpassElement): string {
   ).trim();
 }
 
-/** Fetch nearby amenities via Overpass API. Returns structured NearbyData. */
+/** Fetch nearby amenities via Overpass API. Returns structured NearbyData.
+ * Uses both node and way (many POIs are mapped as buildings/areas in OSM).
+ * Radii: 1000-1500m for better coverage in suburbs. */
 async function fetchNearbyData(lat: number, lng: number): Promise<NearbyData> {
   const empty: NearbyData = {
     restaurants: 0,
@@ -164,19 +167,30 @@ async function fetchNearbyData(lat: number, lng: number): Promise<NearbyData> {
     schools: 0,
     healthcare: 0,
   };
+  const r1 = 1000;  // 1 km for most POIs
+  const r2 = 1500;  // 1.5 km for schools, transport
   const query = `
-[out:json][timeout:8];
+[out:json][timeout:15];
 (
-  node["amenity"~"restaurant|cafe|bar"](around:500,${lat},${lng});
-  node["shop"](around:500,${lat},${lng});
-  node["amenity"~"gym|fitness_centre"](around:500,${lat},${lng});
-  node["highway"="bus_stop"](around:500,${lat},${lng});
-  node["railway"="station"](around:1000,${lat},${lng});
-  node["amenity"="parking"](around:300,${lat},${lng});
-  node["amenity"="school"](around:1000,${lat},${lng});
-  node["amenity"~"pharmacy|clinic|doctors"](around:500,${lat},${lng});
+  node["amenity"~"restaurant|cafe|bar"](around:${r1},${lat},${lng});
+  way["amenity"~"restaurant|cafe|bar"](around:${r1},${lat},${lng});
+  node["shop"](around:${r1},${lat},${lng});
+  way["shop"](around:${r1},${lat},${lng});
+  node["amenity"~"gym|fitness_centre|fitness_center"](around:${r1},${lat},${lng});
+  way["amenity"~"gym|fitness_centre|fitness_center"](around:${r1},${lat},${lng});
+  node["highway"="bus_stop"](around:${r2},${lat},${lng});
+  node["public_transport"="stop_position"]["bus"="yes"](around:${r2},${lat},${lng});
+  node["railway"="station"](around:${r2},${lat},${lng});
+  way["railway"="station"](around:${r2},${lat},${lng});
+  node["amenity"="parking"](around:${r1},${lat},${lng});
+  way["amenity"="parking"](around:${r1},${lat},${lng});
+  node["amenity"~"school|university|college|kindergarten"](around:${r2},${lat},${lng});
+  way["amenity"~"school|university|college|kindergarten"](around:${r2},${lat},${lng});
+  way["building"="school"](around:${r2},${lat},${lng});
+  node["amenity"~"pharmacy|clinic|doctors|hospital"](around:${r1},${lat},${lng});
+  way["amenity"~"pharmacy|clinic|doctors|hospital"](around:${r1},${lat},${lng});
 );
-out;
+out center;
   `.trim();
   try {
     const res = await fetchWithTimeout(
@@ -186,7 +200,7 @@ out;
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: `data=${encodeURIComponent(query)}`,
       },
-      8000
+      12000
     );
     if (!res.ok) return empty;
     const data = (await res.json()) as OverpassResponse;
@@ -210,9 +224,9 @@ out;
         restaurants++;
       } else if (tags.shop) {
         shops++;
-      } else if (tags.amenity && /gym|fitness_centre/i.test(String(tags.amenity))) {
+      } else if (tags.amenity && /gym|fitness_centre|fitness_center/i.test(String(tags.amenity))) {
         gyms++;
-      } else if (tags.highway === "bus_stop") {
+      } else if (tags.highway === "bus_stop" || (tags.public_transport === "stop_position" && tags.bus === "yes")) {
         busStops++;
         busStopElements.push(el);
       } else if (tags.railway === "station") {
@@ -220,21 +234,28 @@ out;
         stationElements.push(el);
       } else if (tags.amenity === "parking") {
         parking++;
-      } else if (tags.amenity === "school") {
+      } else if ((tags.amenity && /school|university|college|kindergarten/i.test(String(tags.amenity))) || tags.building === "school") {
         schools++;
-      } else if (tags.amenity && /pharmacy|clinic|doctors/i.test(String(tags.amenity))) {
+      } else if (tags.amenity && /pharmacy|clinic|doctors|hospital/i.test(String(tags.amenity))) {
         healthcare++;
       }
     }
 
+    const getCoords = (e: OverpassElement): { lat: number; lng: number } | null => {
+      if (e.lat != null && e.lon != null) return { lat: e.lat, lng: e.lon };
+      if (e.center?.lat != null && e.center?.lon != null) return { lat: e.center.lat, lng: e.center.lon };
+      return null;
+    };
     const sortByDistance = (arr: OverpassElement[]) =>
       arr
-        .filter((e) => e.lat != null && e.lon != null)
+        .map((e) => ({ el: e, coords: getCoords(e) }))
+        .filter((x): x is { el: OverpassElement; coords: { lat: number; lng: number } } => x.coords != null)
         .sort((a, b) => {
-          const d1 = haversineDistance(lat, lng, a.lat!, a.lon!);
-          const d2 = haversineDistance(lat, lng, b.lat!, b.lon!);
+          const d1 = haversineDistance(lat, lng, a.coords.lat, a.coords.lng);
+          const d2 = haversineDistance(lat, lng, b.coords.lat, b.coords.lng);
           return d1 - d2;
-        });
+        })
+        .map((x) => x.el);
     const nearestBus = sortByDistance(busStopElements)[0];
     const nearestStation = sortByDistance(stationElements)[0];
 
@@ -499,9 +520,24 @@ export async function generateListingContent(
       `Marknadsjämförelse: Medianpris i ${city} för liknande lokaler: ${priceContext.medianPrice.toLocaleString("sv-SE")} kr${type === "rent" ? "/mån" : ""}. Antal aktiva annonser: ${priceContext.count}. Prisspann: ${priceContext.minPrice.toLocaleString("sv-SE")}–${priceContext.maxPrice.toLocaleString("sv-SE")} kr.`
     );
   }
-  userContentParts.push(
-    `Använd exakt antal där det ges: ${nearbyResolved.restaurants} restauranger, ${nearbyResolved.shops} butiker, ${nearbyResolved.gyms} gym, ${nearbyResolved.busStops.count} busshållplatser, ${nearbyResolved.trainStations.count} tågstationer, ${nearbyResolved.parking} parkeringar, ${nearbyResolved.schools} skolor, ${nearbyResolved.healthcare} vård/apotek.`
-  );
+  const hasAnyNearby =
+    nearbyResolved.restaurants > 0 ||
+    nearbyResolved.shops > 0 ||
+    nearbyResolved.gyms > 0 ||
+    nearbyResolved.busStops.count > 0 ||
+    nearbyResolved.trainStations.count > 0 ||
+    nearbyResolved.parking > 0 ||
+    nearbyResolved.schools > 0 ||
+    nearbyResolved.healthcare > 0;
+  if (hasAnyNearby) {
+    userContentParts.push(
+      `Använd dessa exakta antal i beskrivningen: ${nearbyResolved.restaurants} restauranger, ${nearbyResolved.shops} butiker, ${nearbyResolved.gyms} gym, ${nearbyResolved.busStops.count} busshållplatser, ${nearbyResolved.trainStations.count} tågstationer, ${nearbyResolved.parking} parkeringar, ${nearbyResolved.schools} skolor, ${nearbyResolved.healthcare} vård/apotek.`
+    );
+  } else {
+    userContentParts.push(
+      "Ingen detaljerad platsdata tillgänglig – nämn inte antal butiker/skolor/faciliteter. Fokusera på lokalens egenskaper, läge och pris."
+    );
+  }
   const userContent = userContentParts.filter(Boolean).join("\n");
 
   const openai = new OpenAI({ apiKey: openaiApiKey, timeout: 25_000 });

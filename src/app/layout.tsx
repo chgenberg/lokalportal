@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
@@ -32,6 +32,13 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
 };
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+};
+
 const organizationJsonLd = {
   "@context": "https://schema.org",
   "@type": "Organization",
@@ -59,7 +66,7 @@ export default function RootLayout({
             dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
           />
           <Header />
-          <main className="min-h-screen pt-16">{children}</main>
+          <main className="min-h-screen pt-16 w-full min-w-0 overflow-x-hidden">{children}</main>
           <Footer />
         </SessionProvider>
       </body>

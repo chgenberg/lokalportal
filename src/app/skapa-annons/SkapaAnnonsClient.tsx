@@ -581,122 +581,10 @@ export default function SkapaAnnonsClient() {
           </div>
         )}
 
-        {/* Step: Preview */}
+        {/* Step: Preview – resultat visas direkt */}
         {step === "preview" && generated && (
           <div className="animate-fade-in space-y-6">
-            <div className="bg-white rounded-2xl border border-border/60 p-6 sm:p-8 shadow-sm">
-              <p className="text-[11px] font-semibold text-gray-400 tracking-[0.1em] uppercase mb-4">Steg 3 av 4 – Redigera och ladda ner</p>
-              <div className="space-y-4 mb-8">
-                <div>
-                  <label className="block text-[11px] font-semibold text-gray-400 mb-1 tracking-[0.1em] uppercase">Rubrik</label>
-                  <input
-                    type="text"
-                    value={generated.title}
-                    onChange={(e) => setGenerated((g) => (g ? { ...g, title: e.target.value } : g))}
-                    className="w-full px-4 py-2.5 bg-muted/30 rounded-xl text-sm border border-border/60 focus:border-navy/30 outline-none transition-all"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-semibold text-gray-400 mb-1 tracking-[0.1em] uppercase">Beskrivning</label>
-                  <textarea
-                    value={generated.description}
-                    onChange={(e) => setGenerated((g) => (g ? { ...g, description: e.target.value } : g))}
-                    rows={5}
-                    className="w-full px-4 py-2.5 bg-muted/30 rounded-xl text-sm border border-border/60 focus:border-navy/30 outline-none transition-all resize-none leading-relaxed"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-semibold text-gray-400 mb-1.5 tracking-[0.1em] uppercase">Egenskaper</label>
-                  <div className="flex flex-wrap gap-2">
-                    {availableTags.map((tag) => {
-                      const active = generated.tags.includes(tag);
-                      return (
-                        <button
-                          key={tag}
-                          type="button"
-                          onClick={() => toggleTag(tag)}
-                          className={`px-3 py-1.5 rounded-xl text-[12px] font-semibold transition-all border ${
-                            active ? "bg-navy text-white border-navy" : "bg-white text-gray-500 border-border/60 hover:border-navy/20 hover:text-navy"
-                          }`}
-                        >
-                          {tag}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-[11px] font-semibold text-gray-400 mb-1.5 tracking-[0.1em] uppercase">Bild (valfritt – visas i PDF)</label>
-                  <input
-                    ref={imageInputRef}
-                    type="file"
-                    accept="image/jpeg,image/png,image/gif,image/webp"
-                    className="hidden"
-                    onChange={(e) => {
-                      const f = e.target.files?.[0];
-                      if (f) handleImageUpload(f);
-                      e.target.value = "";
-                    }}
-                  />
-                  {imageError && (
-                    <p className="text-[12px] text-red-600 mb-2">{imageError}</p>
-                  )}
-                  {generated.imageUrl ? (
-                    <div className="relative inline-block">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={generated.imageUrl} alt="Förhandsgranskning" className="h-32 rounded-xl border border-border object-cover" />
-                      <button
-                        type="button"
-                        onClick={() => setGenerated((g) => (g ? { ...g, imageUrl: "" } : g))}
-                        className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-navy text-white flex items-center justify-center text-sm hover:bg-navy/90 transition-colors shadow"
-                        aria-label="Ta bort bild"
-                      >
-                        &times;
-                      </button>
-                    </div>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => imageInputRef.current?.click()}
-                      disabled={imageUploading}
-                      className="py-6 px-4 border-2 border-dashed border-border rounded-xl text-sm text-gray-500 hover:border-navy hover:text-navy transition-colors disabled:opacity-50"
-                    >
-                      {imageUploading ? "Laddar upp..." : "Ladda upp bild (max 10 MB)"}
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-3">
-                <button
-                  type="button"
-                  onClick={handleDownloadPdf}
-                  className="flex-1 py-3.5 px-4 bg-navy text-white text-[13px] font-semibold rounded-xl tracking-wide flex items-center justify-center gap-2"
-                >
-                  <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                  Ladda ner PDF
-                </button>
-                <button
-                  type="button"
-                  onClick={handleFinish}
-                  className="py-3.5 px-4 border border-border/60 text-gray-600 text-[13px] font-medium rounded-xl hover:bg-muted/50 hover:border-navy/20 hover:text-navy transition-colors"
-                >
-                  Klar – visa nästa steg
-                </button>
-              </div>
-              <button
-                type="button"
-                onClick={() => { setStep("input"); setGenerateError(""); }}
-                className="mt-4 text-[13px] font-semibold text-gray-400 hover:text-navy transition-colors"
-              >
-                &larr; Redigera grunddata
-              </button>
-            </div>
-
-            <div className="rounded-2xl border border-border/60 overflow-hidden bg-muted/30">
-              <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase px-6 pt-4 pb-2">Förhandsgranskning</p>
+            <div className="rounded-2xl border border-border/60 overflow-hidden bg-white shadow-sm">
               <ListingDetailContent
                 listing={{
                   id: "preview",
@@ -718,7 +606,58 @@ export default function SkapaAnnonsClient() {
                 }}
                 showBackLink={false}
                 compact
-                contactSlot={null}
+                contactSlot={
+                  <div className="p-6 border-t border-border/40 space-y-4">
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <button
+                        type="button"
+                        onClick={handleDownloadPdf}
+                        className="flex-1 py-3.5 px-4 bg-navy text-white text-[13px] font-semibold rounded-xl flex items-center justify-center gap-2 hover:bg-navy/90 transition-colors"
+                      >
+                        <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        Ladda ner PDF
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleFinish}
+                        className="py-3.5 px-4 border border-border/60 text-gray-600 text-[13px] font-medium rounded-xl hover:bg-muted/50 hover:border-navy/20 hover:text-navy transition-colors"
+                      >
+                        Klar – nästa steg
+                      </button>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-3 text-sm">
+                      <input
+                        ref={imageInputRef}
+                        type="file"
+                        accept="image/jpeg,image/png,image/gif,image/webp"
+                        className="hidden"
+                        onChange={(e) => {
+                          const f = e.target.files?.[0];
+                          if (f) handleImageUpload(f);
+                          e.target.value = "";
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => imageInputRef.current?.click()}
+                        disabled={imageUploading}
+                        className="text-gray-500 hover:text-navy transition-colors disabled:opacity-50"
+                      >
+                        {imageUploading ? "Laddar upp..." : generated.imageUrl ? "Byt bild" : "Ladda upp bild (valfritt)"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setStep("input"); setGenerateError(""); }}
+                        className="text-gray-400 hover:text-navy transition-colors"
+                      >
+                        &larr; Redigera grunddata
+                      </button>
+                    </div>
+                    {imageError && <p className="text-[12px] text-red-600">{imageError}</p>}
+                  </div>
+                }
               />
             </div>
           </div>
