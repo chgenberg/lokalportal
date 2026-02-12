@@ -3,7 +3,7 @@
 import { lazy, Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { categoryLabels, typeLabels } from "@/lib/types";
+import { formatCategories, typeLabels } from "@/lib/types";
 import type { Listing } from "@/lib/types";
 import PlaceholderImage from "@/components/PlaceholderImage";
 
@@ -67,7 +67,7 @@ export default function ListingDetailContent({
                 {typeLabels[listing.type]}
               </span>
               <span className="px-3 py-1 text-[11px] font-semibold rounded-full bg-white/70 text-navy/70 backdrop-blur-sm tracking-wide">
-                {categoryLabels[listing.category]}
+                {formatCategories(listing.category)}
               </span>
               {listing.featured && (
                 <span className="px-3 py-1 text-[11px] font-semibold rounded-full bg-navy/90 text-white backdrop-blur-sm tracking-wide">
@@ -214,7 +214,7 @@ export default function ListingDetailContent({
                   </div>
                   <div className="flex justify-between items-center py-2 border-b border-border/30">
                     <span className="text-[12px] text-gray-400 tracking-wide">Kategori</span>
-                    <span className="text-[13px] font-medium text-navy">{categoryLabels[listing.category]}</span>
+                    <span className="text-[13px] font-medium text-navy">{formatCategories(listing.category)}</span>
                   </div>
                   <div className="flex justify-between items-center py-2 border-b border-border/30">
                     <span className="text-[12px] text-gray-400 tracking-wide">Storlek</span>

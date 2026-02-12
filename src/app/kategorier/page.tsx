@@ -23,10 +23,46 @@ const categoryConfig = [
     features: ["Lastbrygga", "Bra logistik", "Stora ytor"],
   },
   {
+    id: "restaurang",
+    label: "Restaurang & Café",
+    description: "Restaurang- och cafélokaler med köksutrustning, ventilation och möjlighet till serveringstillstånd.",
+    features: ["Kök", "Ventilation", "Serveringstillstånd"],
+  },
+  {
+    id: "verkstad",
+    label: "Verkstad & Industri",
+    description: "Verkstads- och industrilokaler med hög takhöjd, bra tillgänglighet och tunga installationer.",
+    features: ["Hög takhöjd", "Tunga installationer", "Bra tillgänglighet"],
+  },
+  {
+    id: "showroom",
+    label: "Showroom",
+    description: "Representativa lokaler för produktvisning, kundmöten och utställningar i attraktiva lägen.",
+    features: ["Representativt", "Kundmöten", "Utställning"],
+  },
+  {
+    id: "popup",
+    label: "Pop-up lokaler",
+    description: "Korttidslokaler perfekta för pop-up butiker, event, marknadsföring och tillfälliga projekt.",
+    features: ["Korttidsavtal", "Flexibelt", "Event"],
+  },
+  {
+    id: "atelje",
+    label: "Ateljé & Studio",
+    description: "Kreativa lokaler för konstnärer, fotografer, designers och andra kreativa verksamheter.",
+    features: ["Kreativa ytor", "Naturligt ljus", "Öppen planlösning"],
+  },
+  {
+    id: "gym",
+    label: "Gym & Träningslokal",
+    description: "Lokaler anpassade för gym, yoga, dans och andra tränings- och hälsoverksamheter.",
+    features: ["Hög takhöjd", "Ventilation", "Omklädningsrum"],
+  },
+  {
     id: "ovrigt",
     label: "Övriga lokaler",
-    description: "Unika lokaler för kreativa verksamheter. Ateljéer, studios, pop-up butiker och mycket mer.",
-    features: ["Kreativa ytor", "Flexibelt", "Unika lägen"],
+    description: "Andra typer av kommersiella lokaler och unika utrymmen som inte passar i övriga kategorier.",
+    features: ["Flexibelt", "Unika lägen", "Anpassningsbart"],
   },
 ];
 

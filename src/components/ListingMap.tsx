@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import type { Listing } from "@/lib/types";
-import { categoryLabels, typeLabels } from "@/lib/types";
+import { formatCategories, typeLabels } from "@/lib/types";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -95,7 +95,7 @@ export default function ListingMap({
               border-radius: 999px;
               background: #f1f5f9;
               color: #475569;
-            ">${categoryLabels[listing.category]}</span>
+            ">${formatCategories(listing.category)}</span>
           </div>
           <a href="/annonser/${listing.id}" style="
             font-size: 14px;

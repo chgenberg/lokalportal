@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { typeLabels, categoryLabels } from "@/lib/types";
+import { typeLabels, formatCategories } from "@/lib/types";
 import type { Listing } from "@/lib/types";
 import PlaceholderImage from "./PlaceholderImage";
 import FavoriteButton from "./FavoriteButton";
@@ -48,7 +48,7 @@ export default function ListingCard({ listing, favorited: initialFavorited }: Li
               {typeLabels[listing.type]}
             </span>
             <span className="px-2.5 py-1 text-[10px] font-semibold rounded-full bg-white/80 text-navy/70 backdrop-blur-sm tracking-wide">
-              {categoryLabels[listing.category]}
+              {formatCategories(listing.category)}
             </span>
           </div>
           <div className="absolute top-3 right-3 flex items-center gap-2">

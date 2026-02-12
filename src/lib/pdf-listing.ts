@@ -3,7 +3,7 @@
 import { jsPDF } from "jspdf";
 import QRCode from "qrcode";
 import type { Listing } from "@/lib/types";
-import { categoryLabels, typeLabels } from "@/lib/types";
+import { formatCategories, typeLabels } from "@/lib/types";
 
 const MARGIN = 20;
 const PAGE_W = 210;
@@ -83,7 +83,7 @@ export async function downloadListingPdf(listing: Listing): Promise<void> {
   doc.setTextColor(COLOR_MUTED[0], COLOR_MUTED[1], COLOR_MUTED[2]);
   const meta = [
     typeLabels[listing.type] ?? listing.type,
-    categoryLabels[listing.category] ?? listing.category,
+    formatCategories(listing.category),
     formatPrice(listing.price, listing.type),
     `${listing.size} m²`,
     listing.city,

@@ -32,7 +32,7 @@ model Listing {
   city        String
   address     String
   type        String   // "sale" | "rent"
-  category    String   // "butik" | "kontor" | "lager" | "ovrigt"
+  category    String   // comma-separated: "butik","kontor","lager","restaurang","verkstad","showroom","popup","atelje","gym","ovrigt"
   price       Int
   size        Int
   imageUrl    String   @default("")

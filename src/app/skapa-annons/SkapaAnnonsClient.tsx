@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { availableTags, categoryLabels, typeLabels } from "@/lib/types";
+import { availableTags, categoryLabels, allCategories, typeLabels } from "@/lib/types";
 import type { Listing } from "@/lib/types";
 import { formatPriceInput, parsePriceInput } from "@/lib/formatPrice";
 import CustomSelect from "@/components/CustomSelect";
@@ -27,7 +27,7 @@ type Step = "email" | "input" | "generating" | "preview" | "done";
 interface InputForm {
   address: string;
   type: "sale" | "rent" | "";
-  category: "butik" | "kontor" | "lager" | "ovrigt" | "";
+  categories: string[];
   price: string;
   size: string;
   highlights: string;
@@ -44,7 +44,7 @@ interface GeneratedListing {
   lat: number;
   lng: number;
   type: "sale" | "rent";
-  category: "butik" | "kontor" | "lager" | "ovrigt";
+  category: string; // comma-separated
   price: number;
   size: number;
   areaSummary?: string;
@@ -54,7 +54,7 @@ interface GeneratedListing {
 const initialInput: InputForm = {
   address: "",
   type: "",
-  category: "",
+  categories: [],
   price: "",
   size: "",
   highlights: "",
@@ -197,8 +197,8 @@ export default function SkapaAnnonsClient() {
       setGenerateError("Välj typ (uthyres eller till salu)");
       return;
     }
-    if (!input.category) {
-      setGenerateError("Välj kategori");
+    if (input.categories.length === 0) {
+      setGenerateError("Välj minst en kategori");
       return;
     }
     const priceNum = Number(input.price);
@@ -220,7 +220,7 @@ export default function SkapaAnnonsClient() {
         email: leadEmail.trim().toLowerCase(),
         address: input.address.trim(),
         type: input.type,
-        category: input.category,
+        category: input.categories[0], // primary category for AI generation
         price: priceNum,
         size: sizeNum,
         highlights: input.highlights.trim() || undefined,
@@ -251,7 +251,7 @@ export default function SkapaAnnonsClient() {
         lat: typeof data.lat === "number" ? data.lat : 0,
         lng: typeof data.lng === "number" ? data.lng : 0,
         type: data.type ?? input.type,
-        category: data.category ?? input.category,
+        category: input.categories.join(","),
         price: data.price ?? priceNum,
         size: data.size ?? sizeNum,
         areaSummary: data.areaSummary,
@@ -450,16 +450,35 @@ export default function SkapaAnnonsClient() {
                     ))}
                   </div>
                 </div>
-                <CustomSelect
-                  label="Kategori"
-                  value={input.category}
-                  onChange={(v) => updateInput({ category: v as InputForm["category"] })}
-                  placeholder="Välj kategori"
-                  options={[
-                    { value: "", label: "Välj kategori" },
-                    ...Object.entries(categoryLabels).map(([val, label]) => ({ value: val, label })),
-                  ]}
-                />
+                <div>
+                  <label className="block text-[11px] font-semibold text-gray-400 mb-1.5 tracking-[0.1em] uppercase">
+                    Kategori
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {allCategories.map((cat) => {
+                      const active = input.categories.includes(cat);
+                      return (
+                        <button
+                          key={cat}
+                          type="button"
+                          onClick={() => {
+                            const next = active
+                              ? input.categories.filter((c) => c !== cat)
+                              : [...input.categories, cat];
+                            updateInput({ categories: next });
+                          }}
+                          className={`px-3 py-1.5 rounded-xl text-[12px] font-semibold transition-all border ${
+                            active
+                              ? "bg-navy text-white border-navy"
+                              : "bg-white text-gray-500 border-border/60 hover:border-navy/20 hover:text-navy"
+                          }`}
+                        >
+                          {categoryLabels[cat]}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

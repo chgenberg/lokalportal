@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
   if (!VALID_TYPES.includes(type as "sale" | "rent")) {
     return NextResponse.json({ error: "Ogiltig typ. Använd sale eller rent." }, { status: 400 });
   }
-  if (!VALID_CATEGORIES.includes(category as "butik" | "kontor" | "lager" | "ovrigt")) {
+  if (!VALID_CATEGORIES.includes(category as (typeof VALID_CATEGORIES)[number])) {
     return NextResponse.json({ error: "Ogiltig kategori." }, { status: 400 });
   }
   const priceNum = Number(price);

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { categoryLabels } from "@/lib/types";
+import { formatCategories } from "@/lib/types";
 import type { Listing } from "@/lib/types";
 import FavoriteButton from "@/components/FavoriteButton";
 import ListingDetailContent from "@/components/ListingDetailContent";
@@ -114,7 +114,7 @@ export default function ListingDetailPage() {
     "@type": "Product",
     name: listing.title,
     description: listing.description,
-    category: categoryLabels[listing.category],
+    category: formatCategories(listing.category),
     offers: { "@type": "Offer", price: listing.price, priceCurrency: "SEK" },
     additionalProperty: [
       { "@type": "PropertyValue", name: "Storlek", value: `${listing.size} m²` },

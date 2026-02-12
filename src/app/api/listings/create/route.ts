@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
   if (session.user.role !== "landlord") return NextResponse.json({ error: "Endast hyresvärdar kan skapa annonser" }, { status: 403 });
 
   const VALID_TYPES = ["sale", "rent"] as const;
-  const VALID_CATEGORIES = ["butik", "kontor", "lager", "ovrigt"] as const;
+  const VALID_CATEGORIES = ["butik", "kontor", "lager", "restaurang", "verkstad", "showroom", "popup", "atelje", "gym", "ovrigt"] as const;
   const MAX_TITLE = 200;
   const MAX_DESC = 5000;
   const MAX_CITY = 100;
@@ -28,7 +28,9 @@ export async function POST(request: NextRequest) {
     if (!VALID_TYPES.includes(type)) {
       return NextResponse.json({ error: "Ogiltig typ. Använd sale eller rent." }, { status: 400 });
     }
-    if (!VALID_CATEGORIES.includes(category)) {
+    // category can be comma-separated (multi-select)
+    const categoryParts = String(category).split(",").map((c: string) => c.trim()).filter(Boolean);
+    if (categoryParts.length === 0 || !categoryParts.every((c: string) => (VALID_CATEGORIES as readonly string[]).includes(c))) {
       return NextResponse.json({ error: "Ogiltig kategori." }, { status: 400 });
     }
 

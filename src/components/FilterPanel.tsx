@@ -2,7 +2,7 @@
 
 import RangeSlider from "./RangeSlider";
 import CustomSelect from "./CustomSelect";
-import { availableTags } from "@/lib/types";
+import { availableTags, categoryLabels, allCategories } from "@/lib/types";
 
 export interface FilterState {
   city: string;
@@ -88,19 +88,34 @@ export default function FilterPanel({ filters, onChange, onClear, onClose, total
             { value: "rent", label: "Uthyres" },
           ]}
         />
-        <CustomSelect
-          label="Kategori"
-          value={filters.category}
-          onChange={(v) => onChange({ category: v })}
-          placeholder="Alla kategorier"
-          options={[
-            { value: "", label: "Alla kategorier" },
-            { value: "butik", label: "Butik" },
-            { value: "kontor", label: "Kontor" },
-            { value: "lager", label: "Lager" },
-            { value: "ovrigt", label: "Övrigt" },
-          ]}
-        />
+        <div>
+          <label className="block text-[11px] font-semibold text-gray-500 mb-2 tracking-wide uppercase">Kategori</label>
+          <div className="flex flex-wrap gap-1.5">
+            {allCategories.map((cat) => {
+              const selectedCats = filters.category ? filters.category.split(",") : [];
+              const active = selectedCats.includes(cat);
+              return (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => {
+                    const next = active
+                      ? selectedCats.filter((c) => c !== cat)
+                      : [...selectedCats, cat];
+                    onChange({ category: next.filter(Boolean).join(",") });
+                  }}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all border ${
+                    active
+                      ? "bg-navy text-white border-navy"
+                      : "bg-white text-gray-500 border-border hover:border-navy/20 hover:text-navy"
+                  }`}
+                >
+                  {categoryLabels[cat]}
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
         <div>
           <RangeSlider

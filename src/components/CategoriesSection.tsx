@@ -8,7 +8,13 @@ const categoryConfig = [
   { key: "butik", label: "Butik", description: "Butikslokaler i attraktiva lägen med bra exponering mot gata." },
   { key: "kontor", label: "Kontor", description: "Moderna kontorslokaler med flexibla planlösningar." },
   { key: "lager", label: "Lager", description: "Lagerlokaler med bra logistikläge och lastmöjligheter." },
-  { key: "ovrigt", label: "Övrigt", description: "Ateljéer, studios, pop-up lokaler och andra unika utrymmen." },
+  { key: "restaurang", label: "Restaurang/Café", description: "Restaurang- och cafélokaler med köksutrustning och serveringstillstånd." },
+  { key: "verkstad", label: "Verkstad/Industri", description: "Verkstads- och industrilokaler med hög takhöjd och bra tillgänglighet." },
+  { key: "showroom", label: "Showroom", description: "Showroomlokaler för produktvisning och kundmöten." },
+  { key: "popup", label: "Pop-up", description: "Korttidslokaler för pop-up butiker, event och tillfälliga projekt." },
+  { key: "atelje", label: "Ateljé/Studio", description: "Kreativa lokaler för ateljéer, studios och konstnärlig verksamhet." },
+  { key: "gym", label: "Gym/Träningslokal", description: "Lokaler anpassade för gym, yoga och andra träningsverksamheter." },
+  { key: "ovrigt", label: "Övrigt", description: "Andra typer av kommersiella lokaler och unika utrymmen." },
 ];
 
 export default function CategoriesSection() {
@@ -37,7 +43,7 @@ export default function CategoriesSection() {
           </div>
         </ScrollReveal>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4">
           {categoryConfig.map((cat, i) => (
             <ScrollReveal key={cat.key} delay={i * 80}>
               <Link

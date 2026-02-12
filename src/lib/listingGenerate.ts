@@ -4,7 +4,7 @@ const FETCH_TIMEOUT_MS = 5000;
 const NOMINATIM_USER_AGENT = "HittaYta.se/1.0 (commercial; listing generator)";
 
 export const VALID_TYPES = ["sale", "rent"] as const;
-export const VALID_CATEGORIES = ["butik", "kontor", "lager", "ovrigt"] as const;
+export const VALID_CATEGORIES = ["butik", "kontor", "lager", "restaurang", "verkstad", "showroom", "popup", "atelje", "gym", "ovrigt"] as const;
 
 export type InputType = (typeof VALID_TYPES)[number];
 export type InputCategory = (typeof VALID_CATEGORIES)[number];
@@ -108,43 +108,142 @@ async function geocodeAddress(address: string): Promise<GeocodeResult | null> {
   }
 }
 
-interface SmhiPointForecast {
-  timeSeries?: Array<{
-    validTime?: string;
-    parameters?: Array<{ name: string; values: number[] }>;
-  }>;
+interface OverpassElement {
+  type?: string;
+  tags?: Record<string, string>;
 }
 
-async function fetchSmhiWeather(lat: number, lng: number): Promise<string | null> {
-  const lon = Math.round(lng * 100) / 100;
-  const latR = Math.round(lat * 100) / 100;
-  const url = `https://opendata-download-metfcst.smhi.se/api/category/pmp3g/version/2/geotype/point/lon/${lon}/lat/${latR}/data.json`;
+interface OverpassResponse {
+  elements?: OverpassElement[];
+}
+
+/** Fetch nearby amenities via Overpass API (OpenStreetMap). Returns a short summary string or null. */
+async function fetchNearbyAmenities(lat: number, lng: number): Promise<string | null> {
+  const query = `
+[out:json][timeout:8];
+(
+  node["amenity"~"restaurant|cafe|bar"](around:500,${lat},${lng});
+  node["shop"](around:500,${lat},${lng});
+  node["amenity"~"gym|fitness_centre"](around:500,${lat},${lng});
+  node["highway"="bus_stop"](around:500,${lat},${lng});
+  node["railway"="station"](around:1000,${lat},${lng});
+  node["amenity"="parking"](around:300,${lat},${lng});
+);
+out;
+  `.trim();
   try {
-    const res = await fetchWithTimeout(url);
+    const res = await fetchWithTimeout("https://overpass-api.de/api/interpreter", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: `data=${encodeURIComponent(query)}`,
+    }, 8000);
     if (!res.ok) return null;
-    const data = (await res.json()) as SmhiPointForecast;
-    const series = data?.timeSeries;
-    if (!Array.isArray(series) || series.length === 0) return null;
-    const first = series[0];
-    const params = first?.parameters || [];
-    const temp = params.find((p) => p.name === "t");
-    const tempVal = temp?.values?.[0];
-    const desc: string[] = [];
-    if (typeof tempVal === "number") desc.push(`medeltemperaturen cirka ${Math.round(tempVal)}°C`);
-    if (desc.length > 0) return `Klimat: ${desc.join(", ")}.`;
-    return "Väderdata tillgänglig för området.";
+    const data = (await res.json()) as OverpassResponse;
+    const elements = data?.elements;
+    if (!Array.isArray(elements)) return null;
+    let restaurants = 0, shops = 0, gyms = 0, busStops = 0, stations = 0, parking = 0;
+    for (const el of elements) {
+      const tags = el.tags ?? {};
+      if (tags.amenity && /restaurant|cafe|bar/i.test(String(tags.amenity))) restaurants++;
+      else if (tags.shop) shops++;
+      else if (tags.amenity && /gym|fitness_centre/i.test(String(tags.amenity))) gyms++;
+      else if (tags.highway === "bus_stop") busStops++;
+      else if (tags.railway === "station") stations++;
+      else if (tags.amenity === "parking") parking++;
+    }
+    const parts: string[] = [];
+    if (restaurants > 0) parts.push(`${restaurants} restauranger/caféer`);
+    if (shops > 0) parts.push(`${shops} butiker`);
+    if (gyms > 0) parts.push(`${gyms} gym`);
+    if (busStops > 0) parts.push(`${busStops} busshållplatser`);
+    if (stations > 0) parts.push(`${stations} tågstation(er)`);
+    if (parking > 0) parts.push(`${parking} parkeringar`);
+    if (parts.length === 0) return null;
+    return `Inom 500 m: ${parts.join(", ")}.`;
   } catch {
     return null;
   }
 }
 
-async function fetchScbDemographics(_cityName: string): Promise<string | null> {
+/** SCB kommunkoder (4 siffror) för kommunspecifik befolkning. Normaliserad stadskey = lowercase, utan diakritika. */
+const KOMMUN_CODES: Record<string, string> = {
+  stockholm: "0180",
+  göteborg: "1480",
+  goteborg: "1480",
+  malmö: "1280",
+  malmo: "1280",
+  uppsala: "0380",
+  västerås: "1980",
+  vasteras: "1980",
+  örebro: "1880",
+  orebro: "1880",
+  linköping: "0580",
+  linkoping: "0580",
+  helsingborg: "1283",
+  norrköping: "0581",
+  norrkoping: "0581",
+  jönköping: "0680",
+  jonkoping: "0680",
+  umeå: "2480",
+  umea: "2480",
+  lund: "1281",
+  borås: "1490",
+  boras: "1490",
+  sundsvall: "2281",
+  gävle: "2180",
+  gavle: "2180",
+  eskilstuna: "0484",
+  södertälje: "0181",
+  sodertalje: "0181",
+  karlstad: "1780",
+  täby: "0160",
+  taby: "0160",
+  växjö: "0780",
+  vaxjo: "0780",
+  halmstad: "1380",
+  luleå: "2580",
+  lulea: "2580",
+  trollhättan: "1488",
+  trollhattan: "1488",
+  östersund: "2380",
+  ostersund: "2380",
+  borlänge: "2081",
+  borlange: "2081",
+  falun: "2080",
+  kalmar: "0880",
+  kristianstad: "1290",
+  skövde: "1496",
+  skovde: "1496",
+  uddevalla: "1485",
+  varberg: "1383",
+  nyköping: "0482",
+  nykoping: "0482",
+  landskrona: "1282",
+  motala: "0583",
+  lidköping: "1494",
+  lidkoping: "1494",
+  visby: "0980",
+};
+
+function normalizeCityForLookup(name: string): string {
+  return name
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .trim();
+}
+
+async function fetchScbDemographics(cityName: string): Promise<string | null> {
+  const key = normalizeCityForLookup(cityName);
+  const kommunCode = KOMMUN_CODES[key] ?? KOMMUN_CODES[key.replace(/\s+kommun$/i, "")] ?? "00";
+  const isNational = kommunCode === "00";
+
   try {
     const tableUrl =
       "https://api.scb.se/OV0104/v1/doris/sv/ssd/START/BE/BE0101/BE0101A/FolkmangdKommunLän";
     const body = {
       query: [
-        { code: "Region", selection: { filter: "item", values: ["00"] } },
+        { code: "Region", selection: { filter: "item", values: [kommunCode] } },
         { code: "ContentsCode", selection: { filter: "item", values: ["BE0101N1"] } },
         { code: "Tid", selection: { filter: "item", values: ["2024"] } },
       ],
@@ -159,23 +258,34 @@ async function fetchScbDemographics(_cityName: string): Promise<string | null> {
     const data = (await res.json()) as { data?: Array<{ key: string[]; values: string[] }> };
     const rows = data?.data;
     if (!Array.isArray(rows) || rows.length === 0) return null;
-    const total = rows.find((r) => r.key?.[0] === "00");
-    const pop = total?.values?.[0];
-    if (pop) return `Sverige har cirka ${Number(pop).toLocaleString("sv-SE")} invånare (2024).`;
-    return null;
+    const row = rows.find((r) => r.key?.[0] === kommunCode) ?? rows[0];
+    const pop = row?.values?.[0];
+    if (!pop) return null;
+    const num = Number(pop);
+    if (Number.isNaN(num)) return null;
+    if (isNational) return `Sverige har cirka ${num.toLocaleString("sv-SE")} invånare (2024).`;
+    const label = cityName.trim() || "Kommunen";
+    return `${label} har cirka ${num.toLocaleString("sv-SE")} invånare (2024).`;
   } catch {
     return null;
   }
 }
 
-const GPT_SYSTEM = `Du är en professionell fastighetsannonsförfattare i Sverige.
-Skapa en säljande annons på svenska för en kommersiell lokal.
-Använd informationen om området (demografi, väder, läge) för att göra annonsen trovärdig och informativ.
-Strukturera beskrivningen med tydliga stycken. Var professionell men engagerande.
-Svara ENDAST med en giltig JSON-objekt utan markdown eller annan text, med dessa nycklar:
-- "title": sträng, max 80 tecken, säljande rubrik
-- "description": sträng, 300–600 ord, flera stycken
-- "tags": array av strängar, välj bland: Nyrenoverad, Centralt läge, Hög takhöjd, Parkering, Fiber, Klimatanläggning, Lastbrygga, Skyltfönster, Öppen planlösning, Mötesrum (max 10 taggar)`;
+const GPT_SYSTEM = `Du är Sveriges bästa kommersiella fastighetsannonsförfattare med 20 års erfarenhet. Din uppgift är att skriva en annons som får läsaren att vilja boka visning idag.
+
+Svara ENDAST med ett giltigt JSON-objekt utan markdown eller annan text. Nycklar:
+- "title": sträng, max 80 tecken. Börja med lokalens starkaste egenskap + plats. Exempel: "Skyltfönster mot Avenyn – 120 m² butik i Göteborg"
+- "description": sträng, 200–400 ord, exakt 4 stycken:
+  1. KROK: En mening som fångar. Lyft det mest unika.
+  2. LOKALEN: Storlek, planlösning, skick, utrustning. Var specifik.
+  3. LÄGET: Använd områdesdata (faciliteter, kommunikationer, demografi) naturligt i löpande text – inte som punktlista.
+  4. AVSLUTNING: Kort CTA. Vem passar lokalen för? Varför nu?
+- "tags": array av strängar, max 10 st. Välj endast bland: Nyrenoverad, Centralt läge, Hög takhöjd, Parkering, Fiber, Klimatanläggning, Lastbrygga, Skyltfönster, Öppen planlösning, Mötesrum
+
+REGLER:
+- Skriv som en människa, inte en AI. Professionell men engagerande.
+- Undvik klichéer: "unik möjlighet", "perfekt för", "missa inte", "i hjärtat av".
+- Var konkret: siffror och fakta framför floskler. Nämn pris och storlek naturligt i beskrivningen.`;
 
 export async function generateListingContent(
   input: GenerateInput,
@@ -183,7 +293,8 @@ export async function generateListingContent(
 ): Promise<GenerateResult> {
   const { address, type, category, price: priceNum, size: sizeNum, highlights = "" } = input;
   const typeLabel = type === "rent" ? "uthyres" : "till salu";
-  const categoryLabel = { butik: "butik", kontor: "kontor", lager: "lager", ovrigt: "övrigt" }[category];
+  const catLabels: Record<string, string> = { butik: "butik", kontor: "kontor", lager: "lager", restaurang: "restaurang/café", verkstad: "verkstad/industri", showroom: "showroom", popup: "pop-up", atelje: "ateljé/studio", gym: "gym/träningslokal", ovrigt: "övrigt" };
+  const categoryLabel = catLabels[category] ?? category;
 
   const hasBodyCoords =
     input.lat != null &&
@@ -213,10 +324,9 @@ export async function generateListingContent(
     lng = geocode?.lng ?? 0;
   }
 
-  // Run weather + demographics in parallel to reduce total latency
-  const [weatherSummary, demographicsSummary] = await Promise.all([
-    (lat && lng) ? fetchSmhiWeather(lat, lng) : Promise.resolve(null),
+  const [demographicsSummary, amenitiesSummary] = await Promise.all([
     fetchScbDemographics(city),
+    lat && lng ? fetchNearbyAmenities(lat, lng) : Promise.resolve(null),
   ]);
 
   const userContent = [
@@ -227,8 +337,8 @@ export async function generateListingContent(
     `Storlek: ${sizeNum} m²`,
     highlights?.trim() ? `Det hyresvärden vill lyfta: ${highlights.trim()}` : "",
     geocode ? `Plats: ${geocode.displayName}` : "",
-    weatherSummary ? `Områdesinformation (väder/klimat): ${weatherSummary}` : "",
     demographicsSummary ? `Demografi: ${demographicsSummary}` : "",
+    amenitiesSummary ? `Närliggande faciliteter: ${amenitiesSummary}` : "",
   ]
     .filter(Boolean)
     .join("\n");
@@ -336,6 +446,6 @@ export async function generateListingContent(
     category,
     price: Math.floor(priceNum),
     size: Math.floor(sizeNum),
-    areaSummary: [weatherSummary, demographicsSummary].filter(Boolean).join(" ") || undefined,
+    areaSummary: [demographicsSummary, amenitiesSummary].filter(Boolean).join(" ") || undefined,
   };
 }

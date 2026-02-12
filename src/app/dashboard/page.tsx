@@ -6,7 +6,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import type { Listing } from "@/lib/types";
-import { categoryLabels, typeLabels, availableTags } from "@/lib/types";
+import { categoryLabels, allCategories, typeLabels, availableTags } from "@/lib/types";
 import { formatPrice, formatPriceInput, parsePriceInput } from "@/lib/formatPrice";
 import CustomSelect from "@/components/CustomSelect";
 import ListingCard from "@/components/ListingCard";
@@ -51,7 +51,7 @@ function DashboardContent() {
 
   const [createForm, setCreateForm] = useState({
     title: "", description: "", city: "", address: "",
-    type: "rent" as "sale" | "rent", category: "kontor" as "butik" | "kontor" | "lager" | "ovrigt",
+    type: "rent" as "sale" | "rent", category: "" as string,
     price: "", size: "", tags: [] as string[], imageUrl: "",
   });
   const [createError, setCreateError] = useState("");
@@ -62,7 +62,7 @@ function DashboardContent() {
   const [editingListingId, setEditingListingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<{
     title: string; description: string; city: string; address: string;
-    type: "sale" | "rent"; category: "butik" | "kontor" | "lager" | "ovrigt";
+    type: "sale" | "rent"; category: string;
     price: string; size: string; tags: string[]; imageUrl: string;
   } | null>(null);
   const [editError, setEditError] = useState("");
@@ -155,7 +155,7 @@ function DashboardContent() {
       const res = await fetch("/api/listings/create", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...createForm, price: parseInt(createForm.price, 10), size: parseInt(createForm.size, 10) }) });
       if (!res.ok) { const data = await res.json(); setCreateError(data.error || "Kunde inte skapa annons"); return; }
       setCreateSuccess(true);
-      setCreateForm({ title: "", description: "", city: "", address: "", type: "rent", category: "kontor", price: "", size: "", tags: [], imageUrl: "" });
+      setCreateForm({ title: "", description: "", city: "", address: "", type: "rent", category: "", price: "", size: "", tags: [], imageUrl: "" });
     } catch { setCreateError("Något gick fel"); }
   };
 
@@ -189,7 +189,7 @@ function DashboardContent() {
         city: data.city ?? "",
         address: data.address ?? "",
         type: data.type ?? "rent",
-        category: data.category ?? "kontor",
+        category: data.category ?? "",
         price: String(data.price ?? ""),
         size: String(data.size ?? ""),
         tags: Array.isArray(data.tags) ? data.tags : [],
@@ -451,7 +451,23 @@ function DashboardContent() {
                 <input type="text" value={editForm.address} onChange={(e) => setEditForm((p) => (p ? { ...p, address: e.target.value } : p))} required className="w-full px-4 py-3 bg-muted rounded-xl text-sm border border-border focus:border-navy outline-none" />
               </div>
               <CustomSelect label="Typ" value={editForm.type} onChange={(v) => setEditForm((p) => (p ? { ...p, type: v as "sale" | "rent" } : p))} options={[{ value: "rent", label: "Uthyres" }, { value: "sale", label: "Till salu" }]} />
-              <CustomSelect label="Kategori" value={editForm.category} onChange={(v) => setEditForm((p) => (p ? { ...p, category: v as "butik" | "kontor" | "lager" | "ovrigt" } : p))} options={Object.entries(categoryLabels).map(([k, v]) => ({ value: k, label: v }))} />
+              <div className="sm:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Kategori</label>
+                <div className="flex flex-wrap gap-2">
+                  {allCategories.map((cat) => {
+                    const cats = editForm.category ? editForm.category.split(",") : [];
+                    const active = cats.includes(cat);
+                    return (
+                      <button key={cat} type="button" onClick={() => setEditForm((p) => {
+                        if (!p) return p;
+                        const curr = p.category ? p.category.split(",") : [];
+                        const next = active ? curr.filter((c) => c !== cat) : [...curr, cat];
+                        return { ...p, category: next.join(",") };
+                      })} className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border ${active ? "bg-navy text-white border-navy" : "bg-white text-gray-500 border-border hover:border-navy/20 hover:text-navy"}`}>{categoryLabels[cat]}</button>
+                    );
+                  })}
+                </div>
+              </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Pris (kr)</label>
                 <input type="text" inputMode="numeric" value={formatPriceInput(editForm.price)} onChange={(e) => setEditForm((p) => (p ? { ...p, price: parsePriceInput(e.target.value) } : p))} required className="w-full px-4 py-3 bg-muted rounded-xl text-sm border border-border focus:border-navy outline-none" />
@@ -696,12 +712,22 @@ function DashboardContent() {
                 { value: "sale", label: "Till salu" },
               ]}
             />
-            <CustomSelect
-              label="Kategori"
-              value={createForm.category}
-              onChange={(v) => setCreateForm((p) => ({ ...p, category: v as "butik" | "kontor" | "lager" | "ovrigt" }))}
-              options={Object.entries(categoryLabels).map(([k, v]) => ({ value: k, label: v }))}
-            />
+            <div className="sm:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Kategori</label>
+              <div className="flex flex-wrap gap-2">
+                {allCategories.map((cat) => {
+                  const cats = createForm.category ? createForm.category.split(",") : [];
+                  const active = cats.includes(cat);
+                  return (
+                    <button key={cat} type="button" onClick={() => setCreateForm((p) => {
+                      const curr = p.category ? p.category.split(",") : [];
+                      const next = active ? curr.filter((c) => c !== cat) : [...curr, cat];
+                      return { ...p, category: next.join(",") };
+                    })} className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border ${active ? "bg-navy text-white border-navy" : "bg-white text-gray-500 border-border hover:border-navy/20 hover:text-navy"}`}>{categoryLabels[cat]}</button>
+                  );
+                })}
+              </div>
+            </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Pris (kr)</label>
               <input type="text" inputMode="numeric" value={formatPriceInput(createForm.price)} onChange={(e) => setCreateForm((p) => ({ ...p, price: parsePriceInput(e.target.value) }))} required className="w-full px-4 py-3 bg-muted rounded-xl text-sm border border-border focus:border-navy outline-none" placeholder={createForm.type === "rent" ? "25 000" : "3 500 000"} />
@@ -913,12 +939,24 @@ const categoryColors: Record<string, string> = {
   kontor: "#1a2744",
   butik: "#3b82f6",
   lager: "#f59e0b",
+  restaurang: "#ef4444",
+  verkstad: "#6b7280",
+  showroom: "#ec4899",
+  popup: "#14b8a6",
+  atelje: "#a855f7",
+  gym: "#f97316",
   ovrigt: "#8b5cf6",
 };
 const categoryNames: Record<string, string> = {
   kontor: "Kontor",
   butik: "Butik",
   lager: "Lager",
+  restaurang: "Restaurang/Café",
+  verkstad: "Verkstad/Industri",
+  showroom: "Showroom",
+  popup: "Pop-up",
+  atelje: "Ateljé/Studio",
+  gym: "Gym/Träningslokal",
   ovrigt: "Övrigt",
 };
 

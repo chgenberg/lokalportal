@@ -68,6 +68,12 @@ export default function HeroSearch() {
     { value: "butik", label: "Butik" },
     { value: "kontor", label: "Kontor" },
     { value: "lager", label: "Lager" },
+    { value: "restaurang", label: "Restaurang/Café" },
+    { value: "verkstad", label: "Verkstad/Industri" },
+    { value: "showroom", label: "Showroom" },
+    { value: "popup", label: "Pop-up" },
+    { value: "atelje", label: "Ateljé/Studio" },
+    { value: "gym", label: "Gym/Träningslokal" },
     { value: "ovrigt", label: "Övrigt" },
   ];
 

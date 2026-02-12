@@ -5,7 +5,7 @@ export interface Listing {
   city: string;
   address: string;
   type: "sale" | "rent";
-  category: "butik" | "kontor" | "lager" | "ovrigt";
+  category: string; // comma-separated: "butik", "kontor", "lager", "restaurang", "verkstad", "showroom", "popup", "atelje", "gym", "ovrigt"
   price: number;
   size: number;
   imageUrl: string;
@@ -58,8 +58,29 @@ export const categoryLabels: Record<string, string> = {
   butik: "Butik",
   kontor: "Kontor",
   lager: "Lager",
+  restaurang: "Restaurang/Café",
+  verkstad: "Verkstad/Industri",
+  showroom: "Showroom",
+  popup: "Pop-up",
+  atelje: "Ateljé/Studio",
+  gym: "Gym/Träningslokal",
   ovrigt: "Övrigt",
 };
+
+export const allCategories = Object.keys(categoryLabels);
+
+/** Convert comma-separated category string to array */
+export function parseCategories(cat: string): string[] {
+  if (!cat) return [];
+  return cat.split(",").map((c) => c.trim()).filter(Boolean);
+}
+
+/** Format categories for display */
+export function formatCategories(cat: string): string {
+  return parseCategories(cat)
+    .map((c) => categoryLabels[c] ?? c)
+    .join(", ");
+}
 
 export const typeLabels: Record<string, string> = {
   sale: "Till salu",

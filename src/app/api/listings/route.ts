@@ -5,7 +5,7 @@ import prisma from "@/lib/db";
 import type { Prisma } from "@/generated/prisma/client";
 
 const VALID_TYPES = ["sale", "rent"] as const;
-const VALID_CATEGORIES = ["butik", "kontor", "lager", "ovrigt"] as const;
+const VALID_CATEGORIES = ["butik", "kontor", "lager", "restaurang", "verkstad", "showroom", "popup", "atelje", "gym", "ovrigt"] as const;
 type SortOption = "date" | "price_asc" | "price_desc" | "size";
 const VALID_SORTS: SortOption[] = ["date", "price_asc", "price_desc", "size"];
 const MAX_STRING_LENGTH = 100;
@@ -40,7 +40,16 @@ export async function GET(request: NextRequest) {
   const rawSort = searchParams.get("sort");
 
   const type = rawType && VALID_TYPES.includes(rawType as (typeof VALID_TYPES)[number]) ? rawType : undefined;
-  const category = rawCategory && VALID_CATEGORIES.includes(rawCategory as (typeof VALID_CATEGORIES)[number]) ? rawCategory : undefined;
+  let category: string | undefined;
+  if (rawCategory) {
+    if (rawCategory.includes(",")) {
+      const categories = rawCategory.split(",").map((c) => c.trim()).filter(Boolean);
+      const validCategories = categories.filter((c) => VALID_CATEGORIES.includes(c as (typeof VALID_CATEGORIES)[number]));
+      category = validCategories.length > 0 ? validCategories.join(",") : undefined;
+    } else {
+      category = VALID_CATEGORIES.includes(rawCategory as (typeof VALID_CATEGORIES)[number]) ? rawCategory : undefined;
+    }
+  }
   const sort: SortOption = rawSort && VALID_SORTS.includes(rawSort as SortOption) ? (rawSort as SortOption) : "date";
 
   const city = trimMax(searchParams.get("city"));
@@ -67,7 +76,14 @@ export async function GET(request: NextRequest) {
     if (ownerId) where.ownerId = ownerId;
     if (city) where.city = { equals: city, mode: "insensitive" };
     if (type) where.type = type;
-    if (category) where.category = category;
+    if (category) {
+      if (category.includes(",")) {
+        const categories = category.split(",").map((c) => c.trim()).filter(Boolean);
+        where.category = { in: categories };
+      } else {
+        where.category = category;
+      }
+    }
     if (featured) where.featured = true;
     if (priceMin != null || priceMax != null) {
       where.price = {};
