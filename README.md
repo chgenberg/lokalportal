@@ -45,7 +45,7 @@ Se `.env.example`. Obligatoriskt:
 - `DATABASE_URL` – PostgreSQL-anslutningssträng
 - `NEXTAUTH_SECRET` – hemlighet för NextAuth (krävs i produktion)
 
-Valfritt: `SEED_SECRET`, `RESEND_API_KEY`, `CONTACT_EMAIL_TO`, `RESEND_FROM_EMAIL`, `NEXT_PUBLIC_SITE_URL`.
+Valfritt: `SEED_SECRET`, `RESEND_API_KEY`, `CONTACT_EMAIL_TO`, `RESEND_FROM_EMAIL`, `NEXT_PUBLIC_SITE_URL`, `OPENAI_API_KEY` (för AI-genererade annonser), `TRUST_PROXY="true"` (nödvändigt bakom reverse proxy för korrekt IP-baserad rate limiting).
 
 ## Seed-data
 
@@ -89,7 +89,7 @@ src/
 │   ├── types.ts           # TypeScript-typer
 │   └── useDebounce.ts
 ├── generated/prisma/      # Prisma Client (genererad)
-└── middleware.ts          # Skydd av /dashboard, redirect auth-sidor
+└── proxy.ts               # Skydd av /dashboard, redirect auth-sidor
 ```
 
 ## Funktioner
@@ -105,4 +105,6 @@ src/
 
 ## Deployment (Docker)
 
-Projektet inkluderar en `Dockerfile` för standalone-build. Säkerställ att `DATABASE_URL` och `NEXTAUTH_SECRET` är satta i miljön. Katalogen `uploads` skapas automatiskt för uppladdade filer.
+Projektet inkluderar en `Dockerfile` för standalone-build. Säkerställ att `DATABASE_URL` och `NEXTAUTH_SECRET` är satta i miljön.
+
+**Uppladdade filer:** Katalogen `uploads` skapas automatiskt i containern. Utan volymmontering går uppladdade filer (bilder, PDF:er) förlorade vid omstart/redeploy. För produktionsdrift: montera en volym på `/app/uploads` (t.ex. Railway Volume, Docker volume eller NFS) så att filer består mellan deploymenter.

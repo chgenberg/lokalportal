@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { checkRateLimit, getClientKey } from "@/lib/rateLimit";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { randomUUID } from "crypto";
@@ -83,6 +84,16 @@ export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user) {
     return NextResponse.json({ error: "Ej inloggad" }, { status: 401 });
+  }
+
+  const key = `upload:${session.user.id}`;
+  const { limited, retryAfter } = checkRateLimit(key, 30, 15 * 60 * 1000);
+  if (limited) {
+    const headers = retryAfter ? { "Retry-After": String(retryAfter) } : undefined;
+    return NextResponse.json(
+      { error: "För många uppladdningar. Försök igen senare." },
+      { status: 429, headers }
+    );
   }
 
   try {

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { checkRateLimit, getClientKey } from "@/lib/rateLimit";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { randomUUID } from "crypto";
@@ -52,6 +53,17 @@ function verifyFileContent(mime: string, buffer: Buffer): boolean {
 }
 
 export async function POST(request: NextRequest) {
+  const clientKey = getClientKey(request);
+  const key = `upload-public:${clientKey}`;
+  const { limited, retryAfter } = checkRateLimit(key, 10, 15 * 60 * 1000);
+  if (limited) {
+    const headers = retryAfter ? { "Retry-After": String(retryAfter) } : undefined;
+    return NextResponse.json(
+      { error: "För många uppladdningar. Försök igen senare." },
+      { status: 429, headers }
+    );
+  }
+
   try {
     const formData = await request.formData();
     const file = formData.get("file") as File | null;

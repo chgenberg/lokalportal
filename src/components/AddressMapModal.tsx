@@ -119,17 +119,31 @@ export default function AddressMapModal({
     };
   }, [open, initialLat, initialLng, initialAddress]);
 
+  useEffect(() => {
+    if (!open) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [open, onClose]);
+
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[110] flex items-center justify-center p-2 sm:p-4">
-      <div className="absolute inset-0 bg-navy/50 backdrop-blur-sm" onClick={onClose} />
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="address-map-title"
+      className="fixed inset-0 z-[110] flex items-center justify-center p-2 sm:p-4"
+    >
+      <div className="absolute inset-0 bg-navy/50 backdrop-blur-sm" onClick={onClose} aria-hidden />
       <div
         className="relative w-full max-w-full sm:max-w-2xl bg-white rounded-2xl shadow-xl overflow-hidden animate-scale-in flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-4 py-3 border-b border-border/60">
-          <p className="text-sm font-semibold text-navy">Placera pin på kartan</p>
+          <p id="address-map-title" className="text-sm font-semibold text-navy">Placera pin på kartan</p>
           <button
             type="button"
             onClick={onClose}

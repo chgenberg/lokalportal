@@ -476,14 +476,15 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
 
   if (!session?.user) {
     return (
-      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-        <div className="absolute inset-0 bg-navy/40 backdrop-blur-sm" onClick={handleClose} />
+      <div role="dialog" aria-modal="true" aria-labelledby="create-modal-auth-title" className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div className="absolute inset-0 bg-navy/40 backdrop-blur-sm" onClick={handleClose} aria-hidden />
         <div
           className="relative w-full max-w-md bg-white rounded-2xl p-10 text-center animate-scale-in"
           onClick={(e) => e.stopPropagation()}
         >
           <button
             onClick={handleClose}
+            aria-label="Stäng"
             className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-lg hover:bg-navy/[0.03] transition-colors text-gray-400 hover:text-navy"
           >
             &times;
@@ -519,13 +520,13 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
 
   if (submitted) {
     return (
-      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-        <div className="absolute inset-0 bg-navy/40 backdrop-blur-sm" />
+      <div role="dialog" aria-modal="true" aria-labelledby="create-modal-done-title" className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div className="absolute inset-0 bg-navy/40 backdrop-blur-sm" aria-hidden />
         <div className="relative w-full max-w-md bg-white rounded-2xl p-10 text-center animate-scale-in">
           <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-navy/[0.04] border border-navy/10 shadow-sm flex items-center justify-center">
             <span className="text-2xl">&#10003;</span>
           </div>
-          <h2 className="text-xl font-bold text-navy mb-2 tracking-tight">Annons publicerad</h2>
+          <h2 id="create-modal-done-title" className="text-xl font-bold text-navy mb-2 tracking-tight">Annons publicerad</h2>
           <p className="text-[13px] text-gray-400">Din annons är nu live och synlig för alla besökare.</p>
         </div>
       </div>
@@ -544,7 +545,7 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
       >
         <div className="flex items-center justify-between px-4 sm:px-8 py-5 border-b border-border/40">
           <div>
-            <h2 className="text-lg font-bold text-navy tracking-tight">Skapa annons</h2>
+            <h2 id="create-modal-title" className="text-lg font-bold text-navy tracking-tight">Skapa annons</h2>
             <p className="text-[11px] text-gray-400 mt-0.5 tracking-wide">
               {step === "input" && "Grunddata"}
               {step === "generating" && "Skapar annons med AI..."}
@@ -553,6 +554,7 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
           </div>
           <button
             onClick={handleClose}
+            aria-label="Stäng"
             className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-navy/[0.03] transition-colors text-gray-400 hover:text-navy"
           >
             &times;
@@ -904,7 +906,14 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
                         <div className="flex flex-wrap gap-2">
                           <button
                             type="button"
-                            onClick={async () => { await downloadListingPdf(previewListing); }}
+                            onClick={async () => {
+                              try {
+                                await downloadListingPdf(previewListing);
+                                toast.success("PDF nedladdad");
+                              } catch {
+                                toast.error("Kunde inte ladda ner PDF. Försök igen.");
+                              }
+                            }}
                             className="flex-1 min-w-0 shrink-0 py-3 px-4 border border-border/60 text-gray-600 text-center text-sm font-medium rounded-xl hover:bg-muted/50 hover:border-navy/20 hover:text-navy transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
                           >
                             <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

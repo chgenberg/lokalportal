@@ -82,6 +82,7 @@ export default function SkapaAnnonsClient() {
   const [cropFile, setCropFile] = useState<File | null>(null);
   const [generationVersion, setGenerationVersion] = useState(1);
   const [regenerating, setRegenerating] = useState(false);
+  const [pdfDownloading, setPdfDownloading] = useState(false);
   const [draftChecked, setDraftChecked] = useState(false);
   const [showDraftBanner, setShowDraftBanner] = useState(false);
   const addressWrapperRef = useRef<HTMLDivElement>(null);
@@ -455,6 +456,7 @@ export default function SkapaAnnonsClient() {
 
   const handleDownloadPdf = async () => {
     if (!generated) return;
+    setPdfDownloading(true);
     const previewListing = {
       id: "pdf-preview",
       showWatermark: true,
@@ -481,7 +483,14 @@ export default function SkapaAnnonsClient() {
       priceContext: generated.priceContext ?? null,
       demographics: generated.demographics ?? null,
     };
-    await downloadListingPdf(previewListing);
+    try {
+      await downloadListingPdf(previewListing);
+      toast.success("PDF nedladdad");
+    } catch {
+      toast.error("Kunde inte ladda ner PDF. Försök igen.");
+    } finally {
+      setPdfDownloading(false);
+    }
   };
 
   const handleFinish = () => {
@@ -785,12 +794,19 @@ export default function SkapaAnnonsClient() {
                       <button
                         type="button"
                         onClick={handleDownloadPdf}
-                        className="flex-1 min-w-0 py-3.5 px-4 bg-navy text-white text-[13px] font-semibold rounded-xl flex items-center justify-center gap-2 hover:bg-navy/90 transition-colors whitespace-nowrap shrink-0"
+                        disabled={pdfDownloading}
+                        className="flex-1 min-w-0 py-3.5 px-4 bg-navy text-white text-[13px] font-semibold rounded-xl flex items-center justify-center gap-2 hover:bg-navy/90 transition-colors whitespace-nowrap shrink-0 disabled:opacity-60 disabled:cursor-not-allowed"
                       >
+                        {pdfDownloading ? (
+                          <span className="animate-pulse">Laddar ner...</span>
+                        ) : (
+                          <>
                         <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
                         Ladda ner PDF
+                        </>
+                        )}
                       </button>
                       <button
                         type="button"

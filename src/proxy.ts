@@ -9,7 +9,7 @@ const getSecret = () => {
   return s || "dev-secret-change-in-production";
 };
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const token = await getToken({
     req: request,
     secret: getSecret(),

@@ -424,7 +424,7 @@ export default function ListingDetailContent({
                     <p className="text-[11px] text-gray-400 tracking-wide mb-0.5">Telefon</p>
                     {listing.contact?.phone ? (
                       <a
-                        href={`tel:${listing.contact.phone.replace(/\s/g, "")}`}
+                        href={`tel:${(listing.contact.phone ?? "").replace(/\s/g, "")}`}
                         className="text-sm font-medium text-navy hover:underline"
                       >
                         {listing.contact.phone}

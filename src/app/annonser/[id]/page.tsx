@@ -10,6 +10,7 @@ import FavoriteButton from "@/components/FavoriteButton";
 import ListingDetailContent from "@/components/ListingDetailContent";
 import ScrollProgressBar from "@/components/ScrollProgressBar";
 import { downloadListingPdf } from "@/lib/pdf-listing";
+import { toast } from "sonner";
 
 export default function ListingDetailPage() {
   const params = useParams();
@@ -23,6 +24,7 @@ export default function ListingDetailPage() {
   const [favorited, setFavorited] = useState(false);
   const [contactLoading, setContactLoading] = useState(false);
   const [contactError, setContactError] = useState<string | null>(null);
+  const [pdfDownloading, setPdfDownloading] = useState(false);
 
   useEffect(() => {
     const fetchListing = async () => {
@@ -177,20 +179,39 @@ export default function ListingDetailPage() {
             </div>
             <button
               type="button"
-              onClick={async () => { await downloadListingPdf(listing); }}
-              className="w-full py-3 px-4 border border-border/60 text-gray-600 text-center text-sm font-medium rounded-xl hover:bg-muted/50 hover:border-navy/20 hover:text-navy transition-colors flex items-center justify-center gap-2"
+              onClick={async () => {
+                setPdfDownloading(true);
+                try {
+                  await downloadListingPdf(listing);
+                  toast.success("PDF nedladdad");
+                } catch {
+                  toast.error("Kunde inte ladda ner PDF. Försök igen.");
+                } finally {
+                  setPdfDownloading(false);
+                }
+              }}
+              disabled={pdfDownloading}
+              className="w-full py-3 px-4 border border-border/60 text-gray-600 text-center text-sm font-medium rounded-xl hover:bg-muted/50 hover:border-navy/20 hover:text-navy transition-colors flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              Ladda ner PDF
+              {pdfDownloading ? (
+                <span className="animate-pulse">Laddar ner...</span>
+              ) : (
+                <>
+                  <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Ladda ner PDF
+                </>
+              )}
             </button>
-            <a href={`mailto:${listing.contact.email}`} className="w-full py-3 px-4 border border-navy/20 text-navy text-center text-sm font-medium rounded-xl hover:bg-navy/[0.03] transition-colors">
+            <a href={`mailto:${listing.contact?.email ?? ""}`} className="w-full py-3 px-4 border border-navy/20 text-navy text-center text-sm font-medium rounded-xl hover:bg-navy/[0.03] transition-colors">
               Skicka e-post
             </a>
-            <a href={`tel:${listing.contact.phone.replace(/\s/g, "")}`} className="w-full py-3 px-4 border border-border/60 text-gray-500 text-center text-sm font-medium rounded-xl hover:bg-muted/50 transition-colors">
-              Ring
-            </a>
+            {listing.contact?.phone ? (
+              <a href={`tel:${listing.contact.phone.replace(/\s/g, "")}`} className="w-full py-3 px-4 border border-border/60 text-gray-500 text-center text-sm font-medium rounded-xl hover:bg-muted/50 transition-colors">
+                Ring
+              </a>
+            ) : null}
           </>
         }
       />
