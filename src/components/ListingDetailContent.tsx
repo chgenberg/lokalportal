@@ -3,7 +3,7 @@
 import { lazy, Suspense, useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { formatCategories, typeLabels } from "@/lib/types";
+import { formatCategories, typeLabels, getListingImages } from "@/lib/types";
 import type { Listing, NearbyData, DemographicsData, PriceContext } from "@/lib/types";
 import PlaceholderImage from "@/components/PlaceholderImage";
 
@@ -43,7 +43,8 @@ export default function ListingDetailContent({
 }: ListingDetailContentProps) {
   const [isEditingDescription, setIsEditingDescription] = useState(false);
   const [editDraft, setEditDraft] = useState(listing.description || "");
-  const hasImage = listing.imageUrl && listing.imageUrl.trim() !== "";
+  const images = getListingImages(listing);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   useEffect(() => {
     if (isEditingDescription) setEditDraft(listing.description || "");
@@ -66,19 +67,37 @@ export default function ListingDetailContent({
       )}
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 -mt-2 pb-16">
-        <div className={`relative rounded-2xl overflow-hidden border border-border/40 shadow-lg shadow-navy/[0.06] mb-8 ${compact ? "h-48 sm:h-72" : "h-72 sm:h-96"}`}>
-          {hasImage ? (
-            <Image
-              src={listing.imageUrl}
-              alt={listing.title}
-              fill
-              className="object-cover"
-              sizes="(max-width: 1024px) 100vw, 960px"
-              priority={showBackLink}
-            />
-          ) : (
-            <PlaceholderImage category={listing.category} className="h-full w-full" />
-          )}
+        <div className="mb-8">
+          <div className={`relative rounded-2xl overflow-hidden border border-border/40 shadow-lg shadow-navy/[0.06] ${compact ? "h-48 sm:h-72" : "h-72 sm:h-96"}`}>
+            {images.length > 0 ? (
+              <>
+                <Image
+                  src={images[0]!}
+                  alt={listing.title}
+                  fill
+                  className="object-cover cursor-pointer"
+                  sizes="(max-width: 1024px) 100vw, 960px"
+                  priority={showBackLink}
+                  onClick={() => images.length > 1 && setLightboxIndex(0)}
+                />
+                {images.length > 1 && !compact && (
+                  <div className="absolute bottom-14 left-6 flex gap-2">
+                    {images.map((url, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); setLightboxIndex(i); }}
+                        className="w-12 h-12 rounded-lg overflow-hidden border-2 border-white/80 hover:border-white shadow-md shrink-0"
+                      >
+                        <Image src={url} alt="" width={48} height={48} className="object-cover w-full h-full" />
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </>
+            ) : (
+              <PlaceholderImage category={listing.category} className="h-full w-full" />
+            )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
           <div className="absolute bottom-6 left-6 right-6">
             <div className="flex flex-wrap gap-2 mb-3">
@@ -89,13 +108,57 @@ export default function ListingDetailContent({
                 {formatCategories(listing.category)}
               </span>
               {listing.featured && (
-                <span className="px-3 py-1 text-[11px] font-semibold rounded-full bg-navy/90 text-white backdrop-blur-sm tracking-wide">
+                <span className="px-3 py-1 text-[11px] font-semibold rounded-full bg-gold text-navy backdrop-blur-sm tracking-wide">
                   Utvald
                 </span>
               )}
             </div>
             <h1 className="text-2xl md:text-3xl font-bold text-white drop-shadow-lg tracking-tight">{listing.title}</h1>
           </div>
+        </div>
+
+          {lightboxIndex !== null && images.length > 0 && (
+            <div
+              className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center"
+              onClick={() => setLightboxIndex(null)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => e.key === "Escape" && setLightboxIndex(null)}
+              aria-label="Stäng bildvisning"
+            >
+              <button
+                type="button"
+                onClick={() => setLightboxIndex(null)}
+                className="absolute top-4 right-4 w-10 h-10 text-white/80 hover:text-white text-2xl"
+                aria-label="Stäng"
+              >
+                &times;
+              </button>
+              {images.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); setLightboxIndex((lightboxIndex - 1 + images.length) % images.length); }}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 text-white hover:bg-white/20"
+                    aria-label="Föregående"
+                  >
+                    &larr;
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); setLightboxIndex((lightboxIndex + 1) % images.length); }}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 text-white hover:bg-white/20"
+                    aria-label="Nästa"
+                  >
+                    &rarr;
+                  </button>
+                </>
+              )}
+              <div className="relative max-w-5xl max-h-[90vh] mx-4" onClick={(e) => e.stopPropagation()}>
+                <Image src={images[lightboxIndex]!} alt={listing.title} width={1200} height={675} className="object-contain max-h-[90vh] w-auto" unoptimized />
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

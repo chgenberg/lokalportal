@@ -4,6 +4,7 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import AuthLayout from "@/components/AuthLayout";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -46,18 +47,10 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center px-4">
-      <div className="w-full max-w-sm animate-fade-in">
-        <div className="text-center mb-10">
-          <div className="w-14 h-14 mx-auto mb-5 rounded-2xl bg-navy flex items-center justify-center shadow-md border border-navy/20">
-            <span className="text-lg font-bold text-white">H</span>
-          </div>
-          <h1 className="text-xl font-bold text-navy mb-1.5 tracking-tight">Skapa konto</h1>
-          <p className="text-[13px] text-gray-400">
-            {step === "role" ? "Välj din kontotyp" : `Registrerar som ${role === "landlord" ? "hyresvärd" : "hyresgäst"}`}
-          </p>
-        </div>
-
+    <AuthLayout
+      title="Skapa konto"
+      subtitle={step === "role" ? "Välj din kontotyp" : `Registrerar som ${role === "landlord" ? "hyresvärd" : "hyresgäst"}`}
+    >
         {step === "role" ? (
           <div className="space-y-3">
             <button onClick={() => handleRoleSelect("landlord")} className="w-full p-6 rounded-2xl border border-border/60 text-left group transition-all duration-300 hover:shadow-md hover:-translate-y-1">
@@ -122,7 +115,6 @@ export default function RegisterPage() {
         <div className="mt-8 text-center">
           <p className="text-[13px] text-gray-400">Har redan ett konto? <Link href="/logga-in" className="text-navy font-semibold hover:underline">Logga in</Link></p>
         </div>
-      </div>
-    </div>
+    </AuthLayout>
   );
 }

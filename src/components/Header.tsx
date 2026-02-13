@@ -199,7 +199,7 @@ export default function Header() {
         </div>
 
         {mobileOpen && (
-          <div className="md:hidden glass border-t border-border/60 animate-slide-down">
+          <div className="md:hidden glass border-t border-border/60 animate-slide-down shadow-lg">
             <div className="px-4 py-4 space-y-0.5">
               {navLinks.map((link) => (
                 <Link key={link.href} href={link.href} onClick={() => setMobileOpen(false)} className="block py-2.5 px-4 text-sm font-medium text-gray-500 hover:text-navy hover:bg-navy/[0.03] rounded-lg transition-all">

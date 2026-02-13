@@ -11,6 +11,7 @@ import ListingDetailContent from "@/components/ListingDetailContent";
 import { downloadListingPdf } from "@/lib/pdf-listing";
 
 const AddressMapModal = dynamic(() => import("@/components/AddressMapModal"), { ssr: false });
+const ImageCropModal = dynamic(() => import("@/components/ImageCropModal"), { ssr: false });
 
 const SUGGEST_DEBOUNCE_MS = 350;
 const MIN_CHARS_FOR_SUGGEST = 3;
@@ -78,6 +79,7 @@ export default function SkapaAnnonsClient() {
   const [selectedSuggestIndex, setSelectedSuggestIndex] = useState(-1);
   const [imageUploading, setImageUploading] = useState(false);
   const [imageError, setImageError] = useState("");
+  const [cropFile, setCropFile] = useState<File | null>(null);
   const [generationVersion, setGenerationVersion] = useState(1);
   const [regenerating, setRegenerating] = useState(false);
   const addressWrapperRef = useRef<HTMLDivElement>(null);
@@ -198,20 +200,12 @@ export default function SkapaAnnonsClient() {
     setMapOpen(false);
   };
 
-  const handleImageUpload = async (file: File) => {
-    if (!file.type.startsWith("image/")) {
-      setImageError("Endast bilder (JPEG, PNG, GIF, WebP) stöds.");
-      return;
-    }
-    if (file.size > 10 * 1024 * 1024) {
-      setImageError("Bilden får max vara 10 MB.");
-      return;
-    }
+  const uploadImageBlob = async (blob: Blob) => {
     setImageUploading(true);
     setImageError("");
     try {
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("file", blob, "cropped.jpg");
       const res = await fetch("/api/upload", { method: "POST", body: formData });
       const data = await res.json();
       if (!res.ok) {
@@ -227,6 +221,23 @@ export default function SkapaAnnonsClient() {
     } finally {
       setImageUploading(false);
     }
+  };
+
+  const handleImageUpload = async (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      setImageError("Endast bilder (JPEG, PNG, GIF, WebP) stöds.");
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setImageError("Bilden får max vara 10 MB.");
+      return;
+    }
+    setCropFile(file);
+  };
+
+  const handleCropped = (blob: Blob) => {
+    setCropFile(null);
+    uploadImageBlob(blob);
   };
 
   const handleSubmitEmail = async (e: React.FormEvent) => {
@@ -773,6 +784,12 @@ export default function SkapaAnnonsClient() {
                           if (f) handleImageUpload(f);
                           e.target.value = "";
                         }}
+                      />
+                      <ImageCropModal
+                        open={!!cropFile}
+                        imageFile={cropFile}
+                        onClose={() => setCropFile(null)}
+                        onCropped={handleCropped}
                       />
                       <button
                         type="button"

@@ -113,8 +113,16 @@ export default function OmOssClient() {
   return (
     <div className="min-h-screen bg-muted/30">
       {/* Hero */}
-      <div className="bg-navy relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-navy via-navy to-navy-light opacity-90" />
+      <div className="bg-navy relative overflow-hidden min-h-[280px]">
+        <Image
+          src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1920&q=80"
+          alt=""
+          fill
+          className="object-cover"
+          sizes="100vw"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-br from-navy/95 via-navy/85 to-navy-light/90" />
         <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: "radial-gradient(circle at 1px 1px, white 1px, transparent 0)", backgroundSize: "24px 24px" }} />
         <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-28 md:pt-32 pb-12 sm:pb-16 text-center">
           <p className="text-[11px] font-semibold tracking-[0.25em] uppercase text-white/40 mb-3">Om oss</p>
@@ -145,7 +153,17 @@ export default function OmOssClient() {
         </div>
 
         {/* Thomas resa */}
-        <div className="bg-white rounded-2xl border border-border/40 p-8 shadow-sm mb-6">
+        <div className="relative bg-white rounded-2xl border border-border/40 overflow-hidden shadow-sm mb-6">
+          <div className="absolute top-0 right-0 w-full max-w-xs h-full opacity-[0.06] hidden sm:block">
+            <Image
+              src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&q=80"
+              alt=""
+              fill
+              className="object-cover object-right"
+              sizes="320px"
+            />
+          </div>
+          <div className="relative p-8">
           <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-3">Thomas resa</p>
           <h2 className="text-xl font-bold text-navy mb-6 tracking-tight">Från garageuthyrning till Sveriges smartaste lokalplattform</h2>
           <div className="space-y-6">
@@ -181,6 +199,7 @@ export default function OmOssClient() {
                 </div>
               </div>
             ))}
+          </div>
           </div>
         </div>
 

@@ -4,6 +4,7 @@ import { useState, Suspense } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import AuthLayout from "@/components/AuthLayout";
 
 function LoginContent() {
   const router = useRouter();
@@ -42,16 +43,7 @@ function LoginContent() {
   }
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center px-4">
-      <div className="w-full max-w-sm animate-fade-in">
-        <div className="text-center mb-10">
-          <div className="w-14 h-14 mx-auto mb-5 rounded-2xl bg-navy flex items-center justify-center shadow-md border border-navy/20">
-            <span className="text-lg font-bold text-white">H</span>
-          </div>
-          <h1 className="text-xl font-bold text-navy mb-1.5 tracking-tight">Logga in</h1>
-          <p className="text-[13px] text-gray-400">Verifiera din identitet för att fortsätta</p>
-        </div>
-
+    <AuthLayout title="Logga in" subtitle="Verifiera din identitet för att fortsätta">
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && <div role="alert" className="p-3 bg-navy/[0.03] border border-navy/10 rounded-xl text-[13px] text-navy">{error}</div>}
 
@@ -70,7 +62,7 @@ function LoginContent() {
             </div>
           </div>
 
-          <button type="submit" disabled={submitting} className="w-full py-3.5 bg-navy text-white text-[13px] font-semibold rounded-xl disabled:opacity-50 tracking-wide transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
+          <button type="submit" disabled={submitting} className="w-full py-3.5 bg-gold text-navy text-[13px] font-semibold rounded-xl disabled:opacity-50 tracking-wide transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
             Logga in
           </button>
         </form>

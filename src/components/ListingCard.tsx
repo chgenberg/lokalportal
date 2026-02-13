@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { typeLabels, formatCategories } from "@/lib/types";
+import { typeLabels, formatCategories, getListingImages } from "@/lib/types";
 import type { Listing } from "@/lib/types";
 import PlaceholderImage from "./PlaceholderImage";
 import FavoriteButton from "./FavoriteButton";
@@ -30,21 +30,21 @@ export default function ListingCard({ listing, favorited: initialFavorited }: Li
         <div className="relative h-52 overflow-hidden">
           {hasImage ? (
             <Image
-              src={listing.imageUrl}
+              src={primaryImage!}
               alt={listing.title}
               fill
-              className="object-cover transition-transform duration-500 group-hover:scale-105"
+              className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             />
           ) : (
-            <PlaceholderImage category={listing.category} className="h-full w-full transition-transform duration-500 group-hover:scale-105" />
+            <PlaceholderImage category={listing.category} className="h-full w-full transition-transform duration-500 group-hover:scale-110 group-hover:translate-y-[-2%]" />
           )}
           {/* Gradient overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
           {/* Badges */}
           <div className="absolute top-3 left-3 flex gap-1.5">
-            <span className="px-2.5 py-1 text-[10px] font-semibold rounded-full bg-navy/90 text-white backdrop-blur-sm tracking-wide">
+            <span className="px-2.5 py-1 text-[10px] font-semibold rounded-full bg-gold text-navy backdrop-blur-sm tracking-wide">
               {typeLabels[listing.type]}
             </span>
             <span className="px-2.5 py-1 text-[10px] font-semibold rounded-full bg-white/80 text-navy/70 backdrop-blur-sm tracking-wide">
@@ -54,7 +54,7 @@ export default function ListingCard({ listing, favorited: initialFavorited }: Li
           <div className="absolute top-3 right-3 flex items-center gap-2">
             <FavoriteButton listingId={listing.id} initialFavorited={initialFavorited} />
             {listing.featured && (
-              <span className="px-2.5 py-1 text-[10px] font-semibold rounded-full bg-white/90 text-navy backdrop-blur-sm tracking-wide">
+              <span className="px-2.5 py-1 text-[10px] font-semibold rounded-full bg-gold text-navy backdrop-blur-sm tracking-wide">
                 Utvald
               </span>
             )}

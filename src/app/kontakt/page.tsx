@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 type FormState = {
   name: string;
@@ -46,8 +47,16 @@ export default function KontaktPage() {
   return (
     <div className="min-h-screen bg-muted/30">
       {/* Hero */}
-      <div className="bg-navy relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-navy via-navy to-navy-light opacity-90" />
+      <div className="bg-navy relative overflow-hidden min-h-[320px]">
+        <Image
+          src="https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=1920&q=80"
+          alt=""
+          fill
+          className="object-cover"
+          sizes="100vw"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-br from-navy/90 via-navy/80 to-navy-light/90" />
         <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: "radial-gradient(circle at 1px 1px, white 1px, transparent 0)", backgroundSize: "24px 24px" }} />
         <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-28 md:pt-32 pb-12 sm:pb-16 text-center">
           <p className="text-[11px] font-semibold tracking-[0.25em] uppercase text-white/40 mb-3">Kontakt</p>

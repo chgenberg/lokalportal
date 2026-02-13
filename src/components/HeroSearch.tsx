@@ -179,7 +179,7 @@ export default function HeroSearch() {
         <button
           type="button"
           onClick={handleSearch}
-          className="px-7 py-3 bg-navy text-white rounded-xl text-sm font-semibold shrink-0 tracking-wide transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
+          className="px-7 py-3 bg-gold text-navy rounded-xl text-sm font-semibold shrink-0 tracking-wide transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
           aria-label="Sök lokaler"
         >
           Sök

@@ -11,9 +11,10 @@ import { toast } from "sonner";
 import { formatPriceInput, parsePriceInput } from "@/lib/formatPrice";
 import CustomSelect from "./CustomSelect";
 import ListingDetailContent from "./ListingDetailContent";
-import { downloadListingPdf } from "@/lib/pdf-listing";
+import { downloadListingPdf, generateListingPdfBlob } from "@/lib/pdf-listing";
 
 const AddressMapModal = dynamic(() => import("./AddressMapModal"), { ssr: false });
+const ImageCropModal = dynamic(() => import("./ImageCropModal"), { ssr: false });
 
 const SUGGEST_DEBOUNCE_MS = 350;
 const MIN_CHARS_FOR_SUGGEST = 3;
@@ -57,6 +58,7 @@ interface GeneratedListing {
   size: number;
   areaSummary?: string;
   imageUrl: string;
+  imageUrls?: string[];
   nearby?: NearbyData;
   priceContext?: PriceContext | null;
   demographics?: DemographicsData | null;
@@ -82,6 +84,7 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
   const [submitted, setSubmitted] = useState(false);
   const [generateError, setGenerateError] = useState("");
   const [imageUploading, setImageUploading] = useState(false);
+  const [cropFile, setCropFile] = useState<File | null>(null);
   const [generationVersion, setGenerationVersion] = useState(1);
   const [regenerating, setRegenerating] = useState(false);
   const [suggestions, setSuggestions] = useState<SuggestItem[]>([]);
@@ -254,6 +257,7 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
         size: data.size ?? sizeNum,
         areaSummary: data.areaSummary,
         imageUrl: generated.imageUrl,
+        imageUrls: generated.imageUrls ?? (generated.imageUrl ? [generated.imageUrl] : []),
         nearby: data.nearby,
         priceContext: data.priceContext ?? null,
         demographics: data.demographics ?? null,
@@ -355,6 +359,34 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
     setPublishError("");
   };
 
+  const uploadImageBlob = async (blob: Blob) => {
+    setImageUploading(true);
+    setPublishError("");
+    try {
+      const formData = new FormData();
+      formData.append("file", blob, "cropped.jpg");
+      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      const data = await res.json();
+      if (!res.ok) {
+        setPublishError(data.error || "Kunde inte ladda upp bilden.");
+        return;
+      }
+      if (data.url && generated) {
+        setGenerated((g) => {
+          if (!g) return g;
+          const current = g.imageUrls?.length ? g.imageUrls : (g.imageUrl ? [g.imageUrl] : []);
+          const next = [...current, data.url].slice(0, 5);
+          return { ...g, imageUrls: next, imageUrl: next[0] || "" };
+        });
+        toast.success("Bild uppladdad");
+      }
+    } catch {
+      setPublishError("Uppladdning misslyckades. Försök igen.");
+    } finally {
+      setImageUploading(false);
+    }
+  };
+
   const handleImageUpload = async (file: File) => {
     if (!file.type.startsWith("image/")) {
       setPublishError("Endast bilder (JPEG, PNG, GIF, WebP) stöds.");
@@ -364,25 +396,12 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
       setPublishError("Bilden får max vara 10 MB.");
       return;
     }
-    setImageUploading(true);
-    setPublishError("");
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-      const res = await fetch("/api/upload", { method: "POST", body: formData });
-      const data = await res.json();
-      if (!res.ok) {
-        setPublishError(data.error || "Kunde inte ladda upp bilden.");
-        return;
-      }
-      if (data.url && generated) {
-        setGenerated((g) => (g ? { ...g, imageUrl: data.url } : g));
-      }
-    } catch {
-      setPublishError("Uppladdning misslyckades. Försök igen.");
-    } finally {
-      setImageUploading(false);
-    }
+    setCropFile(file);
+  };
+
+  const handleCropped = (blob: Blob) => {
+    setCropFile(null);
+    uploadImageBlob(blob);
   };
 
   const handlePublish = async () => {
@@ -407,7 +426,8 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
           price: generated.price,
           size: generated.size,
           tags: generated.tags,
-          imageUrl: generated.imageUrl.trim(),
+          imageUrl: imgs[0] || "",
+          imageUrls: imgs.length > 0 ? imgs : undefined,
           lat: generated.lat,
           lng: generated.lng,
         }),
@@ -736,6 +756,7 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
               price: generated.price,
               size: generated.size,
               imageUrl: generated.imageUrl,
+              imageUrls: generated.imageUrls ?? (generated.imageUrl ? [generated.imageUrl] : []),
               featured: false,
               createdAt: new Date().toISOString(),
               lat: generated.lat,
@@ -822,29 +843,48 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
                           e.target.value = "";
                         }}
                       />
-                      {generated.imageUrl ? (
-                        <div className="relative inline-block">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={generated.imageUrl} alt="Förhandsgranskning" className="h-32 rounded-xl border border-border object-cover" />
-                          <button
-                            type="button"
-                            onClick={() => setGenerated((g) => (g ? { ...g, imageUrl: "" } : g))}
-                            className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-navy text-white flex items-center justify-center text-sm hover:bg-navy/90 transition-colors shadow"
-                            aria-label="Ta bort bild"
-                          >
-                            &times;
-                          </button>
-                        </div>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => imageInputRef.current?.click()}
-                          disabled={imageUploading}
-                          className="py-6 px-4 border-2 border-dashed border-border rounded-xl text-sm text-gray-500 hover:border-navy hover:text-navy transition-colors disabled:opacity-50"
-                        >
-                          {imageUploading ? "Laddar upp..." : "Ladda upp bild (max 10 MB)"}
-                        </button>
-                      )}
+                      <ImageCropModal
+                        open={!!cropFile}
+                        imageFile={cropFile}
+                        onClose={() => setCropFile(null)}
+                        onCropped={handleCropped}
+                      />
+                      {(() => {
+                        const imgs = generated.imageUrls?.length ? generated.imageUrls : (generated.imageUrl ? [generated.imageUrl] : []);
+                        return (
+                          <div className="flex flex-wrap gap-2 items-start">
+                            {imgs.map((url, i) => (
+                              <div key={i} className="relative">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img src={url} alt={`Bild ${i + 1}`} className="h-32 w-40 rounded-xl border border-border object-cover" />
+                                <button
+                                  type="button"
+                                  onClick={() => setGenerated((g) => {
+                                    if (!g) return g;
+                                    const current = g.imageUrls?.length ? g.imageUrls : (g.imageUrl ? [g.imageUrl] : []);
+                                    const next = current.filter((_, j) => j !== i);
+                                    return { ...g, imageUrls: next, imageUrl: next[0] || "" };
+                                  })}
+                                  className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-navy text-white flex items-center justify-center text-sm hover:bg-navy/90 transition-colors shadow"
+                                  aria-label="Ta bort bild"
+                                >
+                                  &times;
+                                </button>
+                              </div>
+                            ))}
+                            {imgs.length < 5 && (
+                              <button
+                                type="button"
+                                onClick={() => imageInputRef.current?.click()}
+                                disabled={imageUploading}
+                                className="h-32 w-40 flex flex-col items-center justify-center border-2 border-dashed border-border rounded-xl text-sm text-gray-500 hover:border-navy hover:text-navy transition-colors disabled:opacity-50"
+                              >
+                                {imageUploading ? "Laddar upp..." : `+ Lägg till (${imgs.length}/5)`}
+                              </button>
+                            )}
+                          </div>
+                        );
+                      })()}
                     </div>
                   </div>
                 </div>
@@ -860,16 +900,48 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
                     contactSlot={
                       <>
                         <p className="text-[13px] text-gray-500 py-2">Kontaktknappar visas för besökare efter publicering.</p>
-                        <button
-                          type="button"
-                          onClick={async () => { await downloadListingPdf(previewListing); }}
-                          className="w-full py-3 px-4 border border-border/60 text-gray-600 text-center text-sm font-medium rounded-xl hover:bg-muted/50 hover:border-navy/20 hover:text-navy transition-colors flex items-center justify-center gap-2"
-                        >
-                          <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                          </svg>
-                          Ladda ner PDF
-                        </button>
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={async () => { await downloadListingPdf(previewListing); }}
+                            className="flex-1 py-3 px-4 border border-border/60 text-gray-600 text-center text-sm font-medium rounded-xl hover:bg-muted/50 hover:border-navy/20 hover:text-navy transition-colors flex items-center justify-center gap-2"
+                          >
+                            <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            Ladda ner PDF
+                          </button>
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              try {
+                                const blob = await generateListingPdfBlob(previewListing);
+                                const fd = new FormData();
+                                fd.append("file", blob, "annons.pdf");
+                                const res = await fetch("/api/upload", { method: "POST", body: fd });
+                                const data = await res.json();
+                                if (res.ok && data.url) {
+                                  const fullUrl = `${typeof window !== "undefined" ? window.location.origin : ""}${data.url}`;
+                                  await navigator.clipboard.writeText(fullUrl);
+                                  toast.success("Delbar länk kopierad");
+                                } else if (res.status === 401) {
+                                  toast.error("Logga in för att skapa delbar länk");
+                                } else {
+                                  toast.error("Kunde inte skapa delbar länk");
+                                }
+                              } catch {
+                                toast.error("Kunde inte skapa delbar länk");
+                              }
+                            }}
+                            className="py-3 px-4 border border-border/60 text-gray-600 text-center text-sm font-medium rounded-xl hover:bg-muted/50 hover:border-navy/20 hover:text-navy transition-colors flex items-center justify-center gap-2"
+                            title="Kopiera delbar länk"
+                          >
+                            <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                            </svg>
+                            Kopiera länk
+                          </button>
+                        </div>
                       </>
                     }
                   />
@@ -907,10 +979,10 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
               <button
                 type="button"
                 onClick={handlePublish}
-                disabled={submitting || !generated?.imageUrl?.trim()}
+                disabled={submitting || !(generated?.imageUrls?.length || generated?.imageUrl?.trim())}
                 className="px-6 py-2.5 bg-navy text-white text-[13px] font-semibold rounded-xl tracking-wide disabled:opacity-50 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
               >
-                {submitting ? "Publicerar..." : generated?.imageUrl?.trim() ? "Publicera annons" : "Ladda upp bild först"}
+                {submitting ? "Publicerar..." : (generated?.imageUrls?.length || generated?.imageUrl?.trim()) ? "Publicera annons" : "Ladda upp bild först"}
               </button>
             )}
           </div>

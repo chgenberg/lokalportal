@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { title, description, city, address, type, category, price, size, tags, imageUrl, lat, lng } = body;
+    const { title, description, city, address, type, category, price, size, tags, imageUrl, imageUrls, lat, lng } = body;
 
     if (!title || !description || !city || !address || !type || !category || price == null || price === "" || size == null || size === "") {
       return NextResponse.json({ error: "Alla obligatoriska fält måste fyllas i" }, { status: 400 });
@@ -45,7 +45,8 @@ export async function POST(request: NextRequest) {
 
     const user = await prisma.user.findUnique({ where: { id: session.user.id } });
 
-    const imageUrlStr = typeof imageUrl === "string" ? imageUrl.trim().slice(0, 2000) : "";
+    const urls = Array.isArray(imageUrls) ? imageUrls.slice(0, 5).filter((u): u is string => typeof u === "string").map((u) => u.trim().slice(0, 2000)).filter(Boolean) : [];
+    const imageUrlStr = urls.length > 0 ? urls[0]! : (typeof imageUrl === "string" ? imageUrl.trim().slice(0, 2000) : "");
     const latNum = lat != null && lat !== "" ? Number(lat) : undefined;
     const lngNum = lng != null && lng !== "" ? Number(lng) : undefined;
     const hasValidCoords =
@@ -69,6 +70,7 @@ export async function POST(request: NextRequest) {
         price: Math.floor(priceNum),
         size: Math.floor(sizeNum),
         imageUrl: imageUrlStr || "",
+        imageUrls: urls,
         tags: Array.isArray(tags) ? tags.slice(0, 20).filter((t: unknown) => typeof t === "string").map((t: string) => t.trim().slice(0, 50)) : [],
         ownerId: session.user.id,
         contactName: user?.name || session.user.name || "",

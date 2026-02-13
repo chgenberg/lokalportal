@@ -125,7 +125,7 @@ export async function GET(request: NextRequest) {
 
 function formatListing(l: {
   id: string; title: string; description: string; city: string; address: string;
-  type: string; category: string; price: number; size: number; imageUrl: string;
+  type: string; category: string; price: number; size: number; imageUrl: string; imageUrls?: string[];
   featured: boolean; createdAt: Date; lat: number; lng: number; tags: string[];
   ownerId: string | null; contactName: string; contactEmail: string; contactPhone: string;
 }) {
@@ -140,6 +140,7 @@ function formatListing(l: {
     price: l.price,
     size: l.size,
     imageUrl: l.imageUrl,
+    imageUrls: l.imageUrls ?? [],
     featured: l.featured,
     createdAt: l.createdAt.toISOString(),
     lat: l.lat,

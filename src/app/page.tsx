@@ -7,6 +7,7 @@ import FeaturedListings from "@/components/FeaturedListings";
 import FeaturesSection from "@/components/FeaturesSection";
 import SocialProofSection from "@/components/SocialProofSection";
 import CTASection from "@/components/CTASection";
+import SectionDivider from "@/components/SectionDivider";
 import ScrollReveal from "@/components/ScrollReveal";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://hittayta.se";
@@ -34,7 +35,7 @@ export default function Home() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
       />
-      <section className="relative overflow-hidden min-h-[520px] sm:min-h-[640px] md:min-h-[720px] flex items-center">
+      <section className="relative overflow-hidden min-h-[520px] sm:min-h-[640px] md:min-h-[720px] flex items-center grain-overlay">
         <HeroCarousel />
 
         <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16 sm:pt-28 sm:pb-24 md:pt-36 md:pb-32">
@@ -71,7 +72,7 @@ export default function Home() {
             </p>
             <Link
               href="/skapa-annons"
-              className="inline-flex items-center gap-2 px-8 py-3.5 bg-navy text-white text-sm font-semibold rounded-xl transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 tracking-wide"
+              className="inline-flex items-center gap-2 px-8 py-3.5 bg-gold text-navy text-sm font-semibold rounded-xl transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 tracking-wide"
             >
               Skapa gratis annons-PDF
             </Link>
@@ -79,7 +80,9 @@ export default function Home() {
         </ScrollReveal>
       </section>
 
+      <SectionDivider topBg="white" direction="down" />
       <FeaturesSection />
+      <SectionDivider topBg="white" direction="down" />
       <SocialProofSection />
       <CTASection />
     </>

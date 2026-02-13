@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import ScrollReveal from "@/components/ScrollReveal";
 
 const packages = [
@@ -30,11 +31,20 @@ export default function AnnonspaketPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="bg-muted/50 border-b border-border/40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
-          <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-gray-400 mb-2">Priser</p>
-          <h1 className="text-2xl sm:text-3xl font-bold text-navy tracking-tight mb-2">Annonspaket</h1>
-          <p className="text-gray-400 text-[15px]">Välj det paket som passar din verksamhet bäst</p>
+      <div className="relative bg-navy overflow-hidden min-h-[240px]">
+        <Image
+          src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1920&q=80"
+          alt=""
+          fill
+          className="object-cover"
+          sizes="100vw"
+          priority
+        />
+        <div className="absolute inset-0 bg-navy/70" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
+          <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-white/50 mb-2">Priser</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight mb-2">Annonspaket</h1>
+          <p className="text-white/70 text-[15px]">Välj det paket som passar din verksamhet bäst</p>
         </div>
       </div>
 
@@ -73,7 +83,7 @@ export default function AnnonspaketPage() {
                 <a
                   href="/logga-in"
                   className={`w-full flex items-center justify-center py-3 rounded-xl text-[13px] font-semibold tracking-wide transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 ${
-                    pkg.highlighted ? "bg-navy text-white" : "bg-navy/[0.04] text-navy hover:bg-navy hover:text-white"
+                    pkg.highlighted ? "bg-gold text-navy" : "bg-navy/[0.04] text-navy hover:bg-navy hover:text-white"
                   } transition-all`}
                 >
                   Kom igång

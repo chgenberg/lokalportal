@@ -4,20 +4,24 @@ import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 
 const IMAGES = [
+  "https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=1920&q=80",
   "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1920&q=80",
   "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1920&q=80",
   "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=1920&q=80",
+  "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=1920&q=80",
 ];
 const ALT_TEXTS = [
-  "Kommersiell lokal med moderna kontorsytor",
+  "Stadsvy över kommersiella områden",
+  "Moderna kontorsytor med flexibla planlösningar",
   "Butikslokal med stor fönsterfront",
   "Lagerlokal med god logistik",
+  "Café med varmt ljus och atmosfär",
 ];
 const INTERVAL = 6000;
 
 export default function HeroCarousel() {
   const [current, setCurrent] = useState(0);
-  const [loaded, setLoaded] = useState<boolean[]>([false, false, false]);
+  const [loaded, setLoaded] = useState<boolean[]>(Array(IMAGES.length).fill(false));
 
   const next = useCallback(() => {
     setCurrent((prev) => (prev + 1) % IMAGES.length);

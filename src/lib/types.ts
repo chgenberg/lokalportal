@@ -9,6 +9,7 @@ export interface Listing {
   price: number;
   size: number;
   imageUrl: string;
+  imageUrls?: string[]; // Up to 5 images; when present, takes precedence
   featured: boolean;
   createdAt: string;
   lat: number;
@@ -68,6 +69,14 @@ export const categoryLabels: Record<string, string> = {
 };
 
 export const allCategories = Object.keys(categoryLabels);
+
+/** Get all images for a listing (imageUrls takes precedence over imageUrl) */
+export function getListingImages(listing: { imageUrl?: string; imageUrls?: string[] }): string[] {
+  const urls = listing.imageUrls;
+  if (urls && urls.length > 0) return urls.filter((u) => u?.trim());
+  const single = listing.imageUrl?.trim();
+  return single ? [single] : [];
+}
 
 /** Convert comma-separated category string to array */
 export function parseCategories(cat: string): string[] {

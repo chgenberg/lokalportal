@@ -40,11 +40,15 @@ export default function FeaturedListings() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {[...Array(4)].map((_, i) => (
               <div key={i} className="bg-white rounded-2xl border border-border/40 overflow-hidden">
-                <div className="h-48 bg-muted shimmer" />
+                <div className="h-52 bg-gradient-to-br from-muted to-muted/70 shimmer" />
                 <div className="p-5 space-y-3">
-                  <div className="h-4 bg-muted rounded-lg w-3/4" />
-                  <div className="h-3 bg-muted rounded-lg w-1/2" />
-                  <div className="h-3 bg-muted rounded-lg w-full" />
+                  <div className="h-4 bg-muted/80 rounded-lg w-3/4 shimmer" />
+                  <div className="h-3 bg-muted/60 rounded-lg w-1/2" />
+                  <div className="h-3 bg-muted/40 rounded-lg w-full" />
+                  <div className="pt-3 border-t border-border/30 flex justify-between">
+                    <div className="h-3 bg-muted/50 rounded w-16" />
+                    <div className="h-4 bg-muted/70 rounded w-24" />
+                  </div>
                 </div>
               </div>
             ))}

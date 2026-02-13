@@ -8,6 +8,7 @@ import { formatCategories } from "@/lib/types";
 import type { Listing, DemographicsData, NearbyData, PriceContext } from "@/lib/types";
 import FavoriteButton from "@/components/FavoriteButton";
 import ListingDetailContent from "@/components/ListingDetailContent";
+import ScrollProgressBar from "@/components/ScrollProgressBar";
 import { downloadListingPdf } from "@/lib/pdf-listing";
 
 export default function ListingDetailPage() {
@@ -151,6 +152,7 @@ export default function ListingDetailPage() {
 
   return (
     <div className="min-h-screen bg-muted/30 pb-20">
+      <ScrollProgressBar />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdStr }} />
       <ListingDetailContent
         listing={listing}

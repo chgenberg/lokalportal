@@ -70,7 +70,7 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { title, description, city, address, type, category, price, size, tags, imageUrl } = body;
+    const { title, description, city, address, type, category, price, size, tags, imageUrl, imageUrls } = body;
 
     if (!title || !description || !city || !address || !type || !category || price == null || price === "" || size == null || size === "") {
       return NextResponse.json({ error: "Alla obligatoriska fält måste fyllas i" }, { status: 400 });
@@ -93,7 +93,8 @@ export async function PUT(
       return NextResponse.json({ error: "Ogiltig storlek (m²)." }, { status: 400 });
     }
 
-    const imageUrlStr = typeof imageUrl === "string" ? imageUrl.trim().slice(0, 2000) : "";
+    const urls = Array.isArray(imageUrls) ? imageUrls.slice(0, 5).filter((u): u is string => typeof u === "string").map((u) => u.trim().slice(0, 2000)).filter(Boolean) : undefined;
+    const imageUrlStr = urls?.length ? urls[0]! : (typeof imageUrl === "string" ? imageUrl.trim().slice(0, 2000) : listing.imageUrl || "");
 
     const updated = await prisma.listing.update({
       where: { id },
@@ -106,7 +107,8 @@ export async function PUT(
         category,
         price: Math.floor(priceNum),
         size: Math.floor(sizeNum),
-        imageUrl: imageUrlStr || listing.imageUrl || "",
+        imageUrl: imageUrlStr,
+        ...(urls && { imageUrls: urls }),
         tags: Array.isArray(tags) ? tags.slice(0, 20).filter((t: unknown) => typeof t === "string").map((t: string) => t.trim().slice(0, 50)) : listing.tags,
       },
     });

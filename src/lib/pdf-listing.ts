@@ -4,7 +4,7 @@ import { jsPDF } from "jspdf";
 import QRCode from "qrcode";
 import type { Listing } from "@/lib/types";
 import type { NearbyData, PriceContext, DemographicsData } from "@/lib/types";
-import { formatCategories, typeLabels, categoryLabels, parseCategories } from "@/lib/types";
+import { formatCategories, typeLabels, categoryLabels, parseCategories, getListingImages } from "@/lib/types";
 import { formatPrice } from "@/lib/formatPrice";
 
 const MARGIN = 20;
@@ -56,6 +56,26 @@ async function imageUrlToBase64(url: string): Promise<string | null> {
       reader.onerror = reject;
       reader.readAsDataURL(blob);
     });
+  } catch {
+    return null;
+  }
+}
+
+function latLngToTile(lat: number, lng: number, zoom: number): { x: number; y: number } {
+  const n = Math.pow(2, zoom);
+  const x = Math.floor(((lng + 180) / 360) * n);
+  const y = Math.floor(
+    ((1 - Math.log(Math.tan((lat * Math.PI) / 180) + 1 / Math.cos((lat * Math.PI) / 180)) / Math.PI) / 2) * n
+  );
+  return { x, y };
+}
+
+async function getStaticMapBase64(lat: number, lng: number): Promise<string | null> {
+  const zoom = 15;
+  const { x, y } = latLngToTile(lat, lng, zoom);
+  try {
+    const tileUrl = `https://tile.openstreetmap.org/${zoom}/${x}/${y}.png`;
+    return await imageUrlToBase64(tileUrl);
   } catch {
     return null;
   }
@@ -145,15 +165,15 @@ function drawDataTable(
   return y + SECTION_GAP;
 }
 
-export async function downloadListingPdf(listing: PdfListingInput): Promise<void> {
+export async function generateListingPdfBlob(input: PdfListingInput): Promise<Blob> {
   const doc = new jsPDF({ unit: "mm", format: "a4" });
+  const listing = input;
   doc.setProperties({
     title: listing.title,
     subject: `Kommersiell lokal – ${listing.address}, ${listing.city}`,
     author: listing.contact?.name || "HittaYta.se",
     creator: "HittaYta.se",
   });
-  const input = listing as PdfListingInput;
   const nearby = input.nearby;
   const priceContext = input.priceContext ?? null;
   const demographics = input.demographics ?? null;
@@ -175,8 +195,9 @@ export async function downloadListingPdf(listing: PdfListingInput): Promise<void
   // Image or placeholder
   const imgHeight = 70;
   let imgData: string | null = null;
-  if (listing.imageUrl?.trim()) {
-    imgData = await imageUrlToBase64(listing.imageUrl);
+  const primaryImage = getListingImages(listing)[0];
+  if (primaryImage) {
+    imgData = await imageUrlToBase64(primaryImage);
   }
   if (!imgData) {
     imgData = await imageUrlToBase64(placeholderUrl);
@@ -370,6 +391,30 @@ export async function downloadListingPdf(listing: PdfListingInput): Promise<void
     }
   }
 
+  // Plats – statisk kartbild om koordinater finns
+  const hasCoords = listing.lat != null && listing.lng != null && !Number.isNaN(listing.lat) && !Number.isNaN(listing.lng);
+  if (hasCoords && y < 240) {
+    const mapData = await getStaticMapBase64(listing.lat, listing.lng);
+    if (mapData) {
+      doc.setFontSize(FONT_HEADING);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(COLOR_NAVY[0], COLOR_NAVY[1], COLOR_NAVY[2]);
+      doc.text("Plats", MARGIN, y);
+      y += 8;
+      const mapH = 50;
+      try {
+        doc.addImage(mapData, "PNG", MARGIN, y, CONTENT_W, mapH, undefined, "FAST");
+      } catch {
+        // ignore
+      }
+      y += mapH + SECTION_GAP;
+      doc.setFontSize(FONT_SMALL);
+      doc.setTextColor(COLOR_MUTED[0], COLOR_MUTED[1], COLOR_MUTED[2]);
+      doc.text("Karta: © OpenStreetMap", MARGIN, y);
+      y += 6;
+    }
+  }
+
   // --- PAGE 3: KONTAKT + QR ---
   doc.addPage();
   y = MARGIN;
@@ -413,5 +458,15 @@ export async function downloadListingPdf(listing: PdfListingInput): Promise<void
   doc.text("Genererad med HittaYta.se", MARGIN, y);
   doc.text("hittayta.se", MARGIN, y + 5);
 
-  doc.save(`annons-${listing.id.slice(0, 8)}.pdf`);
+  return doc.output("blob");
+}
+
+export async function downloadListingPdf(listing: PdfListingInput): Promise<void> {
+  const blob = await generateListingPdfBlob(listing);
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `annons-${listing.id.slice(0, 8)}.pdf`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
