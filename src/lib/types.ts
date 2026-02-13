@@ -131,8 +131,16 @@ export interface PriceContext {
   maxPrice: number;
 }
 
-/** Demographics from SCB */
+/** Demographics from SCB + BRÅ */
 export interface DemographicsData {
   population: number;
   city: string;
+  /** Median income in tkr/year (sammanräknad förvärvsinkomst) */
+  medianIncome?: number;
+  /** Percentage of population aged 20–64 */
+  workingAgePercent?: number;
+  /** Total registered businesses in the municipality */
+  totalBusinesses?: number;
+  /** Reported crimes per 100 000 inhabitants (BRÅ) */
+  crimeRate?: number;
 }

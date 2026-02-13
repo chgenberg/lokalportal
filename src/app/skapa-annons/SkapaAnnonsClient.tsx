@@ -666,6 +666,103 @@ export default function SkapaAnnonsClient() {
                 }
               />
             </div>
+
+            {/* Områdesanalys – visible summary of enrichment data */}
+            {(generated.demographics || generated.nearby) && (
+              <div className="bg-white rounded-2xl border border-border/60 p-6 sm:p-8 shadow-sm">
+                <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-4">Områdesanalys</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
+                  {generated.demographics?.population && (
+                    <div className="bg-muted/40 rounded-xl p-3">
+                      <p className="text-[11px] text-gray-400 tracking-wide mb-0.5">Invånare</p>
+                      <p className="text-base font-bold text-navy">{generated.demographics.population.toLocaleString("sv-SE")}</p>
+                    </div>
+                  )}
+                  {generated.demographics?.medianIncome && (
+                    <div className="bg-muted/40 rounded-xl p-3">
+                      <p className="text-[11px] text-gray-400 tracking-wide mb-0.5">Medianinkomst</p>
+                      <p className="text-base font-bold text-navy">{generated.demographics.medianIncome} tkr/år</p>
+                    </div>
+                  )}
+                  {generated.demographics?.workingAgePercent && (
+                    <div className="bg-muted/40 rounded-xl p-3">
+                      <p className="text-[11px] text-gray-400 tracking-wide mb-0.5">Arbetsför ålder</p>
+                      <p className="text-base font-bold text-navy">{generated.demographics.workingAgePercent}%</p>
+                    </div>
+                  )}
+                  {generated.demographics?.totalBusinesses && (
+                    <div className="bg-muted/40 rounded-xl p-3">
+                      <p className="text-[11px] text-gray-400 tracking-wide mb-0.5">Företag</p>
+                      <p className="text-base font-bold text-navy">{generated.demographics.totalBusinesses.toLocaleString("sv-SE")}</p>
+                    </div>
+                  )}
+                  {generated.demographics?.crimeRate && (
+                    <div className="bg-muted/40 rounded-xl p-3">
+                      <p className="text-[11px] text-gray-400 tracking-wide mb-0.5">Brott/100k inv.</p>
+                      <p className="text-base font-bold text-navy">{generated.demographics.crimeRate.toLocaleString("sv-SE")}</p>
+                    </div>
+                  )}
+                </div>
+                {generated.nearby && (
+                  <>
+                    <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-3">Inom 1 km</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-[13px]">
+                      {generated.nearby.restaurants > 0 && (
+                        <div className="flex items-center gap-2 text-gray-600">
+                          <span className="w-2 h-2 rounded-full bg-navy/30 shrink-0" />
+                          {generated.nearby.restaurants} restauranger
+                        </div>
+                      )}
+                      {generated.nearby.shops > 0 && (
+                        <div className="flex items-center gap-2 text-gray-600">
+                          <span className="w-2 h-2 rounded-full bg-navy/30 shrink-0" />
+                          {generated.nearby.shops} butiker
+                        </div>
+                      )}
+                      {generated.nearby.busStops.count > 0 && (
+                        <div className="flex items-center gap-2 text-gray-600">
+                          <span className="w-2 h-2 rounded-full bg-navy/30 shrink-0" />
+                          {generated.nearby.busStops.count} busshållplatser
+                        </div>
+                      )}
+                      {generated.nearby.trainStations.count > 0 && (
+                        <div className="flex items-center gap-2 text-gray-600">
+                          <span className="w-2 h-2 rounded-full bg-navy/30 shrink-0" />
+                          {generated.nearby.trainStations.count} tågstationer
+                        </div>
+                      )}
+                      {generated.nearby.parking > 0 && (
+                        <div className="flex items-center gap-2 text-gray-600">
+                          <span className="w-2 h-2 rounded-full bg-navy/30 shrink-0" />
+                          {generated.nearby.parking} parkeringar
+                        </div>
+                      )}
+                      {generated.nearby.schools > 0 && (
+                        <div className="flex items-center gap-2 text-gray-600">
+                          <span className="w-2 h-2 rounded-full bg-navy/30 shrink-0" />
+                          {generated.nearby.schools} skolor
+                        </div>
+                      )}
+                      {generated.nearby.healthcare > 0 && (
+                        <div className="flex items-center gap-2 text-gray-600">
+                          <span className="w-2 h-2 rounded-full bg-navy/30 shrink-0" />
+                          {generated.nearby.healthcare} vård/apotek
+                        </div>
+                      )}
+                      {generated.nearby.gyms > 0 && (
+                        <div className="flex items-center gap-2 text-gray-600">
+                          <span className="w-2 h-2 rounded-full bg-navy/30 shrink-0" />
+                          {generated.nearby.gyms} gym
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
+                <p className="text-[11px] text-gray-400 mt-4">
+                  Källa: SCB, BRÅ, OpenStreetMap
+                </p>
+              </div>
+            )}
           </div>
         )}
 

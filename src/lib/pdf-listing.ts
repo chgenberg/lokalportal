@@ -275,16 +275,52 @@ export async function downloadListingPdf(listing: PdfListingInput): Promise<void
       y = drawDataTable(doc, leftRows, rightRows, MARGIN, y);
     }
 
-    if (demographics && y < 260) {
+    if (demographics && y < 250) {
+      doc.setFontSize(FONT_HEADING);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(COLOR_NAVY[0], COLOR_NAVY[1], COLOR_NAVY[2]);
+      doc.text("Demografi & ekonomi", MARGIN, y);
+      y += 5;
+      doc.setDrawColor(COLOR_NAVY[0], COLOR_NAVY[1], COLOR_NAVY[2]);
+      doc.setLineWidth(0.5);
+      doc.line(MARGIN, y - 1, MARGIN + 30, y - 1);
+      y += 4;
+
       doc.setFontSize(FONT_BODY);
       doc.setFont("helvetica", "normal");
       doc.setTextColor(0.2, 0.2, 0.25);
       doc.text(
-        `Demografi: ${demographics.city} har cirka ${demographics.population.toLocaleString("sv-SE")} invånare (2024).`,
+        `${demographics.city} har cirka ${demographics.population.toLocaleString("sv-SE")} invånare (2024).`,
         MARGIN,
         y
       );
-      y += LINE_HEIGHT + SECTION_GAP;
+      y += LINE_HEIGHT + 1;
+
+      if (demographics.medianIncome) {
+        doc.text(`Medianinkomst: ${demographics.medianIncome} tkr/år`, MARGIN, y);
+        y += LINE_HEIGHT + 1;
+      }
+      if (demographics.workingAgePercent) {
+        doc.text(`Andel i arbetsför ålder (20–64): ${demographics.workingAgePercent}%`, MARGIN, y);
+        y += LINE_HEIGHT + 1;
+      }
+      if (demographics.totalBusinesses) {
+        doc.text(
+          `Registrerade företag: ${demographics.totalBusinesses.toLocaleString("sv-SE")}`,
+          MARGIN,
+          y
+        );
+        y += LINE_HEIGHT + 1;
+      }
+      if (demographics.crimeRate) {
+        doc.text(
+          `Anmälda brott per 100 000 inv.: ${demographics.crimeRate.toLocaleString("sv-SE")} (BRÅ 2024)`,
+          MARGIN,
+          y
+        );
+        y += LINE_HEIGHT + 1;
+      }
+      y += SECTION_GAP - 2;
     }
 
     if (priceContext && priceContext.count >= 2 && y < 270) {

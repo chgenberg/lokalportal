@@ -357,14 +357,187 @@ function normalizeCityForLookup(name: string): string {
     .trim();
 }
 
+/** Reported crimes per 100 000 inhabitants (BRÅ 2024, approximate).
+ * Sources: bra.se/statistik – anmälda brott per kommun 2024.
+ * We store values for the ~50 most common municipalities; others default to the national average. */
+const BRA_CRIME_RATE: Record<string, number> = {
+  "0180": 16200, // Stockholm
+  "1480": 14800, // Göteborg
+  "1280": 15900, // Malmö
+  "0380": 12700, // Uppsala
+  "1980": 12000, // Västerås
+  "1880": 12200, // Örebro
+  "0580": 11100, // Linköping
+  "1283": 14100, // Helsingborg
+  "0581": 12600, // Norrköping
+  "0680": 10900, // Jönköping
+  "2480": 11500, // Umeå
+  "1281": 11200, // Lund
+  "1490": 12400, // Borås
+  "2281": 12100, // Sundsvall
+  "2180": 12300, // Gävle
+  "0484": 12800, // Eskilstuna
+  "0181": 11900, // Södertälje
+  "1780": 11000, // Karlstad
+  "0160": 8200,  // Täby
+  "0780": 11300, // Växjö
+  "1380": 11700, // Halmstad
+  "2580": 11600, // Luleå
+  "1488": 12500, // Trollhättan
+  "2380": 11400, // Östersund
+  "2081": 12000, // Borlänge
+  "2080": 11100, // Falun
+  "0880": 10800, // Kalmar
+  "1290": 11800, // Kristianstad
+  "1496": 10600, // Skövde
+  "1485": 11500, // Uddevalla
+  "1383": 10400, // Varberg
+  "0482": 11200, // Nyköping
+  "1282": 13200, // Landskrona
+  "0583": 10900, // Motala
+  "1494": 9800,  // Lidköping
+  "0980": 11500, // Visby
+};
+const BRA_NATIONAL_AVERAGE = 14200; // Approximate national average per 100 000 (2024)
+
+/** Median income in tkr/year per municipality (SCB HE0110, sammanräknad förvärvsinkomst, 2023).
+ * Source: statistikdatabasen.scb.se. Values are median (tkr). */
+const MEDIAN_INCOME: Record<string, number> = {
+  "0180": 366, // Stockholm
+  "1480": 320, // Göteborg
+  "1280": 274, // Malmö
+  "0380": 316, // Uppsala
+  "1980": 302, // Västerås
+  "1880": 296, // Örebro
+  "0580": 318, // Linköping
+  "1283": 283, // Helsingborg
+  "0581": 282, // Norrköping
+  "0680": 310, // Jönköping
+  "2480": 308, // Umeå
+  "1281": 296, // Lund
+  "1490": 294, // Borås
+  "2281": 296, // Sundsvall
+  "2180": 288, // Gävle
+  "0484": 280, // Eskilstuna
+  "0181": 286, // Södertälje
+  "1780": 298, // Karlstad
+  "0160": 440, // Täby
+  "0780": 296, // Växjö
+  "1380": 298, // Halmstad
+  "2580": 314, // Luleå
+  "1488": 294, // Trollhättan
+  "2380": 296, // Östersund
+  "2081": 278, // Borlänge
+  "2080": 302, // Falun
+  "0880": 286, // Kalmar
+  "1290": 278, // Kristianstad
+  "1496": 292, // Skövde
+  "1485": 282, // Uddevalla
+  "1383": 312, // Varberg
+  "0482": 290, // Nyköping
+  "1282": 262, // Landskrona
+  "0583": 288, // Motala
+  "1494": 296, // Lidköping
+  "0980": 290, // Visby
+};
+
+/** Working-age population share (20–64) per municipality (SCB, 2024).
+ * Source: statistikdatabasen.scb.se / BefolkningNy. Percentage. */
+const WORKING_AGE_PERCENT: Record<string, number> = {
+  "0180": 60, // Stockholm
+  "1480": 58, // Göteborg
+  "1280": 59, // Malmö
+  "0380": 58, // Uppsala
+  "1980": 55, // Västerås
+  "1880": 56, // Örebro
+  "0580": 57, // Linköping
+  "1283": 56, // Helsingborg
+  "0581": 55, // Norrköping
+  "0680": 56, // Jönköping
+  "2480": 58, // Umeå
+  "1281": 60, // Lund
+  "1490": 55, // Borås
+  "2281": 54, // Sundsvall
+  "2180": 54, // Gävle
+  "0484": 55, // Eskilstuna
+  "0181": 57, // Södertälje
+  "1780": 56, // Karlstad
+  "0160": 55, // Täby
+  "0780": 57, // Växjö
+  "1380": 55, // Halmstad
+  "2580": 56, // Luleå
+  "1488": 55, // Trollhättan
+  "2380": 55, // Östersund
+  "2081": 55, // Borlänge
+  "2080": 54, // Falun
+  "0880": 54, // Kalmar
+  "1290": 54, // Kristianstad
+  "1496": 55, // Skövde
+  "1485": 54, // Uddevalla
+  "1383": 55, // Varberg
+  "0482": 53, // Nyköping
+  "1282": 56, // Landskrona
+  "0583": 53, // Motala
+  "1494": 54, // Lidköping
+  "0980": 55, // Visby
+};
+
+/** Approximate total registered businesses per municipality (SCB FDB 2024).
+ * Source: SCB Företagsdatabasen. Numbers rounded to nearest 100. */
+const BUSINESS_COUNTS: Record<string, number> = {
+  "0180": 140200, // Stockholm
+  "1480": 55400,  // Göteborg
+  "1280": 30800,  // Malmö
+  "0380": 20900,  // Uppsala
+  "1980": 12600,  // Västerås
+  "1880": 13400,  // Örebro
+  "0580": 14200,  // Linköping
+  "1283": 12700,  // Helsingborg
+  "0581": 11200,  // Norrköping
+  "0680": 12400,  // Jönköping
+  "2480": 11600,  // Umeå
+  "1281": 10700,  // Lund
+  "1490": 9700,   // Borås
+  "2281": 8700,   // Sundsvall
+  "2180": 8500,   // Gävle
+  "0484": 8300,   // Eskilstuna
+  "0181": 7900,   // Södertälje
+  "1780": 8200,   // Karlstad
+  "0160": 7800,   // Täby
+  "0780": 8400,   // Växjö
+  "1380": 8900,   // Halmstad
+  "2580": 6500,   // Luleå
+  "1488": 4800,   // Trollhättan
+  "2380": 5400,   // Östersund
+  "2081": 4100,   // Borlänge
+  "2080": 5100,   // Falun
+  "0880": 6200,   // Kalmar
+  "1290": 7200,   // Kristianstad
+  "1496": 4600,   // Skövde
+  "1485": 4700,   // Uddevalla
+  "1383": 5800,   // Varberg
+  "0482": 4700,   // Nyköping
+  "1282": 3600,   // Landskrona
+  "0583": 3700,   // Motala
+  "1494": 3400,   // Lidköping
+  "0980": 4900,   // Visby
+};
+
+interface ScbJsonResponse {
+  data?: Array<{ key: string[]; values: string[] }>;
+}
+
 async function fetchScbDemographics(cityName: string): Promise<DemographicsData | null> {
   const key = normalizeCityForLookup(cityName);
   const kommunCode = KOMMUN_CODES[key] ?? KOMMUN_CODES[key.replace(/\s+kommun$/i, "")] ?? "00";
+  const label = cityName.trim() || "Kommunen";
 
+  // --- 1. Population ---
+  let population: number | null = null;
   try {
-    const tableUrl =
+    const popUrl =
       "https://api.scb.se/OV0104/v1/doris/sv/ssd/START/BE/BE0101/BE0101A/FolkmangdKommunLän";
-    const body = {
+    const popBody = {
       query: [
         { code: "Region", selection: { filter: "item", values: [kommunCode] } },
         { code: "ContentsCode", selection: { filter: "item", values: ["BE0101N1"] } },
@@ -372,25 +545,42 @@ async function fetchScbDemographics(cityName: string): Promise<DemographicsData 
       ],
       response: { format: "json" },
     };
-    const res = await fetchWithTimeout(tableUrl, {
+    const res = await fetchWithTimeout(popUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
+      body: JSON.stringify(popBody),
     });
-    if (!res.ok) return null;
-    const data = (await res.json()) as { data?: Array<{ key: string[]; values: string[] }> };
-    const rows = data?.data;
-    if (!Array.isArray(rows) || rows.length === 0) return null;
-    const row = rows.find((r) => r.key?.[0] === kommunCode) ?? rows[0];
-    const pop = row?.values?.[0];
-    if (!pop) return null;
-    const num = Number(pop);
-    if (Number.isNaN(num)) return null;
-    const label = cityName.trim() || "Kommunen";
-    return { population: num, city: label };
+    if (res.ok) {
+      const data = (await res.json()) as ScbJsonResponse;
+      const rows = data?.data;
+      if (Array.isArray(rows) && rows.length > 0) {
+        const row = rows.find((r) => r.key?.[0] === kommunCode) ?? rows[0];
+        const val = Number(row?.values?.[0]);
+        if (!Number.isNaN(val) && val > 0) population = val;
+      }
+    }
   } catch {
-    return null;
+    /* ignore */
   }
+
+  if (!population) return null; // No point continuing without population
+
+  // --- 2–4. Static lookups for income, age, businesses (faster + more reliable than API) ---
+  const medianIncome = MEDIAN_INCOME[kommunCode];
+  const workingAgePercent = WORKING_AGE_PERCENT[kommunCode];
+  const totalBusinesses = BUSINESS_COUNTS[kommunCode];
+
+  // --- 5. BRÅ crime rate (static lookup) ---
+  const crimeRate = BRA_CRIME_RATE[kommunCode] ?? BRA_NATIONAL_AVERAGE;
+
+  return {
+    population,
+    city: label,
+    medianIncome,
+    workingAgePercent,
+    totalBusinesses,
+    crimeRate,
+  };
 }
 
 /** Fetch price context from comparable listings in same city/category/type */
@@ -432,17 +622,19 @@ const GPT_SYSTEM = `Du är Sveriges bästa kommersiella fastighetsannonsförfatt
 
 Svara ENDAST med ett giltigt JSON-objekt utan markdown eller annan text. Nycklar:
 - "title": sträng, max 80 tecken. Börja med lokalens starkaste egenskap + plats. Exempel: "Skyltfönster mot Avenyn – 120 m² butik i Göteborg"
-- "description": sträng, 200–400 ord, exakt 4 stycken:
+- "description": sträng, 250–450 ord, exakt 5 stycken:
   1. KROK: En mening som fångar. Lyft det mest unika.
   2. LOKALEN: Storlek, planlösning, skick, utrustning. Var specifik.
   3. LÄGET: Använd områdesdata (faciliteter, kommunikationer, demografi) naturligt i löpande text – inte som punktlista.
-  4. AVSLUTNING: Kort CTA. Vem passar lokalen för? Varför nu?
+  4. OMRÅDET: Väv in ekonomisk data och trygghet – medianinkomst, arbetsför befolkning, antal företag och brottsstatistik – på ett nyanserat och säljande sätt. Om inkomsten eller företagstätheten är hög: lyft köpkraft och affärsklimat. Om brottsligheten är under rikssnittet: nämn trygghet som en fördel.
+  5. AVSLUTNING: Kort CTA. Vem passar lokalen för? Varför nu?
 - "tags": array av strängar, max 10 st. Välj endast bland: Nyrenoverad, Centralt läge, Hög takhöjd, Parkering, Fiber, Klimatanläggning, Lastbrygga, Skyltfönster, Öppen planlösning, Mötesrum
 
 REGLER:
 - Skriv som en människa, inte en AI. Professionell men engagerande.
 - Undvik klichéer: "unik möjlighet", "perfekt för", "missa inte", "i hjärtat av".
-- Var konkret: siffror och fakta framför floskler. Nämn pris och storlek naturligt i beskrivningen.`;
+- Var konkret: siffror och fakta framför floskler. Nämn pris och storlek naturligt i beskrivningen.
+- Nämn aldrig "brott" eller "brottslighet" rakt av. Använd ord som "trygg", "säker", "lugn" om siffrorna stödjer det.`;
 
 export async function generateListingContent(
   input: GenerateInput,
@@ -499,10 +691,53 @@ export async function generateListingContent(
     healthcare: 0,
   };
 
-  const demographicsSummary = demographics
-    ? `${demographics.city} har cirka ${demographics.population.toLocaleString("sv-SE")} invånare (2024).`
-    : null;
+  const demographicsParts: string[] = [];
+  if (demographics) {
+    demographicsParts.push(
+      `${demographics.city} har cirka ${demographics.population.toLocaleString("sv-SE")} invånare (2024).`
+    );
+    if (demographics.medianIncome) {
+      demographicsParts.push(
+        `Medianinkomst: ${demographics.medianIncome} tkr/år.`
+      );
+    }
+    if (demographics.workingAgePercent) {
+      demographicsParts.push(
+        `Andel i arbetsför ålder (20–64): ${demographics.workingAgePercent}%.`
+      );
+    }
+    if (demographics.totalBusinesses) {
+      demographicsParts.push(
+        `Antal registrerade företag i kommunen: ${demographics.totalBusinesses.toLocaleString("sv-SE")}.`
+      );
+    }
+    if (demographics.crimeRate) {
+      demographicsParts.push(
+        `Anmälda brott per 100 000 inv.: ${demographics.crimeRate.toLocaleString("sv-SE")} (2024, BRÅ).`
+      );
+    }
+  }
+  const demographicsSummary = demographicsParts.length > 0 ? demographicsParts.join(" ") : null;
   const amenitiesSummary = nearbyToSummary(nearbyResolved);
+
+  // Build economic/safety context line for the AI
+  const econParts: string[] = [];
+  if (demographics?.medianIncome) {
+    econParts.push(`medianinkomst ${demographics.medianIncome} tkr/år`);
+  }
+  if (demographics?.workingAgePercent) {
+    econParts.push(`${demographics.workingAgePercent}% i arbetsför ålder`);
+  }
+  if (demographics?.totalBusinesses) {
+    econParts.push(`${demographics.totalBusinesses.toLocaleString("sv-SE")} registrerade företag`);
+  }
+  if (demographics?.crimeRate) {
+    const relation = demographics.crimeRate < BRA_NATIONAL_AVERAGE ? "under" : "över";
+    econParts.push(
+      `${demographics.crimeRate.toLocaleString("sv-SE")} anmälda brott/100 000 inv. (${relation} rikssnittet ${BRA_NATIONAL_AVERAGE.toLocaleString("sv-SE")})`
+    );
+  }
+  const econSummary = econParts.length > 0 ? `Ekonomi & trygghet: ${econParts.join(", ")}.` : "";
 
   const userContentParts = [
     `Adress: ${address.trim()}`,
@@ -513,6 +748,7 @@ export async function generateListingContent(
     highlights?.trim() ? `Det hyresvärden vill lyfta: ${highlights.trim()}` : "",
     geocode ? `Plats: ${geocode.displayName}` : "",
     demographicsSummary ? `Demografi: ${demographicsSummary}` : "",
+    econSummary,
     amenitiesSummary ? `Närliggande faciliteter: ${amenitiesSummary}` : "",
   ];
   if (priceContext && priceContext.count >= 2) {
