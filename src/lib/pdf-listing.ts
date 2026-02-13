@@ -147,6 +147,12 @@ function drawDataTable(
 
 export async function downloadListingPdf(listing: PdfListingInput): Promise<void> {
   const doc = new jsPDF({ unit: "mm", format: "a4" });
+  doc.setProperties({
+    title: listing.title,
+    subject: `Kommersiell lokal – ${listing.address}, ${listing.city}`,
+    author: listing.contact?.name || "HittaYta.se",
+    creator: "HittaYta.se",
+  });
   const input = listing as PdfListingInput;
   const nearby = input.nearby;
   const priceContext = input.priceContext ?? null;
@@ -218,12 +224,18 @@ export async function downloadListingPdf(listing: PdfListingInput): Promise<void
   );
   y += SECTION_GAP + 4;
 
-  // Stat boxes: Pris, Yta, Adress
-  const boxW = (CONTENT_W - 8) / 3;
+  // Stat boxes: Pris, Yta, kr/m², Adress
+  const boxW = (CONTENT_W - 12) / 4;
+  const pricePerSqm =
+    listing.size > 0
+      ? Math.round(listing.price / listing.size).toLocaleString("sv-SE") +
+        (listing.type === "rent" ? " kr/m²/mån" : " kr/m²")
+      : "—";
   drawStatBox(doc, "Pris", formatPriceDisplay(listing.price, listing.type), MARGIN, y, boxW);
   drawStatBox(doc, "Yta", `${listing.size} m²`, MARGIN + boxW + 4, y, boxW);
-  const addrShort = listing.address.length > 18 ? listing.address.slice(0, 15) + "…" : listing.address;
-  drawStatBox(doc, "Adress", addrShort, MARGIN + (boxW + 4) * 2, y, boxW);
+  drawStatBox(doc, "kr/m²", pricePerSqm, MARGIN + (boxW + 4) * 2, y, boxW);
+  const addrShort = listing.address.length > 14 ? listing.address.slice(0, 11) + "…" : listing.address;
+  drawStatBox(doc, "Adress", addrShort, MARGIN + (boxW + 4) * 3, y, boxW);
   y += 22;
 
   // Tags
@@ -238,6 +250,14 @@ export async function downloadListingPdf(listing: PdfListingInput): Promise<void
     doc.setTextColor(0.2, 0.2, 0.25);
     doc.text(listing.tags.join(", "), MARGIN, y);
     y += LINE_HEIGHT + SECTION_GAP;
+  }
+
+  if (input.showWatermark) {
+    doc.setFontSize(42);
+    doc.setTextColor(0.94, 0.94, 0.96);
+    doc.setFont("helvetica", "normal");
+    doc.text("Skapad med HittaYta.se", PAGE_W / 2, PAGE_H / 2, { angle: 45, align: "center" });
+    doc.setTextColor(0.2, 0.2, 0.25);
   }
 
   doc.text("HittaYta.se", MARGIN, PAGE_H - 10);

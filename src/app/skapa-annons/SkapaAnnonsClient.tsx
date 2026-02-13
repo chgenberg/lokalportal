@@ -5,6 +5,7 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { availableTags, categoryLabels, allCategories, typeLabels } from "@/lib/types";
 import type { Listing, NearbyData, PriceContext, DemographicsData } from "@/lib/types";
+import { toast } from "sonner";
 import { formatPriceInput, parsePriceInput } from "@/lib/formatPrice";
 import ListingDetailContent from "@/components/ListingDetailContent";
 import { downloadListingPdf } from "@/lib/pdf-listing";
@@ -77,6 +78,8 @@ export default function SkapaAnnonsClient() {
   const [selectedSuggestIndex, setSelectedSuggestIndex] = useState(-1);
   const [imageUploading, setImageUploading] = useState(false);
   const [imageError, setImageError] = useState("");
+  const [generationVersion, setGenerationVersion] = useState(1);
+  const [regenerating, setRegenerating] = useState(false);
   const addressWrapperRef = useRef<HTMLDivElement>(null);
   const suggestDebounceRef = useRef<NodeJS.Timeout | null>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
@@ -124,6 +127,25 @@ export default function SkapaAnnonsClient() {
   }, [input.address, fetchSuggestions]);
 
   useEffect(() => {
+    if (!draftChecked) {
+      const draft = loadDraft();
+      setDraftChecked(true);
+      if (draft) setShowDraftBanner(true);
+    }
+  }, [draftChecked]);
+
+  useEffect(() => {
+    if (step === "input" || step === "email") {
+      const t = setTimeout(() => saveDraft(input), 500);
+      return () => clearTimeout(t);
+    }
+  }, [input, step]);
+
+  useEffect(() => {
+    if (step === "done") clearDraft();
+  }, [step]);
+
+  useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (addressWrapperRef.current && !addressWrapperRef.current.contains(e.target as Node)) {
         setSuggestionsOpen(false);
@@ -132,6 +154,20 @@ export default function SkapaAnnonsClient() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const handleRestoreDraft = () => {
+    const draft = loadDraft();
+    if (draft) {
+      setInput(draft);
+      setShowDraftBanner(false);
+      setStep("input");
+    }
+  };
+
+  const handleDiscardDraft = () => {
+    clearDraft();
+    setShowDraftBanner(false);
+  };
 
   const handleSelectSuggestion = (item: SuggestItem) => {
     updateInput({ address: item.display_name, lat: item.lat, lng: item.lon });
@@ -184,6 +220,7 @@ export default function SkapaAnnonsClient() {
       }
       if (data.url && generated) {
         setGenerated((g) => (g ? { ...g, imageUrl: data.url } : g));
+        toast.success("Bild uppladdad");
       }
     } catch {
       setImageError("Uppladdning misslyckades. Försök igen.");
@@ -295,6 +332,7 @@ export default function SkapaAnnonsClient() {
         priceContext: data.priceContext ?? null,
         demographics: data.demographics ?? null,
       });
+      setGenerationVersion(1);
       setStep("preview");
     } catch {
       setGenerateError("Något gick fel. Försök igen.");
@@ -311,10 +349,69 @@ export default function SkapaAnnonsClient() {
     });
   };
 
+  const MAX_REGENERATIONS = 3;
+
+  const handleRegenerate = async () => {
+    if (!generated || generationVersion >= MAX_REGENERATIONS || regenerating) return;
+    setRegenerating(true);
+    setGenerateError("");
+    try {
+      const priceNum = parsePriceInput(input.price) || 0;
+      const sizeNum = parseInt(input.size, 10) || 0;
+      const body: Record<string, unknown> = {
+        email: leadEmail.trim(),
+        address: input.address.trim(),
+        type: input.type,
+        category: input.categories.join(","),
+        price: priceNum,
+        size: sizeNum,
+        highlights: input.highlights.trim() || undefined,
+      };
+      if (input.lat != null && input.lng != null && !Number.isNaN(input.lat) && !Number.isNaN(input.lng)) {
+        body.lat = input.lat;
+        body.lng = input.lng;
+      }
+      const res = await fetch("/api/listings/generate-public", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setGenerateError(data.error || "Kunde inte generera ny text");
+        return;
+      }
+      setGenerated({
+        title: data.title ?? "",
+        description: data.description ?? "",
+        tags: Array.isArray(data.tags) ? data.tags : [],
+        city: data.city ?? "",
+        address: data.address ?? input.address.trim(),
+        lat: typeof data.lat === "number" ? data.lat : 0,
+        lng: typeof data.lng === "number" ? data.lng : 0,
+        type: data.type ?? input.type,
+        category: input.categories.join(","),
+        price: data.price ?? priceNum,
+        size: data.size ?? sizeNum,
+        areaSummary: data.areaSummary,
+        imageUrl: generated.imageUrl,
+        nearby: data.nearby,
+        priceContext: data.priceContext ?? null,
+        demographics: data.demographics ?? null,
+      });
+      setGenerationVersion((v) => Math.min(v + 1, MAX_REGENERATIONS));
+    } catch {
+      setGenerateError("Något gick fel. Försök igen.");
+    } finally {
+      setRegenerating(false);
+    }
+  };
+
   const handleDownloadPdf = async () => {
     if (!generated) return;
     const previewListing = {
       id: "pdf-preview",
+      showWatermark: true,
       title: generated.title,
       description: generated.description,
       city: generated.city,
@@ -374,6 +471,28 @@ export default function SkapaAnnonsClient() {
             );
           })}
         </div>
+
+        {showDraftBanner && (
+          <div className="mb-6 p-4 rounded-xl bg-navy/5 border border-navy/10 flex flex-wrap items-center justify-between gap-3">
+            <p className="text-[13px] text-navy/80">Du har ett sparat utkast – vill du fortsätta?</p>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={handleRestoreDraft}
+                className="px-4 py-2 text-[13px] font-medium text-white bg-navy rounded-lg hover:bg-navy/90 transition-colors"
+              >
+                Återställ utkast
+              </button>
+              <button
+                type="button"
+                onClick={handleDiscardDraft}
+                className="px-4 py-2 text-[13px] font-medium text-gray-600 hover:text-navy transition-colors"
+              >
+                Ta bort
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Step: Email */}
         {step === "email" && (
@@ -612,6 +731,8 @@ export default function SkapaAnnonsClient() {
                 }}
                 showBackLink={false}
                 compact
+                editableDescription
+                onDescriptionChange={(desc) => setGenerated((g) => (g ? { ...g, description: desc } : g))}
                 contactSlot={
                   <div className="p-6 border-t border-border/40 space-y-4">
                     <div className="flex flex-col sm:flex-row gap-3">
@@ -634,6 +755,14 @@ export default function SkapaAnnonsClient() {
                       </button>
                     </div>
                     <div className="flex flex-wrap items-center gap-3 text-sm">
+                      <button
+                        type="button"
+                        onClick={handleRegenerate}
+                        disabled={generationVersion >= MAX_REGENERATIONS || regenerating}
+                        className="text-gray-500 hover:text-navy transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {regenerating ? "Genererar..." : `Generera ny text (${generationVersion}/${MAX_REGENERATIONS})`}
+                      </button>
                       <input
                         ref={imageInputRef}
                         type="file"

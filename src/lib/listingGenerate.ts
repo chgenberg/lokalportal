@@ -155,8 +155,13 @@ function getName(el: OverpassElement): string {
 
 /** Fetch nearby amenities via Overpass API. Returns structured NearbyData.
  * Uses both node and way (many POIs are mapped as buildings/areas in OSM).
- * Radii: 1000-1500m for better coverage in suburbs. */
+ * Radii: 1000-1500m for better coverage in suburbs.
+ * Results cached 30 min by rounded coordinates. */
 async function fetchNearbyData(lat: number, lng: number): Promise<NearbyData> {
+  const cacheKey = `nearby:${lat.toFixed(3)}:${lng.toFixed(3)}`;
+  const cached = cacheGet<NearbyData>(cacheKey);
+  if (cached) return cached;
+
   const empty: NearbyData = {
     restaurants: 0,
     shops: 0,
@@ -193,14 +198,16 @@ async function fetchNearbyData(lat: number, lng: number): Promise<NearbyData> {
 out center;
   `.trim();
   try {
-    const res = await fetchWithTimeout(
-      "https://overpass-api.de/api/interpreter",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: `data=${encodeURIComponent(query)}`,
-      },
-      12000
+    const res = await fetchWithRetry(() =>
+      fetchWithTimeout(
+        "https://overpass-api.de/api/interpreter",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: `data=${encodeURIComponent(query)}`,
+        },
+        12000
+      )
     );
     if (!res.ok) return empty;
     const data = (await res.json()) as OverpassResponse;
@@ -246,29 +253,38 @@ out center;
       if (e.center?.lat != null && e.center?.lon != null) return { lat: e.center.lat, lng: e.center.lon };
       return null;
     };
-    const sortByDistance = (arr: OverpassElement[]) =>
+    const sortByDistance = (arr: OverpassElement[]): Array<{ el: OverpassElement; distance: number }> =>
       arr
         .map((e) => ({ el: e, coords: getCoords(e) }))
         .filter((x): x is { el: OverpassElement; coords: { lat: number; lng: number } } => x.coords != null)
-        .sort((a, b) => {
-          const d1 = haversineDistance(lat, lng, a.coords.lat, a.coords.lng);
-          const d2 = haversineDistance(lat, lng, b.coords.lat, b.coords.lng);
-          return d1 - d2;
-        })
-        .map((x) => x.el);
-    const nearestBus = sortByDistance(busStopElements)[0];
-    const nearestStation = sortByDistance(stationElements)[0];
+        .map((x) => ({
+          el: x.el,
+          distance: Math.round(haversineDistance(lat, lng, x.coords.lat, x.coords.lng)),
+        }))
+        .sort((a, b) => a.distance - b.distance);
+    const nearestBusEntry = sortByDistance(busStopElements)[0];
+    const nearestStationEntry = sortByDistance(stationElements)[0];
 
-    return {
+    const result: NearbyData = {
       restaurants,
       shops,
       gyms,
-      busStops: { count: busStops, nearest: getName(nearestBus) || undefined },
-      trainStations: { count: stations, nearest: getName(nearestStation) || undefined },
+      busStops: {
+        count: busStops,
+        nearest: nearestBusEntry ? getName(nearestBusEntry.el) || undefined : undefined,
+        nearestDistance: nearestBusEntry?.distance,
+      },
+      trainStations: {
+        count: stations,
+        nearest: nearestStationEntry ? getName(nearestStationEntry.el) || undefined : undefined,
+        nearestDistance: nearestStationEntry?.distance,
+      },
       parking,
       schools,
       healthcare,
     };
+    cacheSet(cacheKey, result);
+    return result;
   } catch {
     return empty;
   }
@@ -532,6 +548,10 @@ async function fetchScbDemographics(cityName: string): Promise<DemographicsData 
   const kommunCode = KOMMUN_CODES[key] ?? KOMMUN_CODES[key.replace(/\s+kommun$/i, "")] ?? "00";
   const label = cityName.trim() || "Kommunen";
 
+  const cacheKey = `demographics:${kommunCode}`;
+  const cached = cacheGet<DemographicsData>(cacheKey);
+  if (cached) return cached;
+
   // --- 1. Population ---
   let population: number | null = null;
   try {
@@ -545,11 +565,13 @@ async function fetchScbDemographics(cityName: string): Promise<DemographicsData 
       ],
       response: { format: "json" },
     };
-    const res = await fetchWithTimeout(popUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(popBody),
-    });
+    const res = await fetchWithRetry(() =>
+      fetchWithTimeout(popUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(popBody),
+      })
+    );
     if (res.ok) {
       const data = (await res.json()) as ScbJsonResponse;
       const rows = data?.data;
@@ -573,7 +595,7 @@ async function fetchScbDemographics(cityName: string): Promise<DemographicsData 
   // --- 5. BRÅ crime rate (static lookup) ---
   const crimeRate = BRA_CRIME_RATE[kommunCode] ?? BRA_NATIONAL_AVERAGE;
 
-  return {
+  const result: DemographicsData = {
     population,
     city: label,
     medianIncome,
@@ -581,10 +603,36 @@ async function fetchScbDemographics(cityName: string): Promise<DemographicsData 
     totalBusinesses,
     crimeRate,
   };
+  cacheSet(cacheKey, result);
+  return result;
+}
+
+const EMPTY_NEARBY: NearbyData = {
+  restaurants: 0,
+  shops: 0,
+  gyms: 0,
+  busStops: { count: 0 },
+  trainStations: { count: 0 },
+  parking: 0,
+  schools: 0,
+  healthcare: 0,
+};
+
+/** Fetches demographics and nearby data for a listing. Used by listing detail page. */
+export async function fetchAreaData(
+  city: string,
+  lat: number,
+  lng: number
+): Promise<{ demographics: DemographicsData | null; nearby: NearbyData }> {
+  const [demographics, nearby] = await Promise.all([
+    fetchScbDemographics(city),
+    lat && lng ? fetchNearbyData(lat, lng) : Promise.resolve(EMPTY_NEARBY),
+  ]);
+  return { demographics, nearby: nearby ?? EMPTY_NEARBY };
 }
 
 /** Fetch price context from comparable listings in same city/category/type */
-async function fetchAreaPriceContext(
+export async function fetchAreaPriceContext(
   city: string,
   category: string,
   type: string
@@ -628,7 +676,7 @@ Svara ENDAST med ett giltigt JSON-objekt utan markdown eller annan text. Nycklar
   3. LÄGET: Använd områdesdata (faciliteter, kommunikationer, demografi) naturligt i löpande text – inte som punktlista.
   4. OMRÅDET: Väv in ekonomisk data och trygghet – medianinkomst, arbetsför befolkning, antal företag och brottsstatistik – på ett nyanserat och säljande sätt. Om inkomsten eller företagstätheten är hög: lyft köpkraft och affärsklimat. Om brottsligheten är under rikssnittet: nämn trygghet som en fördel.
   5. AVSLUTNING: Kort CTA. Vem passar lokalen för? Varför nu?
-- "tags": array av strängar, max 10 st. Välj endast bland: Nyrenoverad, Centralt läge, Hög takhöjd, Parkering, Fiber, Klimatanläggning, Lastbrygga, Skyltfönster, Öppen planlösning, Mötesrum
+- "tags": array av strängar, max 10 st. Välj endast bland: Nyrenoverad, Centralt läge, Hög takhöjd, Parkering, Fiber, Klimatanläggning, Lastbrygga, Skyltfönster, Öppen planlösning, Mötesrum, Nära kollektivtrafik, Gångavstånd till restauranger, Tryggt läge, Nära centrum. Välj "Nära kollektivtrafik" om det finns busshållplatser eller tågstation i närheten. Välj "Gångavstånd till restauranger" om det finns restauranger i området. Välj "Tryggt läge" endast om brottsstatistiken är under rikssnittet. Välj "Nära centrum" om lokalen ligger centralt.
 
 REGLER:
 - Skriv som en människa, inte en AI. Professionell men engagerande.
@@ -739,12 +787,18 @@ export async function generateListingContent(
   }
   const econSummary = econParts.length > 0 ? `Ekonomi & trygghet: ${econParts.join(", ")}.` : "";
 
+  const pricePerSqm = sizeNum > 0 ? Math.round(priceNum / sizeNum) : 0;
+  const pricePerSqmLabel = pricePerSqm > 0
+    ? `Pris per m²: ${pricePerSqm.toLocaleString("sv-SE")} kr${type === "rent" ? "/m²/mån" : "/m²"}`
+    : "";
+
   const userContentParts = [
     `Adress: ${address.trim()}`,
     `Typ: ${typeLabel}`,
     `Kategori: ${categoryLabel}`,
     `Pris: ${priceNum.toLocaleString("sv-SE")} kr${type === "rent" ? "/mån" : ""}`,
     `Storlek: ${sizeNum} m²`,
+    pricePerSqmLabel,
     highlights?.trim() ? `Det hyresvärden vill lyfta: ${highlights.trim()}` : "",
     geocode ? `Plats: ${geocode.displayName}` : "",
     demographicsSummary ? `Demografi: ${demographicsSummary}` : "",
@@ -769,6 +823,22 @@ export async function generateListingContent(
     userContentParts.push(
       `Använd dessa exakta antal i beskrivningen: ${nearbyResolved.restaurants} restauranger, ${nearbyResolved.shops} butiker, ${nearbyResolved.gyms} gym, ${nearbyResolved.busStops.count} busshållplatser, ${nearbyResolved.trainStations.count} tågstationer, ${nearbyResolved.parking} parkeringar, ${nearbyResolved.schools} skolor, ${nearbyResolved.healthcare} vård/apotek.`
     );
+    const nearestParts: string[] = [];
+    if (nearbyResolved.busStops.nearest && nearbyResolved.busStops.nearestDistance != null) {
+      nearestParts.push(
+        `Närmaste busshållplats: ${nearbyResolved.busStops.nearest} (${nearbyResolved.busStops.nearestDistance} m)`
+      );
+    }
+    if (nearbyResolved.trainStations.nearest && nearbyResolved.trainStations.nearestDistance != null) {
+      nearestParts.push(
+        `Närmaste tågstation: ${nearbyResolved.trainStations.nearest} (${nearbyResolved.trainStations.nearestDistance} m)`
+      );
+    }
+    if (nearestParts.length > 0) {
+      userContentParts.push(
+        `Använd dessa specifika platser i lägesstycket: ${nearestParts.join(". ")}.`
+      );
+    }
   } else {
     userContentParts.push(
       "Ingen detaljerad platsdata tillgänglig – nämn inte antal butiker/skolor/faciliteter. Fokusera på lokalens egenskaper, läge och pris."

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
+import { toast } from "sonner";
 
 interface FavoriteButtonProps {
   listingId: string;
@@ -38,14 +39,20 @@ export default function FavoriteButton({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ listingId }),
         });
-        if (res.ok) setFavorited(false);
+        if (res.ok) {
+          setFavorited(false);
+          toast.success("Borttagen från favoriter");
+        }
       } else {
         const res = await fetch("/api/favorites", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ listingId }),
         });
-        if (res.ok) setFavorited(true);
+        if (res.ok) {
+          setFavorited(true);
+          toast.success("Tillagd i favoriter");
+        }
       }
     } finally {
       setLoading(false);

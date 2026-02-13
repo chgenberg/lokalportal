@@ -7,6 +7,7 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { availableTags, categoryLabels, allCategories, typeLabels } from "@/lib/types";
 import type { Listing, NearbyData, PriceContext, DemographicsData } from "@/lib/types";
+import { toast } from "sonner";
 import { formatPriceInput, parsePriceInput } from "@/lib/formatPrice";
 import CustomSelect from "./CustomSelect";
 import ListingDetailContent from "./ListingDetailContent";
@@ -81,6 +82,8 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
   const [submitted, setSubmitted] = useState(false);
   const [generateError, setGenerateError] = useState("");
   const [imageUploading, setImageUploading] = useState(false);
+  const [generationVersion, setGenerationVersion] = useState(1);
+  const [regenerating, setRegenerating] = useState(false);
   const [suggestions, setSuggestions] = useState<SuggestItem[]>([]);
   const [suggestionsOpen, setSuggestionsOpen] = useState(false);
   const [suggestionsLoading, setSuggestionsLoading] = useState(false);
@@ -206,6 +209,63 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
     });
   };
 
+  const MAX_REGENERATIONS = 3;
+
+  const handleRegenerate = async () => {
+    if (!generated || generationVersion >= MAX_REGENERATIONS || regenerating) return;
+    setRegenerating(true);
+    setGenerateError("");
+    try {
+      const priceNum = Number(input.price);
+      const sizeNum = Number(input.size);
+      const body: Record<string, unknown> = {
+        address: input.address.trim(),
+        type: input.type,
+        category: input.categories[0],
+        price: priceNum,
+        size: sizeNum,
+        highlights: input.highlights.trim() || undefined,
+      };
+      if (input.lat != null && input.lng != null && !Number.isNaN(input.lat) && !Number.isNaN(input.lng)) {
+        body.lat = input.lat;
+        body.lng = input.lng;
+      }
+      const res = await fetch("/api/listings/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setGenerateError(data.error || "Kunde inte generera ny text");
+        return;
+      }
+      setGenerated({
+        title: data.title ?? "",
+        description: data.description ?? "",
+        tags: Array.isArray(data.tags) ? data.tags : [],
+        city: data.city ?? "",
+        address: data.address ?? input.address.trim(),
+        lat: typeof data.lat === "number" ? data.lat : 0,
+        lng: typeof data.lng === "number" ? data.lng : 0,
+        type: data.type ?? input.type,
+        category: input.categories.join(","),
+        price: data.price ?? priceNum,
+        size: data.size ?? sizeNum,
+        areaSummary: data.areaSummary,
+        imageUrl: generated.imageUrl,
+        nearby: data.nearby,
+        priceContext: data.priceContext ?? null,
+        demographics: data.demographics ?? null,
+      });
+      setGenerationVersion((v) => Math.min(v + 1, MAX_REGENERATIONS));
+    } catch {
+      setGenerateError("Något gick fel. Försök igen.");
+    } finally {
+      setRegenerating(false);
+    }
+  };
+
   const handleGenerate = async () => {
     if (!session?.user) {
       router.push("/logga-in");
@@ -282,6 +342,7 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
         priceContext: data.priceContext ?? null,
         demographics: data.demographics ?? null,
       });
+      setGenerationVersion(1);
       setStep("preview");
     } catch {
       setGenerateError("Något gick fel. Försök igen.");
@@ -360,6 +421,7 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
       }
 
       setSubmitted(true);
+      toast.success("Annons publicerad!");
       setTimeout(() => {
         onClose();
         setInput(initialInput);
@@ -697,7 +759,17 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
                 )}
 
                 <div className="mb-8 p-5 rounded-2xl border border-border/60 bg-muted/20">
-                  <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-4">Redigera innan du publicerar</p>
+                  <div className="flex items-center justify-between mb-4">
+                    <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase">Redigera innan du publicerar</p>
+                    <button
+                      type="button"
+                      onClick={handleRegenerate}
+                      disabled={generationVersion >= MAX_REGENERATIONS || regenerating}
+                      className="text-[12px] text-navy/60 hover:text-navy disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {regenerating ? "Genererar..." : `Generera ny text (${generationVersion}/${MAX_REGENERATIONS})`}
+                    </button>
+                  </div>
                   <div className="space-y-4">
                     <div>
                       <label className="block text-[11px] font-semibold text-gray-400 mb-1 tracking-[0.1em] uppercase">Rubrik</label>
@@ -783,6 +855,8 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
                     listing={previewListing}
                     showBackLink={false}
                     compact
+                    editableDescription
+                    onDescriptionChange={(desc) => setGenerated((g) => (g ? { ...g, description: desc } : g))}
                     contactSlot={
                       <>
                         <p className="text-[13px] text-gray-500 py-2">Kontaktknappar visas för besökare efter publicering.</p>

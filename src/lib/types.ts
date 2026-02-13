@@ -103,6 +103,10 @@ export const availableTags = [
   "Skyltfönster",
   "Öppen planlösning",
   "Mötesrum",
+  "Nära kollektivtrafik",
+  "Gångavstånd till restauranger",
+  "Tryggt läge",
+  "Nära centrum",
 ] as const;
 
 export interface SearchFilters {
@@ -116,8 +120,8 @@ export interface NearbyData {
   restaurants: number;
   shops: number;
   gyms: number;
-  busStops: { count: number; nearest?: string };
-  trainStations: { count: number; nearest?: string };
+  busStops: { count: number; nearest?: string; nearestDistance?: number };
+  trainStations: { count: number; nearest?: string; nearestDistance?: number };
   parking: number;
   schools: number;
   healthcare: number;

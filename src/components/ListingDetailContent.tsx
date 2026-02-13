@@ -1,10 +1,10 @@
 "use client";
 
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { formatCategories, typeLabels } from "@/lib/types";
-import type { Listing } from "@/lib/types";
+import type { Listing, NearbyData, DemographicsData, PriceContext } from "@/lib/types";
 import PlaceholderImage from "@/components/PlaceholderImage";
 
 const ListingMap = lazy(() => import("@/components/ListingMap"));
@@ -20,6 +20,16 @@ interface ListingDetailContentProps {
   compact?: boolean;
   /** When provided, rendered inside the contact card below name/email/phone (e.g. contact buttons or preview message). */
   contactSlot: React.ReactNode;
+  /** When true, description can be edited via Redigera toggle. Requires onDescriptionChange. */
+  editableDescription?: boolean;
+  /** Called when user saves edited description. Required if editableDescription. */
+  onDescriptionChange?: (description: string) => void;
+  /** Optional area analysis data (demographics, nearby amenities, price context). */
+  areaData?: {
+    demographics: DemographicsData | null;
+    nearby: NearbyData;
+    priceContext: PriceContext | null;
+  };
 }
 
 export default function ListingDetailContent({
@@ -27,8 +37,17 @@ export default function ListingDetailContent({
   showBackLink = true,
   compact = false,
   contactSlot,
+  editableDescription = false,
+  onDescriptionChange,
+  areaData,
 }: ListingDetailContentProps) {
+  const [isEditingDescription, setIsEditingDescription] = useState(false);
+  const [editDraft, setEditDraft] = useState(listing.description || "");
   const hasImage = listing.imageUrl && listing.imageUrl.trim() !== "";
+
+  useEffect(() => {
+    if (isEditingDescription) setEditDraft(listing.description || "");
+  }, [listing.description, isEditingDescription]);
 
   return (
     <div className={`bg-muted/30 ${compact ? "" : "min-h-screen"}`}>
@@ -82,7 +101,7 @@ export default function ListingDetailContent({
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
             <div className="bg-white rounded-2xl border border-border/40 p-6 shadow-sm">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <div className="text-center">
                   <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-1">Pris</p>
                   <p className="text-lg sm:text-xl font-bold text-navy tracking-tight">{formatPrice(listing.price, listing.type)}</p>
@@ -92,6 +111,14 @@ export default function ListingDetailContent({
                   <p className="text-lg sm:text-xl font-bold text-navy tracking-tight">{listing.size} m²</p>
                 </div>
                 <div className="text-center">
+                  <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-1">kr/m²</p>
+                  <p className="text-lg sm:text-xl font-bold text-navy tracking-tight">
+                    {listing.size > 0
+                      ? `${Math.round(listing.price / listing.size).toLocaleString("sv-SE")} ${listing.type === "rent" ? "kr/m²/mån" : "kr/m²"}`
+                      : "—"}
+                  </p>
+                </div>
+                <div className="text-center sm:border-l border-border/40">
                   <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-1">Plats</p>
                   <p className="text-lg font-bold text-navy tracking-tight">{listing.city}</p>
                 </div>
@@ -122,19 +149,161 @@ export default function ListingDetailContent({
             )}
 
             <div className="bg-white rounded-2xl border border-border/40 p-6 sm:p-8 shadow-sm">
-              <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-4">Beskrivning</p>
-              <div className="text-[15px] text-gray-600 leading-[1.7] max-w-[65ch]">
-                {listing.description ? (
-                  listing.description.split(/\n\n+/).map((block, i) => (
-                    <p key={i} className="mb-4 last:mb-0 whitespace-pre-line">
-                      {block.trim()}
-                    </p>
-                  ))
-                ) : (
-                  <p className="text-gray-400">Ingen beskrivning tillagd.</p>
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase">Beskrivning</p>
+                {editableDescription && onDescriptionChange && !isEditingDescription && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditDraft(listing.description || "");
+                      setIsEditingDescription(true);
+                    }}
+                    className="text-[12px] text-navy/60 hover:text-navy transition-colors"
+                  >
+                    Redigera
+                  </button>
+                )}
+                {editableDescription && onDescriptionChange && isEditingDescription && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onDescriptionChange(editDraft.trim().slice(0, 5000));
+                      setIsEditingDescription(false);
+                    }}
+                    className="text-[12px] font-medium text-navy hover:underline"
+                  >
+                    Klart
+                  </button>
                 )}
               </div>
+              {editableDescription && onDescriptionChange && isEditingDescription ? (
+                <textarea
+                  value={editDraft}
+                  onChange={(e) => setEditDraft(e.target.value)}
+                  className="w-full min-h-[200px] p-4 text-[15px] text-gray-600 leading-[1.7] border border-border/60 rounded-xl focus:border-navy/30 focus:outline-none resize-y"
+                  placeholder="Skriv beskrivningen här..."
+                  maxLength={5000}
+                />
+              ) : (
+                <div className="text-[15px] text-gray-600 leading-[1.7] max-w-[65ch]">
+                  {listing.description ? (
+                    listing.description.split(/\n\n+/).map((block, i) => (
+                      <p key={i} className="mb-4 last:mb-0 whitespace-pre-line">
+                        {block.trim()}
+                      </p>
+                    ))
+                  ) : (
+                    <p className="text-gray-400">Ingen beskrivning tillagd.</p>
+                  )}
+                </div>
+              )}
             </div>
+
+            {/* Områdesanalys – demographics, nearby amenities, price context */}
+            {areaData && (areaData.demographics || areaData.nearby || (areaData.priceContext && areaData.priceContext.count >= 2)) && (
+              <div className="bg-white rounded-2xl border border-border/40 p-6 sm:p-8 shadow-sm">
+                <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-4">Områdesanalys</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
+                  {areaData.demographics?.population && (
+                    <div className="bg-muted/40 rounded-xl p-3">
+                      <p className="text-[11px] text-gray-400 tracking-wide mb-0.5">Invånare</p>
+                      <p className="text-base font-bold text-navy">{areaData.demographics.population.toLocaleString("sv-SE")}</p>
+                    </div>
+                  )}
+                  {areaData.demographics?.medianIncome && (
+                    <div className="bg-muted/40 rounded-xl p-3">
+                      <p className="text-[11px] text-gray-400 tracking-wide mb-0.5">Medianinkomst</p>
+                      <p className="text-base font-bold text-navy">{areaData.demographics.medianIncome} tkr/år</p>
+                    </div>
+                  )}
+                  {areaData.demographics?.workingAgePercent && (
+                    <div className="bg-muted/40 rounded-xl p-3">
+                      <p className="text-[11px] text-gray-400 tracking-wide mb-0.5">Arbetsför ålder</p>
+                      <p className="text-base font-bold text-navy">{areaData.demographics.workingAgePercent}%</p>
+                    </div>
+                  )}
+                  {areaData.demographics?.totalBusinesses && (
+                    <div className="bg-muted/40 rounded-xl p-3">
+                      <p className="text-[11px] text-gray-400 tracking-wide mb-0.5">Företag</p>
+                      <p className="text-base font-bold text-navy">{areaData.demographics.totalBusinesses.toLocaleString("sv-SE")}</p>
+                    </div>
+                  )}
+                  {areaData.demographics?.crimeRate && (
+                    <div className="bg-muted/40 rounded-xl p-3">
+                      <p className="text-[11px] text-gray-400 tracking-wide mb-0.5">Brott/100k inv.</p>
+                      <p className="text-base font-bold text-navy">{areaData.demographics.crimeRate.toLocaleString("sv-SE")}</p>
+                    </div>
+                  )}
+                  {areaData.priceContext && areaData.priceContext.count >= 2 && (
+                    <div className="bg-muted/40 rounded-xl p-3 sm:col-span-2 sm:col-start-1">
+                      <p className="text-[11px] text-gray-400 tracking-wide mb-0.5">Medianpris liknande lokaler i {listing.city}</p>
+                      <p className="text-base font-bold text-navy">
+                        {areaData.priceContext.medianPrice.toLocaleString("sv-SE")} {listing.type === "rent" ? "kr/mån" : "kr"}
+                      </p>
+                      <p className="text-[11px] text-gray-400 mt-1">
+                        {areaData.priceContext.count} annonser · {areaData.priceContext.minPrice.toLocaleString("sv-SE")}–{areaData.priceContext.maxPrice.toLocaleString("sv-SE")} kr
+                      </p>
+                    </div>
+                  )}
+                </div>
+                {areaData.nearby && (areaData.nearby.restaurants > 0 || areaData.nearby.shops > 0 || areaData.nearby.busStops.count > 0 || areaData.nearby.trainStations.count > 0 || areaData.nearby.parking > 0 || areaData.nearby.schools > 0 || areaData.nearby.healthcare > 0 || areaData.nearby.gyms > 0) && (
+                  <>
+                    <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-3">Inom 1 km</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-[13px]">
+                      {areaData.nearby.restaurants > 0 && (
+                        <div className="flex items-center gap-2 text-gray-600">
+                          <span className="w-2 h-2 rounded-full bg-navy/30 shrink-0" />
+                          {areaData.nearby.restaurants} restauranger
+                        </div>
+                      )}
+                      {areaData.nearby.shops > 0 && (
+                        <div className="flex items-center gap-2 text-gray-600">
+                          <span className="w-2 h-2 rounded-full bg-navy/30 shrink-0" />
+                          {areaData.nearby.shops} butiker
+                        </div>
+                      )}
+                      {areaData.nearby.busStops.count > 0 && (
+                        <div className="flex items-center gap-2 text-gray-600">
+                          <span className="w-2 h-2 rounded-full bg-navy/30 shrink-0" />
+                          {areaData.nearby.busStops.count} busshållplatser
+                        </div>
+                      )}
+                      {areaData.nearby.trainStations.count > 0 && (
+                        <div className="flex items-center gap-2 text-gray-600">
+                          <span className="w-2 h-2 rounded-full bg-navy/30 shrink-0" />
+                          {areaData.nearby.trainStations.count} tågstationer
+                        </div>
+                      )}
+                      {areaData.nearby.parking > 0 && (
+                        <div className="flex items-center gap-2 text-gray-600">
+                          <span className="w-2 h-2 rounded-full bg-navy/30 shrink-0" />
+                          {areaData.nearby.parking} parkeringar
+                        </div>
+                      )}
+                      {areaData.nearby.schools > 0 && (
+                        <div className="flex items-center gap-2 text-gray-600">
+                          <span className="w-2 h-2 rounded-full bg-navy/30 shrink-0" />
+                          {areaData.nearby.schools} skolor
+                        </div>
+                      )}
+                      {areaData.nearby.healthcare > 0 && (
+                        <div className="flex items-center gap-2 text-gray-600">
+                          <span className="w-2 h-2 rounded-full bg-navy/30 shrink-0" />
+                          {areaData.nearby.healthcare} vård/apotek
+                        </div>
+                      )}
+                      {areaData.nearby.gyms > 0 && (
+                        <div className="flex items-center gap-2 text-gray-600">
+                          <span className="w-2 h-2 rounded-full bg-navy/30 shrink-0" />
+                          {areaData.nearby.gyms} gym
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
+                <p className="text-[11px] text-gray-400 mt-4">Källa: SCB, BRÅ, OpenStreetMap</p>
+              </div>
+            )}
 
             {listing.lat && listing.lng && (
               <div className="bg-white rounded-2xl border border-border/40 overflow-hidden shadow-sm">

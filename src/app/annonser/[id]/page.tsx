@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { formatCategories } from "@/lib/types";
-import type { Listing } from "@/lib/types";
+import type { Listing, DemographicsData, NearbyData, PriceContext } from "@/lib/types";
 import FavoriteButton from "@/components/FavoriteButton";
 import ListingDetailContent from "@/components/ListingDetailContent";
 import { downloadListingPdf } from "@/lib/pdf-listing";
@@ -16,6 +16,7 @@ export default function ListingDetailPage() {
   const { data: session, status } = useSession();
   const id = params.id as string;
   const [listing, setListing] = useState<Listing | null>(null);
+  const [areaData, setAreaData] = useState<{ demographics: DemographicsData | null; nearby: NearbyData; priceContext: PriceContext | null } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [favorited, setFavorited] = useState(false);
@@ -31,6 +32,19 @@ export default function ListingDetailPage() {
       } catch { setError("Ett fel uppstod."); setListing(null); } finally { setLoading(false); }
     };
     if (id) fetchListing();
+  }, [id]);
+
+  useEffect(() => {
+    const fetchArea = async () => {
+      try {
+        const res = await fetch(`/api/listings/${id}/area`);
+        if (res.ok) {
+          const data = await res.json();
+          setAreaData({ demographics: data.demographics ?? null, nearby: data.nearby ?? { restaurants: 0, shops: 0, gyms: 0, busStops: { count: 0 }, trainStations: { count: 0 }, parking: 0, schools: 0, healthcare: 0 }, priceContext: data.priceContext ?? null });
+        }
+      } catch { /* ignore */ }
+    };
+    if (id) fetchArea();
   }, [id]);
 
   useEffect(() => {
@@ -141,6 +155,7 @@ export default function ListingDetailPage() {
       <ListingDetailContent
         listing={listing}
         showBackLink
+        areaData={areaData ?? undefined}
         contactSlot={
           <>
             {contactError && (
