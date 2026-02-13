@@ -7,7 +7,7 @@ import type { NearbyData, PriceContext, DemographicsData } from "@/lib/types";
 import { formatCategories, typeLabels, categoryLabels, parseCategories, getListingImages } from "@/lib/types";
 import { formatPrice } from "@/lib/formatPrice";
 
-const MARGIN = 18;
+const MARGIN = 16;
 const PAGE_W = 210;
 const PAGE_H = 297;
 const CONTENT_W = PAGE_W - MARGIN * 2;
@@ -118,7 +118,7 @@ function drawBarChart(
       doc.setTextColor(COLORS.text[0], COLORS.text[1], COLORS.text[2]);
       doc.text(String(item.value), barStart + barMaxW + 4, y + barHeight / 2 + 1);
     }
-    y += barHeight + 1.5;
+    y += barHeight + 1;
   }
   return y;
 }
@@ -140,7 +140,7 @@ export async function generateListingPdfBlob(input: PdfListingInput): Promise<Bl
   const placeholderUrl = UNSPLASH_BY_CATEGORY[primaryCategory] ?? UNSPLASH_BY_CATEGORY.ovrigt;
 
   // ─── PAGE 1: COVER (minimalist, professional) ───
-  const imgHeight = 85;
+  const imgHeight = 72;
   let imgData: string | null = null;
   const primaryImage = getListingImages(listing)[0];
   if (primaryImage) {
@@ -181,7 +181,7 @@ export async function generateListingPdfBlob(input: PdfListingInput): Promise<Bl
     doc.text(line, MARGIN, titleY + (titleLines.indexOf(line) * 6));
   });
 
-  let y = imgHeight + 14;
+  let y = imgHeight + 8;
 
   // Meta pills – typ, kategori, stad
   doc.setFontSize(9);
@@ -192,7 +192,7 @@ export async function generateListingPdfBlob(input: PdfListingInput): Promise<Bl
     MARGIN,
     y
   );
-  y += 12;
+  y += 7;
 
   // Stats row – minimal cards
   const statItems = [
@@ -210,35 +210,35 @@ export async function generateListingPdfBlob(input: PdfListingInput): Promise<Bl
           : "—",
     },
   ];
-  const statW = (CONTENT_W - 8) / 3;
+  const statW = (CONTENT_W - 6) / 3;
   doc.setFillColor(COLORS.bg[0], COLORS.bg[1], COLORS.bg[2]);
   statItems.forEach((s, i) => {
-    const sx = MARGIN + i * (statW + 4);
-    doc.roundedRect(sx, y, statW, 22, 2, 2, "F");
+    const sx = MARGIN + i * (statW + 3);
+    doc.roundedRect(sx, y, statW, 18, 2, 2, "F");
     doc.setFontSize(8);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(COLORS.muted[0], COLORS.muted[1], COLORS.muted[2]);
-    doc.text(s.label, sx + 6, y + 8);
-    doc.setFontSize(11);
+    doc.text(s.label, sx + 5, y + 6);
+    doc.setFontSize(10);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(COLORS.navy[0], COLORS.navy[1], COLORS.navy[2]);
-    doc.text(s.value, sx + 6, y + 17);
+    doc.text(s.value, sx + 5, y + 14);
   });
-  y += 30;
+  y += 22;
 
   // Address
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(COLORS.text[0], COLORS.text[1], COLORS.text[2]);
   doc.text(`${listing.address}, ${listing.city}`, MARGIN, y);
-  y += 8;
+  y += 5;
 
   // Tags
   if (listing.tags?.length) {
     doc.setFontSize(8);
     doc.setTextColor(COLORS.muted[0], COLORS.muted[1], COLORS.muted[2]);
     doc.text(listing.tags.join(" · "), MARGIN, y);
-    y += 10;
+    y += 6;
   }
 
   // Footer
@@ -252,33 +252,33 @@ export async function generateListingPdfBlob(input: PdfListingInput): Promise<Bl
 
   // Beskrivning
   doc.setFillColor(COLORS.navy[0], COLORS.navy[1], COLORS.navy[2]);
-  doc.rect(0, 0, PAGE_W, 14, "F");
-  doc.setFontSize(10);
+  doc.rect(0, 0, PAGE_W, 10, "F");
+  doc.setFontSize(9);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(1, 1, 1);
-  doc.text("Om lokalen", MARGIN, 10);
-  y = 22;
+  doc.text("Om lokalen", MARGIN, 7);
+  y = 16;
 
-  doc.setFontSize(10);
+  doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(COLORS.text[0], COLORS.text[1], COLORS.text[2]);
   const descLines = doc.splitTextToSize(listing.description || "—", CONTENT_W);
   descLines.forEach((line: string) => {
     doc.text(line, MARGIN, y);
-    y += 5.5;
+    y += 5;
   });
-  y += 14;
+  y += 8;
 
   // Områdesanalys – med diagram
   const hasAreaData = nearby || demographics || priceContext;
   if (hasAreaData) {
     doc.setFillColor(COLORS.navy[0], COLORS.navy[1], COLORS.navy[2]);
-    doc.rect(0, y - 6, PAGE_W, 14, "F");
-    doc.setFontSize(10);
+    doc.rect(0, y - 4, PAGE_W, 10, "F");
+    doc.setFontSize(9);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(1, 1, 1);
-    doc.text("Områdesanalys", MARGIN, y + 2);
-    y += 16;
+    doc.text("Områdesanalys", MARGIN, y + 1);
+    y += 12;
 
     // Faciliteter – bar chart
     if (nearby) {
@@ -294,13 +294,13 @@ export async function generateListingPdfBlob(input: PdfListingInput): Promise<Bl
       ].filter((i) => i.value >= 0);
       const maxAmenity = Math.max(1, ...amenityItems.map((i) => i.value));
       if (amenityItems.length) {
-        doc.setFontSize(9);
+        doc.setFontSize(8);
         doc.setFont("helvetica", "bold");
         doc.setTextColor(COLORS.navy[0], COLORS.navy[1], COLORS.navy[2]);
         doc.text("Faciliteter inom 2,5 km", MARGIN, y);
-        y += 6;
-        y = drawBarChart(doc, amenityItems, MARGIN, y, CONTENT_W, 5, maxAmenity);
-        y += 8;
+        y += 4;
+        y = drawBarChart(doc, amenityItems, MARGIN, y, CONTENT_W, 4, maxAmenity);
+        y += 4;
       }
     }
 
@@ -325,14 +325,14 @@ export async function generateListingPdfBlob(input: PdfListingInput): Promise<Bl
       }
       const maxDemo = Math.max(1, ...demoItems.map((i) => i.value));
       if (demoItems.length) {
-        doc.setFontSize(9);
+        doc.setFontSize(8);
         doc.setFont("helvetica", "bold");
         doc.setTextColor(COLORS.navy[0], COLORS.navy[1], COLORS.navy[2]);
         doc.text("Demografi & ekonomi", MARGIN, y);
-        y += 6;
-        y = drawBarChart(doc, demoItems, MARGIN, y, CONTENT_W, 5, maxDemo);
-        y += 6;
-        doc.setFontSize(8);
+        y += 4;
+        y = drawBarChart(doc, demoItems, MARGIN, y, CONTENT_W, 4, maxDemo);
+        y += 4;
+        doc.setFontSize(7);
         doc.setFont("helvetica", "normal");
         doc.setTextColor(COLORS.muted[0], COLORS.muted[1], COLORS.muted[2]);
         doc.text(
@@ -341,104 +341,148 @@ export async function generateListingPdfBlob(input: PdfListingInput): Promise<Bl
           y,
           { maxWidth: CONTENT_W }
         );
-        y += 10;
+        y += 6;
       }
     }
 
     // Marknadsjämförelse
-    if (priceContext && priceContext.count >= 2 && y < 250) {
-      doc.setFontSize(9);
+    if (priceContext && priceContext.count >= 2 && y < 260) {
+      doc.setFontSize(8);
       doc.setFont("helvetica", "bold");
       doc.setTextColor(COLORS.navy[0], COLORS.navy[1], COLORS.navy[2]);
       doc.text("Marknadsjämförelse", MARGIN, y);
-      y += 6;
+      y += 4;
       const priceSuffix = listing.type === "rent" ? " kr/mån" : " kr";
-      doc.setFontSize(9);
+      doc.setFontSize(8);
       doc.setFont("helvetica", "normal");
       doc.setTextColor(COLORS.text[0], COLORS.text[1], COLORS.text[2]);
       doc.text(`Medianpris i ${listing.city}: ${priceContext.medianPrice.toLocaleString("sv-SE")}${priceSuffix}`, MARGIN, y);
-      y += 5;
+      y += 4;
       doc.text(`Antal annonser: ${priceContext.count}  ·  Spann: ${priceContext.minPrice.toLocaleString("sv-SE")}–${priceContext.maxPrice.toLocaleString("sv-SE")}${priceSuffix}`, MARGIN, y);
-      y += 12;
+      y += 6;
     }
   }
 
   // Plats – kartbild
   const hasCoords = listing.lat != null && listing.lng != null && !Number.isNaN(listing.lat) && !Number.isNaN(listing.lng);
-  if (hasCoords && y < 230) {
+  if (hasCoords && y < 240) {
     doc.setFillColor(COLORS.navy[0], COLORS.navy[1], COLORS.navy[2]);
-    doc.rect(0, y - 6, PAGE_W, 14, "F");
-    doc.setFontSize(10);
+    doc.rect(0, y - 4, PAGE_W, 10, "F");
+    doc.setFontSize(9);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(1, 1, 1);
-    doc.text("Plats", MARGIN, y + 2);
-    y += 14;
+    doc.text("Plats", MARGIN, y + 1);
+    y += 12;
     const mapData = await getStaticMapBase64(listing.lat, listing.lng);
     if (mapData) {
-      const mapH = 48;
+      const mapH = 38;
       try {
         doc.addImage(mapData, "PNG", MARGIN, y, CONTENT_W, mapH, undefined, "FAST");
       } catch {
         /* ignore */
       }
-      y += mapH + 6;
+      y += mapH + 3;
       doc.setFontSize(7);
       doc.setTextColor(COLORS.muted[0], COLORS.muted[1], COLORS.muted[2]);
       doc.text("© OpenStreetMap", MARGIN, y);
-      y += 8;
+      y += 4;
     }
   }
 
-  // ─── PAGE 3: KONTAKT + QR ───
-  doc.addPage();
-  doc.setFillColor(COLORS.navy[0], COLORS.navy[1], COLORS.navy[2]);
-  doc.rect(0, 0, PAGE_W, PAGE_H);
-  doc.setFillColor(COLORS.navyLight[0], COLORS.navyLight[1], COLORS.navyLight[2]);
-  doc.roundedRect(MARGIN, 40, CONTENT_W, 100, 4, 4, "F");
-
-  doc.setFontSize(10);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(1, 1, 1);
-  doc.text("Kontakt", MARGIN + 12, 58);
-
-  doc.setFontSize(11);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(1, 1, 1);
-  let cy = 72;
-  if (listing.contact?.name) {
-    doc.text(listing.contact.name, MARGIN + 12, cy);
-    cy += 8;
-  }
-  if (listing.contact?.email) {
-    doc.text(listing.contact.email, MARGIN + 12, cy);
-    cy += 8;
-  }
-  if (listing.contact?.phone) {
-    doc.text(listing.contact.phone, MARGIN + 12, cy);
-  }
-
+  // ─── KONTAKT + QR – compact block on page 2 if room, else page 3 ───
   const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://hittayta.se";
   const listingUrl = listing.id.startsWith("pdf-") ? baseUrl : `${baseUrl}/annonser/${listing.id}`;
 
-  try {
-    const qrDataUrl = await QRCode.toDataURL(listingUrl, { width: 200, margin: 1 });
-    const qrSize = 28;
-    doc.addImage(qrDataUrl, "PNG", PAGE_W - MARGIN - qrSize - 12, 52, qrSize, qrSize);
+  const contactBlockH = 38;
+  if (y + contactBlockH < PAGE_H - MARGIN - 15) {
+    // Fit on page 2
+    doc.setFillColor(COLORS.navy[0], COLORS.navy[1], COLORS.navy[2]);
+    doc.rect(0, y - 4, PAGE_W, 10, "F");
     doc.setFontSize(9);
-    doc.setTextColor(0.85, 0.88, 0.92);
-    doc.text("Skanna för mer info", PAGE_W - MARGIN - qrSize - 12, 52 + qrSize + 6, { align: "center" });
-  } catch {
-    /* ignore */
-  }
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(1, 1, 1);
+    doc.text("Kontakt", MARGIN, y + 1);
+    y += 10;
+    doc.setFillColor(COLORS.bg[0], COLORS.bg[1], COLORS.bg[2]);
+    doc.roundedRect(MARGIN, y, CONTENT_W, contactBlockH, 2, 2, "F");
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(COLORS.text[0], COLORS.text[1], COLORS.text[2]);
+    let cy = y + 8;
+    if (listing.contact?.name) {
+      doc.text(listing.contact.name, MARGIN + 8, cy);
+      cy += 6;
+    }
+    if (listing.contact?.email) {
+      doc.text(listing.contact.email, MARGIN + 8, cy);
+      cy += 6;
+    }
+    if (listing.contact?.phone) {
+      doc.text(listing.contact.phone, MARGIN + 8, cy);
+    }
+    try {
+      const qrDataUrl = await QRCode.toDataURL(listingUrl, { width: 140, margin: 1 });
+      const qrSize = 22;
+      doc.addImage(qrDataUrl, "PNG", PAGE_W - MARGIN - qrSize - 8, y + 4, qrSize, qrSize);
+      doc.setFontSize(7);
+      doc.setTextColor(COLORS.muted[0], COLORS.muted[1], COLORS.muted[2]);
+      doc.text("Skanna för mer", PAGE_W - MARGIN - qrSize - 8, y + contactBlockH - 2, { align: "center" });
+    } catch {
+      /* ignore */
+    }
+    y += contactBlockH + 8;
+    doc.setFontSize(8);
+    doc.setTextColor(COLORS.muted[0], COLORS.muted[1], COLORS.muted[2]);
+    doc.text("HittaYta.se · hittayta.se", MARGIN, PAGE_H - 8);
+  } else {
+    // New page 3
+    doc.addPage();
+    doc.setFillColor(COLORS.navy[0], COLORS.navy[1], COLORS.navy[2]);
+    doc.rect(0, 0, PAGE_W, PAGE_H);
+    doc.setFillColor(COLORS.navyLight[0], COLORS.navyLight[1], COLORS.navyLight[2]);
+    doc.roundedRect(MARGIN, 30, CONTENT_W, 80, 4, 4, "F");
 
-  doc.setFontSize(10);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(1, 1, 1);
-  doc.text("HittaYta.se", MARGIN, PAGE_H - 30);
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(0.7, 0.75, 0.85);
-  doc.text("hittayta.se", MARGIN, PAGE_H - 22);
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(1, 1, 1);
+    doc.text("Kontakt", MARGIN + 12, 46);
+
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(1, 1, 1);
+    let cy = 58;
+    if (listing.contact?.name) {
+      doc.text(listing.contact.name, MARGIN + 12, cy);
+      cy += 7;
+    }
+    if (listing.contact?.email) {
+      doc.text(listing.contact.email, MARGIN + 12, cy);
+      cy += 7;
+    }
+    if (listing.contact?.phone) {
+      doc.text(listing.contact.phone, MARGIN + 12, cy);
+    }
+
+    try {
+      const qrDataUrl = await QRCode.toDataURL(listingUrl, { width: 180, margin: 1 });
+      const qrSize = 24;
+      doc.addImage(qrDataUrl, "PNG", PAGE_W - MARGIN - qrSize - 12, 38, qrSize, qrSize);
+      doc.setFontSize(8);
+      doc.setTextColor(0.85, 0.88, 0.92);
+      doc.text("Skanna för mer info", PAGE_W - MARGIN - qrSize - 12, 38 + qrSize + 5, { align: "center" });
+    } catch {
+      /* ignore */
+    }
+
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(1, 1, 1);
+    doc.text("HittaYta.se", MARGIN, PAGE_H - 25);
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(0.7, 0.75, 0.85);
+    doc.text("hittayta.se", MARGIN, PAGE_H - 18);
+  }
 
   return doc.output("blob");
 }

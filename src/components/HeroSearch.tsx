@@ -104,7 +104,7 @@ export default function HeroSearch() {
             <ul
               role="listbox"
               aria-label="Förslag på städer"
-              className="absolute top-full left-0 right-0 mt-1.5 glass rounded-xl border border-border/60 shadow-xl z-50 animate-scale-in overflow-hidden list-none m-0 p-0"
+              className="absolute top-full left-0 right-0 mt-1.5 bg-white rounded-xl border border-border/60 shadow-xl z-50 animate-scale-in overflow-hidden list-none m-0 p-0"
             >
               {citySuggestions.map((suggestion, i) => (
                 <li key={suggestion} role="option" aria-selected={i === highlightedIndex}>
@@ -138,7 +138,7 @@ export default function HeroSearch() {
             <svg className={`w-3 h-3 text-gray-400 transition-transform shrink-0 ${typeOpen ? "rotate-180" : ""}`} viewBox="0 0 12 12" fill="currentColor" aria-hidden><path d="M6 8L2 4h8z" /></svg>
           </button>
           {typeOpen && (
-            <div role="listbox" aria-label="Typ" className="absolute top-full left-0 right-0 mt-1.5 glass rounded-xl border border-border/60 shadow-xl z-50 animate-scale-in overflow-hidden">
+            <div role="listbox" aria-label="Typ" className="absolute top-full left-0 right-0 mt-1.5 bg-white rounded-xl border border-border/60 shadow-xl z-50 animate-scale-in overflow-hidden">
               {typeOptions.map((opt) => (
                 <button type="button" key={opt.value}
                   onClick={() => { setType(opt.value); setTypeOpen(false); }}
@@ -165,7 +165,7 @@ export default function HeroSearch() {
             <svg className={`w-3 h-3 text-gray-400 transition-transform shrink-0 ${categoryOpen ? "rotate-180" : ""}`} viewBox="0 0 12 12" fill="currentColor" aria-hidden><path d="M6 8L2 4h8z" /></svg>
           </button>
           {categoryOpen && (
-            <div role="listbox" aria-label="Kategori" className="absolute top-full left-0 right-0 mt-1.5 glass rounded-xl border border-border/60 shadow-xl z-50 animate-scale-in overflow-hidden">
+            <div role="listbox" aria-label="Kategori" className="absolute top-full left-0 right-0 mt-1.5 bg-white rounded-xl border border-border/60 shadow-xl z-50 animate-scale-in overflow-hidden">
               {categoryOptions.map((opt) => (
                 <button type="button" key={opt.value}
                   onClick={() => { setCategory(opt.value); setCategoryOpen(false); }}
