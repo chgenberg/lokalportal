@@ -76,8 +76,7 @@ function LoginContent() {
             Genom att logga in godkänner du våra <Link href="/villkor" className="text-navy/60 hover:underline">villkor</Link> och <Link href="/integritetspolicy" className="text-navy/60 hover:underline">integritetspolicy</Link>
           </p>
         </div>
-      </div>
-    </div>
+    </AuthLayout>
   );
 }
 

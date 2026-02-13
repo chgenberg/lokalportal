@@ -17,7 +17,9 @@ export default function ListingCard({ listing, favorited: initialFavorited }: Li
     return price.toLocaleString("sv-SE") + (type === "sale" ? " kr" : " kr/mån");
   };
 
-  const hasImage = listing.imageUrl && listing.imageUrl.trim() !== "";
+  const images = getListingImages(listing);
+  const primaryImage = images[0];
+  const hasImage = !!primaryImage?.trim();
 
   return (
     <Link
@@ -30,7 +32,7 @@ export default function ListingCard({ listing, favorited: initialFavorited }: Li
         <div className="relative h-52 overflow-hidden">
           {hasImage ? (
             <Image
-              src={primaryImage!}
+              src={primaryImage}
               alt={listing.title}
               fill
               className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"

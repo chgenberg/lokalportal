@@ -24,7 +24,7 @@ export async function GET(
 
     const lat = listing.lat ?? 0;
     const lng = listing.lng ?? 0;
-    const primaryCategory = (listing.category ?? "").split(",")[0]?.trim() || listing.category ?? "";
+    const primaryCategory = ((listing.category ?? "").split(",")[0]?.trim()) || (listing.category ?? "");
     const [areaData, priceContext] = await Promise.all([
       fetchAreaData(listing.city, lat, lng),
       fetchAreaPriceContext(listing.city, primaryCategory, listing.type),

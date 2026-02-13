@@ -37,6 +37,7 @@ export interface PdfListingInput extends Listing {
   nearby?: NearbyData;
   priceContext?: PriceContext | null;
   demographics?: DemographicsData | null;
+  showWatermark?: boolean;
 }
 
 function formatPriceDisplay(price: number, type: string): string {

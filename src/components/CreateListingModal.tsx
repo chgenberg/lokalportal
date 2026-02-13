@@ -406,7 +406,8 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
 
   const handlePublish = async () => {
     if (!session?.user || !generated) return;
-    if (!generated.imageUrl?.trim()) {
+    const imgs = generated.imageUrls?.length ? generated.imageUrls : (generated.imageUrl ? [generated.imageUrl] : []);
+    if (!imgs.length) {
       setPublishError("Ladda upp en bild innan du publicerar.");
       return;
     }

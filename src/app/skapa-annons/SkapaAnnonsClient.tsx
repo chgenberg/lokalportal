@@ -82,9 +82,44 @@ export default function SkapaAnnonsClient() {
   const [cropFile, setCropFile] = useState<File | null>(null);
   const [generationVersion, setGenerationVersion] = useState(1);
   const [regenerating, setRegenerating] = useState(false);
+  const [draftChecked, setDraftChecked] = useState(false);
+  const [showDraftBanner, setShowDraftBanner] = useState(false);
   const addressWrapperRef = useRef<HTMLDivElement>(null);
   const suggestDebounceRef = useRef<NodeJS.Timeout | null>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
+
+  const DRAFT_KEY = "skapa-annons-draft";
+
+  const loadDraft = (): InputForm | null => {
+    if (typeof window === "undefined") return null;
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw) as unknown;
+      if (parsed && typeof parsed === "object" && "address" in parsed) return parsed as InputForm;
+      return null;
+    } catch {
+      return null;
+    }
+  };
+
+  const saveDraft = (data: InputForm) => {
+    if (typeof window === "undefined") return;
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(data));
+    } catch {
+      /* ignore */
+    }
+  };
+
+  const clearDraft = () => {
+    if (typeof window === "undefined") return;
+    try {
+      localStorage.removeItem(DRAFT_KEY);
+    } catch {
+      /* ignore */
+    }
+  };
 
   const updateInput = (partial: Partial<InputForm>) => {
     setInput((prev) => ({ ...prev, ...partial }));

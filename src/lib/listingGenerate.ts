@@ -3,6 +3,22 @@ import type { NearbyData, PriceContext, DemographicsData } from "@/lib/types";
 import prisma from "@/lib/db";
 
 const FETCH_TIMEOUT_MS = 5000;
+const CACHE_TTL_MS = 30 * 60 * 1000; // 30 min
+
+const memCache = new Map<string, { value: unknown; expires: number }>();
+
+function cacheGet<T>(key: string): T | undefined {
+  const entry = memCache.get(key);
+  if (!entry || Date.now() > entry.expires) {
+    if (entry) memCache.delete(key);
+    return undefined;
+  }
+  return entry.value as T;
+}
+
+function cacheSet(key: string, value: unknown): void {
+  memCache.set(key, { value, expires: Date.now() + CACHE_TTL_MS });
+}
 const NOMINATIM_USER_AGENT = "HittaYta.se/1.0 (commercial; listing generator)";
 
 export const VALID_TYPES = ["sale", "rent"] as const;
@@ -77,6 +93,19 @@ async function fetchWithTimeout(
     clearTimeout(timeout);
     throw e;
   }
+}
+
+async function fetchWithRetry<T>(fn: () => Promise<T>, maxAttempts = 3): Promise<T> {
+  let lastError: unknown;
+  for (let i = 0; i < maxAttempts; i++) {
+    try {
+      return await fn();
+    } catch (e) {
+      lastError = e;
+      if (i < maxAttempts - 1) await new Promise((r) => setTimeout(r, 1000 * (i + 1)));
+    }
+  }
+  throw lastError;
 }
 
 async function geocodeAddress(address: string): Promise<GeocodeResult | null> {
