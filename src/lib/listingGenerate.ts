@@ -201,8 +201,8 @@ async function fetchNearbyData(lat: number, lng: number): Promise<NearbyData> {
     schools: 0,
     healthcare: 0,
   };
-  const r1 = 1000;  // 1 km for most POIs
-  const r2 = 1500;  // 1.5 km for schools, transport
+  const r1 = 2500;  // 2.5 km for POIs (better coverage in suburban/rural areas)
+  const r2 = 3000;  // 3 km for schools, transport
   const query = `
 [out:json][timeout:15];
 (
@@ -331,7 +331,7 @@ function nearbyToSummary(nearby: NearbyData): string | null {
   if (nearby.schools > 0) parts.push(`${nearby.schools} skolor`);
   if (nearby.healthcare > 0) parts.push(`${nearby.healthcare} vård/apotek`);
   if (parts.length === 0) return null;
-  return `Inom 500 m: ${parts.join(", ")}.`;
+  return `Inom 2,5 km: ${parts.join(", ")}.`;
 }
 
 /** SCB kommunkoder (4 siffror) för kommunspecifik befolkning. Normaliserad stadskey = lowercase, utan diakritika. */

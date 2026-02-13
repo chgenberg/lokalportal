@@ -901,11 +901,11 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
                     contactSlot={
                       <>
                         <p className="text-[13px] text-gray-500 py-2">Kontaktknappar visas för besökare efter publicering.</p>
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap gap-2">
                           <button
                             type="button"
                             onClick={async () => { await downloadListingPdf(previewListing); }}
-                            className="flex-1 py-3 px-4 border border-border/60 text-gray-600 text-center text-sm font-medium rounded-xl hover:bg-muted/50 hover:border-navy/20 hover:text-navy transition-colors flex items-center justify-center gap-2"
+                            className="flex-1 min-w-0 shrink-0 py-3 px-4 border border-border/60 text-gray-600 text-center text-sm font-medium rounded-xl hover:bg-muted/50 hover:border-navy/20 hover:text-navy transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
                           >
                             <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                               <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -934,7 +934,7 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
                                 toast.error("Kunde inte skapa delbar länk");
                               }
                             }}
-                            className="py-3 px-4 border border-border/60 text-gray-600 text-center text-sm font-medium rounded-xl hover:bg-muted/50 hover:border-navy/20 hover:text-navy transition-colors flex items-center justify-center gap-2"
+                            className="shrink-0 py-3 px-4 border border-border/60 text-gray-600 text-center text-sm font-medium rounded-xl hover:bg-muted/50 hover:border-navy/20 hover:text-navy transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
                             title="Kopiera delbar länk"
                           >
                             <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

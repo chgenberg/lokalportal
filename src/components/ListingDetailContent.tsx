@@ -311,7 +311,7 @@ export default function ListingDetailContent({
                 </div>
                 {areaData.nearby && (areaData.nearby.restaurants > 0 || areaData.nearby.shops > 0 || areaData.nearby.busStops.count > 0 || areaData.nearby.trainStations.count > 0 || areaData.nearby.parking > 0 || areaData.nearby.schools > 0 || areaData.nearby.healthcare > 0 || areaData.nearby.gyms > 0) && (
                   <>
-                    <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-3">Inom 1 km</p>
+                    <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-3">Inom 2,5 km</p>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-[13px]">
                       {areaData.nearby.restaurants > 0 && (
                         <div className="flex items-center gap-2 text-gray-600">

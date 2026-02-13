@@ -7,18 +7,21 @@ import type { NearbyData, PriceContext, DemographicsData } from "@/lib/types";
 import { formatCategories, typeLabels, categoryLabels, parseCategories, getListingImages } from "@/lib/types";
 import { formatPrice } from "@/lib/formatPrice";
 
-const MARGIN = 20;
+const MARGIN = 18;
 const PAGE_W = 210;
 const PAGE_H = 297;
 const CONTENT_W = PAGE_W - MARGIN * 2;
-const LINE_HEIGHT = 5.5;
-const SECTION_GAP = 8;
-const FONT_TITLE = 20;
-const FONT_HEADING = 11;
-const FONT_BODY = 10;
-const FONT_SMALL = 9;
-const COLOR_NAVY = [0.1, 0.15, 0.27] as [number, number, number];
-const COLOR_MUTED = [0.45, 0.45, 0.5] as [number, number, number];
+
+// Modern, minimalist color palette
+const COLORS = {
+  navy: [0.09, 0.18, 0.31] as [number, number, number],
+  navyLight: [0.12, 0.28, 0.45] as [number, number, number],
+  accent: [0.25, 0.5, 0.8] as [number, number, number],
+  muted: [0.45, 0.48, 0.55] as [number, number, number],
+  text: [0.18, 0.2, 0.25] as [number, number, number],
+  bg: [0.97, 0.97, 0.98] as [number, number, number],
+  white: [1, 1, 1] as [number, number, number],
+};
 
 const UNSPLASH_BY_CATEGORY: Record<string, string> = {
   butik: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&q=80",
@@ -82,88 +85,42 @@ async function getStaticMapBase64(lat: number, lng: number): Promise<string | nu
   }
 }
 
-function drawStatBox(
+/** Draw a minimal horizontal bar chart */
+function drawBarChart(
   doc: jsPDF,
-  label: string,
-  value: string,
+  items: { label: string; value: number }[],
   x: number,
   y: number,
-  w: number
-): void {
-  doc.setDrawColor(0.9, 0.9, 0.94);
-  doc.setLineWidth(0.3);
-  doc.rect(x, y, w, 18, "S");
-  doc.setFontSize(FONT_SMALL);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(COLOR_MUTED[0], COLOR_MUTED[1], COLOR_MUTED[2]);
-  doc.text(label, x + 3, y + 6);
-  doc.setFontSize(FONT_BODY);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(COLOR_NAVY[0], COLOR_NAVY[1], COLOR_NAVY[2]);
-  const valLines = doc.splitTextToSize(value, w - 6);
-  doc.text(valLines[0] ?? value, x + 3, y + 13);
-}
-
-function drawSection(
-  doc: jsPDF,
-  title: string,
-  content: string,
-  y: number,
-  maxY: number
+  chartWidth: number,
+  barHeight: number,
+  maxValue: number
 ): number {
-  if (y > maxY) {
-    doc.addPage();
-    y = MARGIN;
-  }
-  doc.setFontSize(FONT_HEADING);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(COLOR_NAVY[0], COLOR_NAVY[1], COLOR_NAVY[2]);
-  doc.text(title, MARGIN, y);
-  y += 5;
-  doc.setDrawColor(COLOR_NAVY[0], COLOR_NAVY[1], COLOR_NAVY[2]);
-  doc.setLineWidth(0.5);
-  doc.line(MARGIN, y - 1, MARGIN + 30, y - 1);
-  y += 4;
-  doc.setFontSize(FONT_BODY);
+  const labelWidth = 38;
+  const barStart = x + labelWidth;
+  const barMaxW = chartWidth - labelWidth - 8;
+
+  doc.setFontSize(8);
   doc.setFont("helvetica", "normal");
-  doc.setTextColor(0.2, 0.2, 0.25);
-  const lines = doc.splitTextToSize(content, CONTENT_W);
-  lines.forEach((line: string) => {
-    if (y > maxY) {
-      doc.addPage();
-      y = MARGIN;
+
+  for (const item of items) {
+    if (item.value === 0) {
+      doc.setTextColor(COLORS.muted[0], COLORS.muted[1], COLORS.muted[2]);
+      doc.text(item.label, x, y + barHeight / 2 + 1);
+      doc.text("—", barStart + barMaxW - 4, y + barHeight / 2 + 1, { align: "right" });
+    } else {
+      doc.setTextColor(COLORS.text[0], COLORS.text[1], COLORS.text[2]);
+      doc.text(item.label, x, y + barHeight / 2 + 1);
+
+      const barW = maxValue > 0 ? (item.value / maxValue) * barMaxW : 0;
+      doc.setFillColor(COLORS.accent[0], COLORS.accent[1], COLORS.accent[2]);
+      doc.roundedRect(barStart, y, barW, barHeight - 0.5, 1, 1, "F");
+
+      doc.setTextColor(COLORS.text[0], COLORS.text[1], COLORS.text[2]);
+      doc.text(String(item.value), barStart + barMaxW + 4, y + barHeight / 2 + 1);
     }
-    doc.text(line, MARGIN, y);
-    y += LINE_HEIGHT + 0.5;
-  });
-  return y + SECTION_GAP;
-}
-
-function drawDataTable(
-  doc: jsPDF,
-  leftRows: [string, string][],
-  rightRows: [string, string][],
-  x: number,
-  y: number
-): number {
-  const colW = CONTENT_W / 2 - 4;
-  doc.setFontSize(FONT_SMALL);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(COLOR_NAVY[0], COLOR_NAVY[1], COLOR_NAVY[2]);
-  doc.text("Faciliteter", x, y);
-  doc.text("Kommunikation", x + colW + 8, y);
-  y += 5;
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(0.2, 0.2, 0.25);
-  const maxRows = Math.max(leftRows.length, rightRows.length);
-  for (let i = 0; i < maxRows; i++) {
-    const left = leftRows[i];
-    const right = rightRows[i];
-    if (left) doc.text(`${left[0]}: ${left[1]}`, x, y);
-    if (right) doc.text(`${right[0]}: ${right[1]}`, x + colW + 8, y);
-    y += 5;
+    y += barHeight + 1.5;
   }
-  return y + SECTION_GAP;
+  return y;
 }
 
 export async function generateListingPdfBlob(input: PdfListingInput): Promise<Blob> {
@@ -182,19 +139,8 @@ export async function generateListingPdfBlob(input: PdfListingInput): Promise<Bl
   const primaryCategory = parseCategories(listing.category)[0] ?? "ovrigt";
   const placeholderUrl = UNSPLASH_BY_CATEGORY[primaryCategory] ?? UNSPLASH_BY_CATEGORY.ovrigt;
 
-  // --- PAGE 1: COVER ---
-  // Header branding (top)
-  doc.setFillColor(COLOR_NAVY[0] * 255, COLOR_NAVY[1] * 255, COLOR_NAVY[2] * 255);
-  doc.rect(0, 0, PAGE_W, 14, "F");
-  doc.setFontSize(12);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(1, 1, 1);
-  doc.text("HittaYta.se", MARGIN, 10);
-
-  let y = 18;
-
-  // Image or placeholder
-  const imgHeight = 70;
+  // ─── PAGE 1: COVER (minimalist, professional) ───
+  const imgHeight = 85;
   let imgData: string | null = null;
   const primaryImage = getListingImages(listing)[0];
   if (primaryImage) {
@@ -203,261 +149,296 @@ export async function generateListingPdfBlob(input: PdfListingInput): Promise<Bl
   if (!imgData) {
     imgData = await imageUrlToBase64(placeholderUrl);
   }
+
+  // Hero image – full width (header bar drawn on top)
   if (imgData) {
     try {
-      doc.addImage(imgData, "JPEG", MARGIN, y, CONTENT_W, imgHeight, undefined, "FAST");
+      doc.addImage(imgData, "JPEG", 0, 12, PAGE_W, imgHeight - 12, undefined, "FAST");
     } catch {
-      doc.setFillColor(COLOR_NAVY[0] * 255, COLOR_NAVY[1] * 255, COLOR_NAVY[2] * 255);
-      doc.rect(MARGIN, y, CONTENT_W, imgHeight, "F");
-      doc.setFontSize(FONT_HEADING);
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(1, 1, 1);
-      doc.text(categoryLabels[primaryCategory] ?? primaryCategory, MARGIN + CONTENT_W / 2 - 20, y + imgHeight / 2);
+      doc.setFillColor(COLORS.navy[0], COLORS.navy[1], COLORS.navy[2]);
+      doc.rect(0, 12, PAGE_W, imgHeight - 12, "F");
     }
   } else {
-    doc.setFillColor(COLOR_NAVY[0] * 255, COLOR_NAVY[1] * 255, COLOR_NAVY[2] * 255);
-    doc.rect(MARGIN, y, CONTENT_W, imgHeight, "F");
-    doc.setFontSize(FONT_HEADING);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(1, 1, 1);
-    doc.text(categoryLabels[primaryCategory] ?? primaryCategory, MARGIN + CONTENT_W / 2 - 20, y + imgHeight / 2);
+    doc.setFillColor(COLORS.navy[0], COLORS.navy[1], COLORS.navy[2]);
+    doc.rect(0, 12, PAGE_W, imgHeight - 12, "F");
   }
-  y = y + imgHeight + SECTION_GAP;
 
-  // Title
-  doc.setFontSize(FONT_TITLE);
+  // Minimal header bar (always on top)
+  doc.setFillColor(COLORS.navy[0], COLORS.navy[1], COLORS.navy[2]);
+  doc.rect(0, 0, PAGE_W, 12, "F");
+  doc.setFontSize(10);
   doc.setFont("helvetica", "bold");
-  doc.setTextColor(COLOR_NAVY[0], COLOR_NAVY[1], COLOR_NAVY[2]);
-  const titleLines = doc.splitTextToSize(listing.title, CONTENT_W);
-  titleLines.forEach((line: string) => {
-    doc.text(line, MARGIN, y);
-    y += LINE_HEIGHT + 1.5;
-  });
-  y += 2;
+  doc.setTextColor(1, 1, 1);
+  doc.text("HittaYta.se", MARGIN, 8.5);
 
-  // Meta: Typ · Kategori · Stad
-  doc.setFontSize(FONT_SMALL);
+  // Title over image (white, bottom of image area)
+  doc.setFontSize(22);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(1, 1, 1);
+  const titleLines = doc.splitTextToSize(listing.title, PAGE_W - MARGIN * 2);
+  const titleY = imgHeight - 8 - (titleLines.length - 1) * 6;
+  titleLines.forEach((line: string) => {
+    doc.text(line, MARGIN, titleY + (titleLines.indexOf(line) * 6));
+  });
+
+  let y = imgHeight + 14;
+
+  // Meta pills – typ, kategori, stad
+  doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
-  doc.setTextColor(COLOR_MUTED[0], COLOR_MUTED[1], COLOR_MUTED[2]);
+  doc.setTextColor(COLORS.muted[0], COLORS.muted[1], COLORS.muted[2]);
   doc.text(
     [typeLabels[listing.type], formatCategories(listing.category), listing.city].join("  ·  "),
     MARGIN,
     y
   );
-  y += SECTION_GAP + 4;
+  y += 12;
 
-  // Stat boxes: Pris, Yta, kr/m², Adress
-  const boxW = (CONTENT_W - 12) / 4;
-  const pricePerSqm =
-    listing.size > 0
-      ? Math.round(listing.price / listing.size).toLocaleString("sv-SE") +
-        (listing.type === "rent" ? " kr/m²/mån" : " kr/m²")
-      : "—";
-  drawStatBox(doc, "Pris", formatPriceDisplay(listing.price, listing.type), MARGIN, y, boxW);
-  drawStatBox(doc, "Yta", `${listing.size} m²`, MARGIN + boxW + 4, y, boxW);
-  drawStatBox(doc, "kr/m²", pricePerSqm, MARGIN + (boxW + 4) * 2, y, boxW);
-  const addrShort = listing.address.length > 14 ? listing.address.slice(0, 11) + "…" : listing.address;
-  drawStatBox(doc, "Adress", addrShort, MARGIN + (boxW + 4) * 3, y, boxW);
-  y += 22;
+  // Stats row – minimal cards
+  const statItems = [
+    { label: "Pris", value: formatPriceDisplay(listing.price, listing.type) },
+    {
+      label: "Yta",
+      value: `${listing.size} m²`,
+    },
+    {
+      label: "kr/m²",
+      value:
+        listing.size > 0
+          ? Math.round(listing.price / listing.size).toLocaleString("sv-SE") +
+            (listing.type === "rent" ? " kr/m²" : " kr/m²")
+          : "—",
+    },
+  ];
+  const statW = (CONTENT_W - 8) / 3;
+  doc.setFillColor(COLORS.bg[0], COLORS.bg[1], COLORS.bg[2]);
+  statItems.forEach((s, i) => {
+    const sx = MARGIN + i * (statW + 4);
+    doc.roundedRect(sx, y, statW, 22, 2, 2, "F");
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(COLORS.muted[0], COLORS.muted[1], COLORS.muted[2]);
+    doc.text(s.label, sx + 6, y + 8);
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(COLORS.navy[0], COLORS.navy[1], COLORS.navy[2]);
+    doc.text(s.value, sx + 6, y + 17);
+  });
+  y += 30;
+
+  // Address
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(COLORS.text[0], COLORS.text[1], COLORS.text[2]);
+  doc.text(`${listing.address}, ${listing.city}`, MARGIN, y);
+  y += 8;
 
   // Tags
   if (listing.tags?.length) {
-    doc.setFontSize(FONT_HEADING);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(COLOR_NAVY[0], COLOR_NAVY[1], COLOR_NAVY[2]);
-    doc.text("Egenskaper", MARGIN, y);
-    y += 5;
-    doc.setFontSize(FONT_BODY);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(0.2, 0.2, 0.25);
-    doc.text(listing.tags.join(", "), MARGIN, y);
-    y += LINE_HEIGHT + SECTION_GAP;
+    doc.setFontSize(8);
+    doc.setTextColor(COLORS.muted[0], COLORS.muted[1], COLORS.muted[2]);
+    doc.text(listing.tags.join(" · "), MARGIN, y);
+    y += 10;
   }
 
-  if (input.showWatermark) {
-    doc.setFontSize(42);
-    doc.setTextColor(0.94, 0.94, 0.96);
-    doc.setFont("helvetica", "normal");
-    doc.text("Skapad med HittaYta.se", PAGE_W / 2, PAGE_H / 2, { angle: 45, align: "center" });
-    doc.setTextColor(0.2, 0.2, 0.25);
-  }
+  // Footer
+  doc.setFontSize(8);
+  doc.setTextColor(COLORS.muted[0], COLORS.muted[1], COLORS.muted[2]);
+  doc.text("HittaYta.se", MARGIN, PAGE_H - 8);
 
-  doc.text("HittaYta.se", MARGIN, PAGE_H - 10);
-
-  // --- PAGE 2: BESKRIVNING + OMRÅDESANALYS ---
+  // ─── PAGE 2: BESKRIVNING + OMRÅDESANALYS + DIAGRAM ───
   doc.addPage();
   y = MARGIN;
 
-  y = drawSection(doc, "Om lokalen", listing.description || "—", y, 250);
+  // Beskrivning
+  doc.setFillColor(COLORS.navy[0], COLORS.navy[1], COLORS.navy[2]);
+  doc.rect(0, 0, PAGE_W, 14, "F");
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(1, 1, 1);
+  doc.text("Om lokalen", MARGIN, 10);
+  y = 22;
 
-  if (nearby || demographics || priceContext) {
-    if (y > 240) {
-      doc.addPage();
-      y = MARGIN;
-    }
-    doc.setFontSize(FONT_HEADING);
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(COLORS.text[0], COLORS.text[1], COLORS.text[2]);
+  const descLines = doc.splitTextToSize(listing.description || "—", CONTENT_W);
+  descLines.forEach((line: string) => {
+    doc.text(line, MARGIN, y);
+    y += 5.5;
+  });
+  y += 14;
+
+  // Områdesanalys – med diagram
+  const hasAreaData = nearby || demographics || priceContext;
+  if (hasAreaData) {
+    doc.setFillColor(COLORS.navy[0], COLORS.navy[1], COLORS.navy[2]);
+    doc.rect(0, y - 6, PAGE_W, 14, "F");
+    doc.setFontSize(10);
     doc.setFont("helvetica", "bold");
-    doc.setTextColor(COLOR_NAVY[0], COLOR_NAVY[1], COLOR_NAVY[2]);
-    doc.text("Områdesanalys", MARGIN, y);
-    y += 8;
+    doc.setTextColor(1, 1, 1);
+    doc.text("Områdesanalys", MARGIN, y + 2);
+    y += 16;
 
-    const leftRows: [string, string][] = [];
-    const rightRows: [string, string][] = [];
+    // Faciliteter – bar chart
     if (nearby) {
-      if (nearby.restaurants > 0) leftRows.push(["Restauranger/caféer", String(nearby.restaurants)]);
-      if (nearby.shops > 0) leftRows.push(["Butiker", String(nearby.shops)]);
-      if (nearby.gyms > 0) leftRows.push(["Gym", String(nearby.gyms)]);
-      if (nearby.schools > 0) leftRows.push(["Skolor", String(nearby.schools)]);
-      if (nearby.healthcare > 0) leftRows.push(["Vård/apotek", String(nearby.healthcare)]);
-      if (nearby.busStops.count > 0) rightRows.push(["Busshållplatser", String(nearby.busStops.count)]);
-      if (nearby.trainStations.count > 0) rightRows.push(["Tågstationer", String(nearby.trainStations.count)]);
-      if (nearby.parking > 0) rightRows.push(["Parkeringar", String(nearby.parking)]);
+      const amenityItems = [
+        { label: "Restauranger", value: nearby.restaurants },
+        { label: "Butiker", value: nearby.shops },
+        { label: "Skolor", value: nearby.schools },
+        { label: "Gym", value: nearby.gyms },
+        { label: "Vård/Apotek", value: nearby.healthcare },
+        { label: "Busshållpl.", value: nearby.busStops.count },
+        { label: "Tågstationer", value: nearby.trainStations.count },
+        { label: "Parkeringar", value: nearby.parking },
+      ].filter((i) => i.value >= 0);
+      const maxAmenity = Math.max(1, ...amenityItems.map((i) => i.value));
+      if (amenityItems.length) {
+        doc.setFontSize(9);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(COLORS.navy[0], COLORS.navy[1], COLORS.navy[2]);
+        doc.text("Faciliteter inom 2,5 km", MARGIN, y);
+        y += 6;
+        y = drawBarChart(doc, amenityItems, MARGIN, y, CONTENT_W, 5, maxAmenity);
+        y += 8;
+      }
     }
-    if (leftRows.length || rightRows.length) {
-      y = drawDataTable(doc, leftRows, rightRows, MARGIN, y);
-    }
 
-    if (demographics && y < 250) {
-      doc.setFontSize(FONT_HEADING);
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(COLOR_NAVY[0], COLOR_NAVY[1], COLOR_NAVY[2]);
-      doc.text("Demografi & ekonomi", MARGIN, y);
-      y += 5;
-      doc.setDrawColor(COLOR_NAVY[0], COLOR_NAVY[1], COLOR_NAVY[2]);
-      doc.setLineWidth(0.5);
-      doc.line(MARGIN, y - 1, MARGIN + 30, y - 1);
-      y += 4;
-
-      doc.setFontSize(FONT_BODY);
-      doc.setFont("helvetica", "normal");
-      doc.setTextColor(0.2, 0.2, 0.25);
-      doc.text(
-        `${demographics.city} har cirka ${demographics.population.toLocaleString("sv-SE")} invånare (2024).`,
-        MARGIN,
-        y
-      );
-      y += LINE_HEIGHT + 1;
-
+    // Demografi – bar chart (om vi har data)
+    if (demographics && y < 200) {
+      const demoItems: { label: string; value: number }[] = [];
+      if (demographics.population) {
+        demoItems.push({ label: "Invånare (tusen)", value: Math.round(demographics.population / 1000) });
+      }
       if (demographics.medianIncome) {
-        doc.text(`Medianinkomst: ${demographics.medianIncome} tkr/år`, MARGIN, y);
-        y += LINE_HEIGHT + 1;
+        demoItems.push({ label: "Medianinkomst (tkr)", value: demographics.medianIncome });
       }
       if (demographics.workingAgePercent) {
-        doc.text(`Andel i arbetsför ålder (20–64): ${demographics.workingAgePercent}%`, MARGIN, y);
-        y += LINE_HEIGHT + 1;
+        demoItems.push({ label: "Arbetsför ålder %", value: demographics.workingAgePercent });
       }
       if (demographics.totalBusinesses) {
-        doc.text(
-          `Registrerade företag: ${demographics.totalBusinesses.toLocaleString("sv-SE")}`,
-          MARGIN,
-          y
-        );
-        y += LINE_HEIGHT + 1;
+        const biz = demographics.totalBusinesses;
+        demoItems.push({
+          label: "Företag (hundratal)",
+          value: biz >= 1000 ? Math.round(biz / 100) : Math.round(biz / 10),
+        });
       }
-      if (demographics.crimeRate) {
+      const maxDemo = Math.max(1, ...demoItems.map((i) => i.value));
+      if (demoItems.length) {
+        doc.setFontSize(9);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(COLORS.navy[0], COLORS.navy[1], COLORS.navy[2]);
+        doc.text("Demografi & ekonomi", MARGIN, y);
+        y += 6;
+        y = drawBarChart(doc, demoItems, MARGIN, y, CONTENT_W, 5, maxDemo);
+        y += 6;
+        doc.setFontSize(8);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(COLORS.muted[0], COLORS.muted[1], COLORS.muted[2]);
         doc.text(
-          `Anmälda brott per 100 000 inv.: ${demographics.crimeRate.toLocaleString("sv-SE")} (BRÅ 2024)`,
+          `${demographics.city} – Invånare: ${demographics.population.toLocaleString("sv-SE")}.${demographics.crimeRate ? ` Brott/100k inv: ${demographics.crimeRate.toLocaleString("sv-SE")} (BRÅ).` : ""}`,
           MARGIN,
-          y
+          y,
+          { maxWidth: CONTENT_W }
         );
-        y += LINE_HEIGHT + 1;
+        y += 10;
       }
-      y += SECTION_GAP - 2;
     }
 
-    if (priceContext && priceContext.count >= 2 && y < 270) {
-      doc.setFontSize(FONT_HEADING);
+    // Marknadsjämförelse
+    if (priceContext && priceContext.count >= 2 && y < 250) {
+      doc.setFontSize(9);
       doc.setFont("helvetica", "bold");
-      doc.setTextColor(COLOR_NAVY[0], COLOR_NAVY[1], COLOR_NAVY[2]);
+      doc.setTextColor(COLORS.navy[0], COLORS.navy[1], COLORS.navy[2]);
       doc.text("Marknadsjämförelse", MARGIN, y);
-      y += 5;
-      doc.setFontSize(FONT_BODY);
-      doc.setFont("helvetica", "normal");
-      doc.setTextColor(0.2, 0.2, 0.25);
+      y += 6;
       const priceSuffix = listing.type === "rent" ? " kr/mån" : " kr";
-      doc.text(
-        `Medianpris i ${listing.city}: ${priceContext.medianPrice.toLocaleString("sv-SE")}${priceSuffix}`,
-        MARGIN,
-        y
-      );
-      y += LINE_HEIGHT;
-      doc.text(`Antal aktiva annonser: ${priceContext.count}`, MARGIN, y);
-      y += LINE_HEIGHT;
-      doc.text(
-        `Prisspann: ${priceContext.minPrice.toLocaleString("sv-SE")}–${priceContext.maxPrice.toLocaleString("sv-SE")}${priceSuffix}`,
-        MARGIN,
-        y
-      );
-      y += SECTION_GAP;
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(COLORS.text[0], COLORS.text[1], COLORS.text[2]);
+      doc.text(`Medianpris i ${listing.city}: ${priceContext.medianPrice.toLocaleString("sv-SE")}${priceSuffix}`, MARGIN, y);
+      y += 5;
+      doc.text(`Antal annonser: ${priceContext.count}  ·  Spann: ${priceContext.minPrice.toLocaleString("sv-SE")}–${priceContext.maxPrice.toLocaleString("sv-SE")}${priceSuffix}`, MARGIN, y);
+      y += 12;
     }
   }
 
-  // Plats – statisk kartbild om koordinater finns
+  // Plats – kartbild
   const hasCoords = listing.lat != null && listing.lng != null && !Number.isNaN(listing.lat) && !Number.isNaN(listing.lng);
-  if (hasCoords && y < 240) {
+  if (hasCoords && y < 230) {
+    doc.setFillColor(COLORS.navy[0], COLORS.navy[1], COLORS.navy[2]);
+    doc.rect(0, y - 6, PAGE_W, 14, "F");
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(1, 1, 1);
+    doc.text("Plats", MARGIN, y + 2);
+    y += 14;
     const mapData = await getStaticMapBase64(listing.lat, listing.lng);
     if (mapData) {
-      doc.setFontSize(FONT_HEADING);
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(COLOR_NAVY[0], COLOR_NAVY[1], COLOR_NAVY[2]);
-      doc.text("Plats", MARGIN, y);
-      y += 8;
-      const mapH = 50;
+      const mapH = 48;
       try {
         doc.addImage(mapData, "PNG", MARGIN, y, CONTENT_W, mapH, undefined, "FAST");
       } catch {
-        // ignore
+        /* ignore */
       }
-      y += mapH + SECTION_GAP;
-      doc.setFontSize(FONT_SMALL);
-      doc.setTextColor(COLOR_MUTED[0], COLOR_MUTED[1], COLOR_MUTED[2]);
-      doc.text("Karta: © OpenStreetMap", MARGIN, y);
-      y += 6;
+      y += mapH + 6;
+      doc.setFontSize(7);
+      doc.setTextColor(COLORS.muted[0], COLORS.muted[1], COLORS.muted[2]);
+      doc.text("© OpenStreetMap", MARGIN, y);
+      y += 8;
     }
   }
 
-  // --- PAGE 3: KONTAKT + QR ---
+  // ─── PAGE 3: KONTAKT + QR ───
   doc.addPage();
-  y = MARGIN;
+  doc.setFillColor(COLORS.navy[0], COLORS.navy[1], COLORS.navy[2]);
+  doc.rect(0, 0, PAGE_W, PAGE_H);
+  doc.setFillColor(COLORS.navyLight[0], COLORS.navyLight[1], COLORS.navyLight[2]);
+  doc.roundedRect(MARGIN, 40, CONTENT_W, 100, 4, 4, "F");
 
-  doc.setFontSize(FONT_HEADING);
+  doc.setFontSize(10);
   doc.setFont("helvetica", "bold");
-  doc.setTextColor(COLOR_NAVY[0], COLOR_NAVY[1], COLOR_NAVY[2]);
-  doc.text("Kontakt", MARGIN, y);
-  y += 8;
-  doc.setFontSize(FONT_BODY);
+  doc.setTextColor(1, 1, 1);
+  doc.text("Kontakt", MARGIN + 12, 58);
+
+  doc.setFontSize(11);
   doc.setFont("helvetica", "normal");
-  doc.setTextColor(0.2, 0.2, 0.25);
-  const contactLines = [
-    listing.contact?.name ? `Namn: ${listing.contact.name}` : "",
-    listing.contact?.email ? `E-post: ${listing.contact.email}` : "",
-    listing.contact?.phone ? `Telefon: ${listing.contact.phone}` : "",
-  ].filter(Boolean);
-  contactLines.forEach((line) => {
-    doc.text(line, MARGIN, y);
-    y += LINE_HEIGHT;
-  });
-  y += SECTION_GAP;
+  doc.setTextColor(1, 1, 1);
+  let cy = 72;
+  if (listing.contact?.name) {
+    doc.text(listing.contact.name, MARGIN + 12, cy);
+    cy += 8;
+  }
+  if (listing.contact?.email) {
+    doc.text(listing.contact.email, MARGIN + 12, cy);
+    cy += 8;
+  }
+  if (listing.contact?.phone) {
+    doc.text(listing.contact.phone, MARGIN + 12, cy);
+  }
 
   const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://hittayta.se";
   const listingUrl = listing.id.startsWith("pdf-") ? baseUrl : `${baseUrl}/annonser/${listing.id}`;
 
   try {
-    const qrDataUrl = await QRCode.toDataURL(listingUrl, { width: 180, margin: 1 });
-    const qrSize = 22;
-    doc.addImage(qrDataUrl, "PNG", MARGIN, y, qrSize, qrSize);
-    doc.setFontSize(FONT_SMALL);
-    doc.setTextColor(COLOR_MUTED[0], COLOR_MUTED[1], COLOR_MUTED[2]);
-    doc.text("Skanna för att se mer", MARGIN + qrSize + 6, y + qrSize / 2 + 2);
+    const qrDataUrl = await QRCode.toDataURL(listingUrl, { width: 200, margin: 1 });
+    const qrSize = 28;
+    doc.addImage(qrDataUrl, "PNG", PAGE_W - MARGIN - qrSize - 12, 52, qrSize, qrSize);
+    doc.setFontSize(9);
+    doc.setTextColor(0.85, 0.88, 0.92);
+    doc.text("Skanna för mer info", PAGE_W - MARGIN - qrSize - 12, 52 + qrSize + 6, { align: "center" });
   } catch {
-    // ignore QR errors
+    /* ignore */
   }
 
-  y = PAGE_H - 20;
-  doc.setFontSize(FONT_SMALL);
-  doc.setTextColor(COLOR_MUTED[0], COLOR_MUTED[1], COLOR_MUTED[2]);
-  doc.text("Genererad med HittaYta.se", MARGIN, y);
-  doc.text("hittayta.se", MARGIN, y + 5);
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(1, 1, 1);
+  doc.text("HittaYta.se", MARGIN, PAGE_H - 30);
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(0.7, 0.75, 0.85);
+  doc.text("hittayta.se", MARGIN, PAGE_H - 22);
 
   return doc.output("blob");
 }

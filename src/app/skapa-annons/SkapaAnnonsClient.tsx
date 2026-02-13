@@ -241,7 +241,7 @@ export default function SkapaAnnonsClient() {
     try {
       const formData = new FormData();
       formData.append("file", blob, "cropped.jpg");
-      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      const res = await fetch("/api/upload-public", { method: "POST", body: formData });
       const data = await res.json();
       if (!res.ok) {
         setImageError(data.error || "Kunde inte ladda upp bilden.");
@@ -785,7 +785,7 @@ export default function SkapaAnnonsClient() {
                       <button
                         type="button"
                         onClick={handleDownloadPdf}
-                        className="flex-1 py-3.5 px-4 bg-navy text-white text-[13px] font-semibold rounded-xl flex items-center justify-center gap-2 hover:bg-navy/90 transition-colors"
+                        className="flex-1 min-w-0 py-3.5 px-4 bg-navy text-white text-[13px] font-semibold rounded-xl flex items-center justify-center gap-2 hover:bg-navy/90 transition-colors whitespace-nowrap shrink-0"
                       >
                         <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -795,7 +795,7 @@ export default function SkapaAnnonsClient() {
                       <button
                         type="button"
                         onClick={handleFinish}
-                        className="py-3.5 px-4 border border-border/60 text-gray-600 text-[13px] font-medium rounded-xl hover:bg-muted/50 hover:border-navy/20 hover:text-navy transition-colors"
+                        className="min-w-fit shrink-0 py-3.5 px-4 border border-border/60 text-gray-600 text-[13px] font-medium rounded-xl hover:bg-muted/50 hover:border-navy/20 hover:text-navy transition-colors whitespace-nowrap"
                       >
                         Klar – nästa steg
                       </button>
@@ -886,7 +886,7 @@ export default function SkapaAnnonsClient() {
                 </div>
                 {generated.nearby && (
                   <>
-                    <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-3">Inom 1 km</p>
+                    <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-3">Inom 2,5 km</p>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-[13px]">
                       {generated.nearby.restaurants > 0 && (
                         <div className="flex items-center gap-2 text-gray-600">
