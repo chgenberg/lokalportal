@@ -6,11 +6,14 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import AuthLayout from "@/components/AuthLayout";
 
+type LoginAs = "landlord" | "tenant";
+
 function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callback") || "/dashboard";
 
+  const [loginAs, setLoginAs] = useState<LoginAs | null>(null);
   const [step, setStep] = useState<"form" | "loading" | "error">("form");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -43,7 +46,46 @@ function LoginContent() {
   }
 
   return (
-    <AuthLayout title="Logga in" subtitle="Verifiera din identitet för att fortsätta">
+    <AuthLayout title="Logga in" subtitle="Ett konto för både att hyra ut och söka lokaler – samma inloggning oavsett roll.">
+        <div className="space-y-6">
+          <div>
+            <p className="text-[12px] font-semibold text-gray-400 mb-3 tracking-wide uppercase">Vad vill du göra idag?</p>
+            <p className="text-[11px] text-gray-400 mb-3">Välj vad du vill prioritera – du får tillgång till allt med samma konto.</p>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setLoginAs("landlord")}
+                className={`p-4 rounded-xl border-2 text-left transition-all ${
+                  loginAs === "landlord"
+                    ? "border-navy bg-navy/[0.04] shadow-sm"
+                    : "border-border/60 hover:border-navy/30 bg-white"
+                }`}
+              >
+                <span className="block text-[13px] font-semibold text-navy">Hyresvärd / säljare</span>
+                <span className="block text-[11px] text-gray-500 mt-0.5">Publicera annonser</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setLoginAs("tenant")}
+                className={`p-4 rounded-xl border-2 text-left transition-all ${
+                  loginAs === "tenant"
+                    ? "border-navy bg-navy/[0.04] shadow-sm"
+                    : "border-border/60 hover:border-navy/30 bg-white"
+                }`}
+              >
+                <span className="block text-[13px] font-semibold text-navy">Hyresgäst / köpare</span>
+                <span className="block text-[11px] text-gray-500 mt-0.5">Sök och kontakta lokaler</span>
+              </button>
+            </div>
+            {loginAs && (
+              <p className="text-[11px] text-gray-400 mt-2">
+                {loginAs === "landlord"
+                  ? "Du kommer till din annons- och statistikdashboard efter inloggning."
+                  : "Du kommer till dina sparade annonser och meddelanden efter inloggning."}
+              </p>
+            )}
+          </div>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && <div role="alert" className="p-3 bg-navy/[0.03] border border-navy/10 rounded-xl text-[13px] text-navy">{error}</div>}
 
@@ -66,6 +108,7 @@ function LoginContent() {
             Logga in
           </button>
         </form>
+        </div>
 
         <div className="mt-8 text-center">
           <p className="text-[13px] text-gray-400">Inget konto? <Link href="/registrera" className="text-navy font-semibold hover:underline">Registrera dig</Link></p>

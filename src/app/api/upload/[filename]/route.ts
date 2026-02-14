@@ -1,24 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { readFile, stat } from "fs/promises";
 import path from "path";
-
-const MIME_MAP: Record<string, string> = {
-  ".jpg": "image/jpeg",
-  ".jpeg": "image/jpeg",
-  ".png": "image/png",
-  ".gif": "image/gif",
-  ".webp": "image/webp",
-  ".mp4": "video/mp4",
-  ".webm": "video/webm",
-  ".pdf": "application/pdf",
-  ".doc": "application/msword",
-  ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  ".xls": "application/vnd.ms-excel",
-  ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  ".zip": "application/zip",
-  ".txt": "text/plain",
-  ".csv": "text/csv",
-};
+import {
+  getPresignedUrl,
+  existsOnDisk,
+  readFromDisk,
+  MIME_MAP,
+} from "@/lib/storage";
 
 export async function GET(
   _request: NextRequest,
@@ -26,17 +13,25 @@ export async function GET(
 ) {
   const { filename } = await params;
 
-  // Prevent path traversal
   const sanitized = path.basename(filename);
-  const filePath = path.join(process.cwd(), "uploads", sanitized);
+  if (!sanitized) return new NextResponse(null, { status: 404 });
 
+  // S3: redirect to presigned URL
+  const presignedUrl = await getPresignedUrl(sanitized);
+  if (presignedUrl) {
+    return NextResponse.redirect(presignedUrl, { status: 302 });
+  }
+
+  // Disk: serve locally
   try {
-    await stat(filePath);
-    const buffer = await readFile(filePath);
+    const exists = await existsOnDisk(sanitized);
+    if (!exists) return new NextResponse(null, { status: 404 });
+
+    const buffer = await readFromDisk(sanitized);
     const ext = path.extname(sanitized).toLowerCase();
     const contentType = MIME_MAP[ext] || "application/octet-stream";
 
-    return new NextResponse(buffer, {
+    return new NextResponse(new Uint8Array(buffer), {
       headers: {
         "Content-Type": contentType,
         "Cache-Control": "public, max-age=31536000, immutable",

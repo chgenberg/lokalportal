@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { checkRateLimit, getClientKey } from "@/lib/rateLimit";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
+import { checkRateLimit } from "@/lib/rateLimit";
+import { uploadBuffer } from "@/lib/storage";
 import { randomUUID } from "crypto";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
@@ -128,12 +127,7 @@ export async function POST(request: NextRequest) {
 
     const ext = MIME_TO_EXT[file.type] ?? ".bin";
     const uniqueName = `${randomUUID()}${ext}`;
-    const uploadsDir = path.join(process.cwd(), "uploads");
-
-    await mkdir(uploadsDir, { recursive: true });
-
-    const filePath = path.join(uploadsDir, uniqueName);
-    await writeFile(filePath, buffer);
+    await uploadBuffer(buffer, uniqueName, file.type);
 
     return NextResponse.json({
       url: `/api/upload/${uniqueName}`,
