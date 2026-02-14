@@ -66,6 +66,20 @@ async function main() {
   });
   console.log(`  Tenant:   ${tenant.email} (${tenant.id})`);
 
+  const agent = await prisma.user.upsert({
+    where: { email: "maklare@hittayta.se" },
+    update: {},
+    create: {
+      email: "maklare@hittayta.se",
+      name: "Nordic Fastighetsmäklare AB",
+      passwordHash,
+      role: "agent",
+      phone: "08-123 45 67",
+      companyName: "Nordic Fastighetsmäklare",
+    },
+  });
+  console.log(`  Agent:    ${agent.email} (${agent.id})`);
+
   // ── Extra dummy tenants (for richer landlord stats) ────
   const dummyTenants = [];
   const dummyTenantData = [
