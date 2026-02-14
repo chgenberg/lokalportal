@@ -5,6 +5,7 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SessionProvider from "@/components/SessionProvider";
+import AISupportChat from "@/components/AISupportChat";
 
 const inter = Inter({
   variable: "--font-geist-sans",
@@ -77,6 +78,7 @@ export default function RootLayout({
           <Header />
           <main id="main-content" className="min-h-screen pt-16 w-full min-w-0 overflow-x-hidden">{children}</main>
           <Footer />
+          <AISupportChat />
           <Toaster richColors position="top-center" />
         </SessionProvider>
       </body>

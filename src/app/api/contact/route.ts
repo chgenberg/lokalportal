@@ -20,16 +20,22 @@ export async function POST(req: NextRequest) {
     );
   }
   try {
-    const { name, email, subject, message } = await req.json();
+    const body = await req.json();
+    const { name, email, subject, message, source } = body;
 
-    if (!name || !email || !subject || !message) {
-      return NextResponse.json({ error: "Alla fält krävs" }, { status: 400 });
+    if (!name || !email) {
+      return NextResponse.json({ error: "Namn och e-post krävs" }, { status: 400 });
     }
 
     const nameStr = String(name).trim();
     const emailStr = String(email).trim();
-    const subjectStr = String(subject).trim();
-    const messageStr = String(message).trim();
+    const isChatRequest = source === "chat";
+    const subjectStr = (subject != null ? String(subject).trim() : "") || (isChatRequest ? "Bli kontaktad via chatt" : "");
+    const messageStr = (message != null ? String(message).trim() : "") || (isChatRequest ? "(Användaren vill bli kontaktad via e-post)" : "");
+
+    if (!isChatRequest && (!subjectStr || !messageStr)) {
+      return NextResponse.json({ error: "Ämne och meddelande krävs" }, { status: 400 });
+    }
 
     if (nameStr.length > MAX_NAME) return NextResponse.json({ error: "Namn är för långt" }, { status: 400 });
     if (emailStr.length > MAX_EMAIL) return NextResponse.json({ error: "E-postadress är för lång" }, { status: 400 });
@@ -44,7 +50,7 @@ export async function POST(req: NextRequest) {
     console.info("Kontaktformulär mottaget");
 
     const apiKey = process.env.RESEND_API_KEY?.trim();
-    const toEmail = process.env.CONTACT_EMAIL_TO?.trim() || "info@ledigyta.se";
+    const toEmail = process.env.CONTACT_EMAIL_TO?.trim() || "info@hittayta.se";
 
     if (apiKey) {
       const resend = new Resend(apiKey);
