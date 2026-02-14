@@ -6,14 +6,14 @@ import prisma from "./db";
 declare module "next-auth" {
   interface User {
     id: string;
-    role: "landlord" | "tenant";
+    role: "landlord" | "tenant" | "agent";
     name: string;
     email: string;
   }
   interface Session {
     user: {
       id: string;
-      role: "landlord" | "tenant";
+      role: "landlord" | "tenant" | "agent";
       name: string;
       email: string;
     };
@@ -23,7 +23,7 @@ declare module "next-auth" {
 declare module "next-auth/jwt" {
   interface JWT {
     id: string;
-    role: "landlord" | "tenant";
+    role: "landlord" | "tenant" | "agent";
   }
 }
 
@@ -50,7 +50,7 @@ export const authOptions: NextAuthOptions = {
           id: user.id,
           email: user.email,
           name: user.name,
-          role: user.role as "landlord" | "tenant",
+          role: user.role as "landlord" | "tenant" | "agent",
         };
       },
     }),

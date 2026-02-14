@@ -17,6 +17,7 @@ export interface Listing {
   lng: number;
   tags: string[];
   ownerId?: string;
+  owner?: { role: string; logoUrl?: string | null; companyName?: string | null; name: string };
   contact: {
     name: string;
     email: string;
@@ -29,8 +30,10 @@ export interface User {
   email: string;
   passwordHash: string;
   name: string;
-  role: "landlord" | "tenant";
+  role: "landlord" | "tenant" | "agent";
   phone?: string;
+  logoUrl?: string | null;
+  companyName?: string | null;
   createdAt: string;
 }
 
@@ -100,6 +103,7 @@ export const typeLabels: Record<string, string> = {
 export const roleLabels: Record<string, string> = {
   landlord: "Hyresvärd",
   tenant: "Hyresgäst",
+  agent: "Mäklare",
 };
 
 export const availableTags = [

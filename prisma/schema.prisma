@@ -12,8 +12,10 @@ model User {
   email        String   @unique
   passwordHash String
   name         String
-  role         String   @default("tenant") // "landlord" | "tenant"
+  role         String   @default("tenant") // "landlord" | "tenant" | "agent"
   phone        String?
+  logoUrl      String?  // mäklare: logotyp i annonser
+  companyName  String?  // mäklare: mäklarbyrå/företagsnamn
   createdAt    DateTime @default(now())
 
   listings              Listing[]

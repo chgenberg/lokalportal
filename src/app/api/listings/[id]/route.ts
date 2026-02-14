@@ -24,7 +24,10 @@ export async function GET(
 
   try {
     const session = await getServerSession(authOptions);
-    const listing = await prisma.listing.findUnique({ where: { id } });
+    const listing = await prisma.listing.findUnique({
+      where: { id },
+      include: { owner: { select: { role: true, logoUrl: true, companyName: true, name: true } } },
+    });
     if (!listing) {
       return NextResponse.json({ error: "Annonsen hittades inte" }, { status: 404 });
     }
@@ -36,9 +39,11 @@ export async function GET(
       });
       listing.viewCount = (listing.viewCount ?? 0) + 1;
     }
+    const { owner, ...rest } = listing;
     return NextResponse.json({
-      ...listing,
+      ...rest,
       createdAt: listing.createdAt.toISOString(),
+      owner: owner ? { role: owner.role, logoUrl: owner.logoUrl, companyName: owner.companyName, name: owner.name } : undefined,
       contact: {
         name: listing.contactName,
         email: listing.contactEmail,

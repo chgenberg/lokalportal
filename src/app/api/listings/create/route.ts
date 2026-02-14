@@ -6,7 +6,7 @@ import prisma from "@/lib/db";
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user) return NextResponse.json({ error: "Ej inloggad" }, { status: 401 });
-  if (session.user.role !== "landlord") return NextResponse.json({ error: "Endast hyresvärdar kan skapa annonser" }, { status: 403 });
+  if (session.user.role !== "landlord" && session.user.role !== "agent") return NextResponse.json({ error: "Endast hyresvärdar och mäklare kan skapa annonser" }, { status: 403 });
 
   const VALID_TYPES = ["sale", "rent"] as const;
   const VALID_CATEGORIES = ["butik", "kontor", "lager", "restaurang", "verkstad", "showroom", "popup", "atelje", "gym", "ovrigt"] as const;

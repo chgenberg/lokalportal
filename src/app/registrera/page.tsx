@@ -9,7 +9,7 @@ import AuthLayout from "@/components/AuthLayout";
 export default function RegisterPage() {
   const router = useRouter();
   const [step, setStep] = useState<"role" | "details" | "loading">("role");
-  const [role, setRole] = useState<"landlord" | "tenant" | "">("");
+  const [role, setRole] = useState<"landlord" | "tenant" | "agent" | "">("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -17,7 +17,7 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
 
-  const handleRoleSelect = (selectedRole: "landlord" | "tenant") => { setRole(selectedRole); setStep("details"); };
+  const handleRoleSelect = (selectedRole: "landlord" | "tenant" | "agent") => { setRole(selectedRole); setStep("details"); };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,7 +49,7 @@ export default function RegisterPage() {
   return (
     <AuthLayout
       title="Skapa konto"
-      subtitle={step === "role" ? "Välj din kontotyp" : `Registrerar som ${role === "landlord" ? "hyresvärd" : "hyresgäst"}`}
+      subtitle={step === "role" ? "Välj din kontotyp" : `Registrerar som ${role === "landlord" ? "hyresvärd" : role === "agent" ? "mäklare" : "hyresgäst"}`}
     >
         {step === "role" ? (
           <div className="space-y-3">
@@ -61,6 +61,18 @@ export default function RegisterPage() {
                 <div>
                   <h3 className="font-semibold text-navy mb-1 tracking-tight">Hyresvärd</h3>
                   <p className="text-[12px] text-gray-400 leading-relaxed">Publicera annonser och kommunicera med hyresgäster</p>
+                </div>
+              </div>
+            </button>
+
+            <button onClick={() => handleRoleSelect("agent")} className="w-full p-6 rounded-2xl border border-border/60 text-left group transition-all duration-300 hover:shadow-md hover:-translate-y-1">
+              <div className="flex items-start gap-4">
+                <div className="w-11 h-11 rounded-xl bg-navy/[0.04] flex items-center justify-center shrink-0 group-hover:bg-navy transition-all duration-300">
+                  <span className="text-[13px] font-bold text-navy group-hover:text-white transition-colors">M</span>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-navy mb-1 tracking-tight">Mäklare</h3>
+                  <p className="text-[12px] text-gray-400 leading-relaxed">Publicera annonser med din logotyp och profilera dina lokaler</p>
                 </div>
               </div>
             </button>

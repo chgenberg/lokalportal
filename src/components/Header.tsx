@@ -55,7 +55,7 @@ export default function Header() {
     setShowCreateModal(true);
   };
 
-  const isLandlord = session?.user?.role === "landlord";
+  const isLandlord = session?.user?.role === "landlord" || session?.user?.role === "agent";
 
   const navLinks = session?.user
     ? [
@@ -146,7 +146,7 @@ export default function Header() {
                         <div className="px-4 py-2.5 border-b border-border/60">
                           <p className="text-sm font-semibold text-navy">{session.user.name}</p>
                           <p className="text-[11px] text-gray-400 tracking-wide">
-                            {isLandlord ? "Hyresvärd" : "Hyresgäst"}
+                            {session?.user?.role === "agent" ? "Mäklare" : isLandlord ? "Hyresvärd" : "Hyresgäst"}
                           </p>
                         </div>
                         <Link href="/dashboard" onClick={() => setUserMenuOpen(false)} className="block px-4 py-2.5 text-[13px] text-gray-500 hover:text-navy hover:bg-navy/[0.03] transition-all">

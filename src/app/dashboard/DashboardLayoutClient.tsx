@@ -97,7 +97,7 @@ export default function DashboardLayoutClient({ children }: { children: React.Re
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { data: session } = useSession();
-  const isLandlord = session?.user?.role === "landlord";
+  const isLandlord = session?.user?.role === "landlord" || session?.user?.role === "agent";
   const currentTab = searchParams.get("tab");
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -140,7 +140,7 @@ export default function DashboardLayoutClient({ children }: { children: React.Re
             </div>
             <div className="min-w-0">
               <p className="font-semibold text-navy text-sm truncate">{session.user.name}</p>
-              <p className="text-[11px] text-gray-400 truncate">{isLandlord ? "Hyresvärd" : "Hyresgäst"}</p>
+              <p className="text-[11px] text-gray-400 truncate">{session?.user?.role === "agent" ? "Mäklare" : isLandlord ? "Hyresvärd" : "Hyresgäst"}</p>
             </div>
           </div>
         </div>

@@ -23,6 +23,7 @@ async function main() {
   const seedEmails = [
     "hyresvard@hittayta.se",
     "hyresgast@hittayta.se",
+    "maklare@hittayta.se",
     "demo-tenant-2@hittayta.se",
     "demo-tenant-3@hittayta.se",
     "demo-tenant-4@hittayta.se",
@@ -203,6 +204,33 @@ async function main() {
     createdListings.push(listing);
     console.log(`  Listing: ${listing.title} (${listing.id})`);
   }
+
+  // Agent listing (mäklare profil)
+  const agentListing = await prisma.listing.create({
+    data: {
+      title: "Kontorslokal i centrum – Mäklarannons",
+      description:
+        "Ljus kontorslokal i centralt läge. Tillgång till mötesrum, fiber och parkering. Kontakta Nordic Fastighetsmäklare för visning.",
+      city: "Stockholm",
+      address: "Stureplan 4",
+      type: "rent",
+      category: "kontor",
+      price: 35000,
+      size: 90,
+      lat: 59.3348,
+      lng: 18.0737,
+      imageUrl: "https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=800&q=80",
+      tags: ["Centralt läge", "Fiber", "Mötesrum"],
+      featured: true,
+      viewCount: 22,
+      ownerId: agent.id,
+      contactName: agent.name,
+      contactEmail: agent.email,
+      contactPhone: agent.phone || "",
+    },
+  });
+  createdListings.push(agentListing);
+  console.log(`  Agent listing: ${agentListing.title} (${agentListing.id})`);
 
   // ── Favorites ──────────────────────────────────────────
   // Anna (main tenant) saves 3
@@ -419,6 +447,7 @@ async function main() {
   console.log(`   Visningar: ${listingsData.map((l) => l.viewCount).join(", ")}`);
   console.log(`\n  Hyresvärd:  hyresvard@hittayta.se / ${PASSWORD}`);
   console.log(`  Hyresgäst:  hyresgast@hittayta.se / ${PASSWORD}`);
+  console.log(`  Mäklare:    maklare@hittayta.se / ${PASSWORD}`);
 }
 
 main()

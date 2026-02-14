@@ -412,6 +412,19 @@ export default function ListingDetailContent({
 
           <div className="lg:col-span-1">
             <div className="sticky top-28 space-y-4">
+              {listing.owner?.role === "agent" && listing.owner?.logoUrl && (
+                <div className="bg-white rounded-2xl border border-border/40 p-6 shadow-sm">
+                  <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-3">Mäklare</p>
+                  <div className="flex items-center gap-3">
+                    <div className="w-14 h-14 rounded-xl overflow-hidden bg-muted shrink-0 flex items-center justify-center">
+                      <Image src={listing.owner.logoUrl} alt={listing.owner.companyName || listing.owner.name} width={56} height={56} className="object-contain w-full h-full" unoptimized />
+                    </div>
+                    {(listing.owner.companyName || listing.owner.name) && (
+                      <p className="text-sm font-medium text-navy">{listing.owner.companyName || listing.owner.name}</p>
+                    )}
+                  </div>
+                </div>
+              )}
               <div className="bg-white rounded-2xl border border-border/40 p-6 shadow-sm">
                 <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-4">Kontakt</p>
                 <div className="space-y-3 mb-6">

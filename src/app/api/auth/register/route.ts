@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     if (!email || !password || !name || !role) {
       return NextResponse.json({ error: "Alla fält måste fyllas i" }, { status: 400 });
     }
-    if (!["landlord", "tenant"].includes(role)) {
+    if (!["landlord", "tenant", "agent"].includes(role)) {
       return NextResponse.json({ error: "Ogiltig roll" }, { status: 400 });
     }
 

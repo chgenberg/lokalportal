@@ -17,7 +17,7 @@ function DashboardContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const tab = searchParams.get("tab") || "overview";
-  const isLandlord = session?.user?.role === "landlord";
+  const isLandlord = session?.user?.role === "landlord" || session?.user?.role === "agent";
 
   const [listings, setListings] = useState<Listing[]>([]);
   const [favorites, setFavorites] = useState<Listing[]>([]);
@@ -71,9 +71,11 @@ function DashboardContent() {
   const [listingsSort, setListingsSort] = useState<"date" | "inquiries" | "views" | "favorites">("date");
   const [renewingId, setRenewingId] = useState<string | null>(null);
   const [contactListingId, setContactListingId] = useState<string | null>(null);
-  const [profile, setProfile] = useState<{ name: string; email: string; phone: string } | null>(null);
+  const [profile, setProfile] = useState<{ name: string; email: string; phone: string; logoUrl?: string; companyName?: string } | null>(null);
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileSuccess, setProfileSuccess] = useState(false);
+  const [logoUploading, setLogoUploading] = useState(false);
+  const logoInputRef = useRef<HTMLInputElement>(null);
   const editImageInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -127,7 +129,13 @@ function DashboardContent() {
         if (profileRes.ok) {
           try {
             const profileData = await profileRes.json();
-            setProfile({ name: profileData.name ?? "", email: profileData.email ?? "", phone: profileData.phone ?? "" });
+            setProfile({
+              name: profileData.name ?? "",
+              email: profileData.email ?? "",
+              phone: profileData.phone ?? "",
+              logoUrl: profileData.logoUrl ?? "",
+              companyName: profileData.companyName ?? "",
+            });
           } catch { /* */ }
         }
       } catch { /* */ } finally { setLoading(false); }
@@ -785,6 +793,21 @@ function DashboardContent() {
   }
 
   if (tab === "settings") {
+    const isAgent = session?.user?.role === "agent";
+
+    const handleLogoUpload = async (file: File) => {
+      if (!file.type.startsWith("image/") || file.size > 2 * 1024 * 1024) return;
+      setLogoUploading(true);
+      try {
+        const formData = new FormData();
+        formData.append("file", file);
+        const res = await fetch("/api/upload", { method: "POST", body: formData });
+        if (!res.ok) return;
+        const data = await res.json();
+        setProfile((p) => (p ? { ...p, logoUrl: data.url || "" } : p));
+      } catch { /* */ } finally { setLogoUploading(false); }
+    };
+
     const handleSaveProfile = async (e: React.FormEvent) => {
       e.preventDefault();
       if (!profile) return;
@@ -794,11 +817,15 @@ function DashboardContent() {
         const res = await fetch("/api/auth/profile", {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name: profile.name, phone: profile.phone }),
+          body: JSON.stringify({
+            name: profile.name,
+            phone: profile.phone,
+            ...(isAgent && { companyName: profile.companyName ?? "", logoUrl: profile.logoUrl ?? "" }),
+          }),
         });
         if (!res.ok) return;
         const data = await res.json();
-        setProfile({ name: data.name, email: data.email, phone: data.phone ?? "" });
+        setProfile({ name: data.name, email: data.email, phone: data.phone ?? "", logoUrl: data.logoUrl ?? "", companyName: data.companyName ?? "" });
         setProfileSuccess(true);
       } catch { /* */ } finally { setProfileSaving(false); }
     };
@@ -823,6 +850,35 @@ function DashboardContent() {
                 <label className="block text-xs font-medium text-gray-500 mb-1.5">Telefon</label>
                 <input type="tel" value={profile.phone} onChange={(e) => setProfile((p) => (p ? { ...p, phone: e.target.value } : p))} className="w-full px-4 py-3 bg-muted rounded-xl text-sm border border-border focus:border-navy outline-none" placeholder="T.ex. 070-123 45 67" />
               </div>
+              {isAgent && (
+                <>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1.5">Mäklarbyrå / företagsnamn</label>
+                    <input type="text" value={profile.companyName ?? ""} onChange={(e) => setProfile((p) => (p ? { ...p, companyName: e.target.value } : p))} className="w-full px-4 py-3 bg-muted rounded-xl text-sm border border-border focus:border-navy outline-none" placeholder="T.ex. ABC Fastigheter" />
+                    <p className="text-[11px] text-gray-400 mt-1">Visas i dina annonser tillsammans med logotypen</p>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1.5">Logotyp</label>
+                    <input ref={logoInputRef} type="file" accept="image/jpeg,image/png,image/gif,image/webp,image/svg+xml" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleLogoUpload(f); e.target.value = ""; }} />
+                    {profile.logoUrl ? (
+                      <div className="flex items-center gap-3">
+                        <div className="w-16 h-16 rounded-xl overflow-hidden bg-muted shrink-0 flex items-center justify-center">
+                          <img src={profile.logoUrl} alt="Logotyp" className="max-w-full max-h-full object-contain" />
+                        </div>
+                        <div className="flex gap-2">
+                          <button type="button" onClick={() => logoInputRef.current?.click()} disabled={logoUploading} className="px-3 py-1.5 text-xs font-medium bg-navy/5 text-navy rounded-lg hover:bg-navy/10 disabled:opacity-50">Byt bild</button>
+                          <button type="button" onClick={() => setProfile((p) => (p ? { ...p, logoUrl: "" } : p))} className="px-3 py-1.5 text-xs font-medium text-gray-500 hover:text-red-600">Ta bort</button>
+                        </div>
+                      </div>
+                    ) : (
+                      <button type="button" onClick={() => logoInputRef.current?.click()} disabled={logoUploading} className="w-full py-8 border-2 border-dashed border-border rounded-xl text-sm text-gray-500 hover:border-navy hover:text-navy transition-colors disabled:opacity-50">
+                        {logoUploading ? "Laddar upp..." : "Klicka för att ladda upp logotyp (max 2 MB)"}
+                      </button>
+                    )}
+                    <p className="text-[11px] text-gray-400 mt-1">Visas i dina annonser. Rekommenderad: kvadratisk, minst 200×200 px</p>
+                  </div>
+                </>
+              )}
               <div className="flex items-center gap-3">
                 <button type="submit" disabled={profileSaving} className="px-6 py-3 bg-navy text-white text-sm font-medium rounded-xl hover:bg-navy-light transition-colors disabled:opacity-50">{profileSaving ? "Sparar..." : "Spara ändringar"}</button>
                 {profileSuccess && <span className="text-sm text-green-600">Sparat!</span>}
@@ -832,7 +888,7 @@ function DashboardContent() {
           {!profile && <p className="text-sm text-gray-500">Laddar...</p>}
           <div className="mt-4 pt-4 border-t border-border">
             <p className="text-xs text-gray-500">Roll</p>
-            <p className="text-sm font-medium text-navy mt-0.5">{isLandlord ? "Hyresvärd" : "Hyresgäst"}</p>
+            <p className="text-sm font-medium text-navy mt-0.5">{session?.user?.role === "agent" ? "Mäklare" : isLandlord ? "Hyresvärd" : "Hyresgäst"}</p>
           </div>
         </div>
         <button onClick={() => signOut({ callbackUrl: "/" })} className="px-6 py-3 bg-navy/5 text-navy text-sm font-medium rounded-xl hover:bg-navy/10 transition-colors">Logga ut</button>

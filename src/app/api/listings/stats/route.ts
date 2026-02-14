@@ -6,7 +6,7 @@ import prisma from "@/lib/db";
 export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session?.user) return NextResponse.json({ error: "Ej inloggad" }, { status: 401 });
-  if (session.user.role !== "landlord") return NextResponse.json({ error: "Endast för hyresvärdar" }, { status: 403 });
+  if (session.user.role !== "landlord" && session.user.role !== "agent") return NextResponse.json({ error: "Endast för hyresvärdar och mäklare" }, { status: 403 });
 
   const userId = session.user.id;
 
