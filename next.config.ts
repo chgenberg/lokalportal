@@ -24,7 +24,7 @@ const nextConfig: NextConfig = {
           { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
           {
             key: "Content-Security-Policy",
-            value: "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://images.unsplash.com https://*.tile.openstreetmap.org https://tile.openstreetmap.org; font-src 'self' data:; connect-src 'self' blob: https://images.unsplash.com https://tile.openstreetmap.org https://*.tile.openstreetmap.org; frame-ancestors 'none';",
+            value: "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://images.unsplash.com https://*.tile.openstreetmap.org https://tile.openstreetmap.org https://*.storageapi.dev https://storage.railway.app; font-src 'self' data:; connect-src 'self' blob: https://images.unsplash.com https://tile.openstreetmap.org https://*.tile.openstreetmap.org https://*.storageapi.dev https://storage.railway.app; frame-ancestors 'none';",
           },
         ],
       },

@@ -42,6 +42,11 @@ interface InputForm {
   highlights: string;
   lat?: number;
   lng?: number;
+  outdoorImageUrl: string;
+  indoorImageUrl: string;
+  floorPlanImageUrl: string;
+  extraImageUrls: string[];
+  videoUrl: string;
 }
 
 interface GeneratedListing {
@@ -59,6 +64,8 @@ interface GeneratedListing {
   areaSummary?: string;
   imageUrl: string;
   imageUrls?: string[];
+  videoUrl?: string | null;
+  floorPlanImageUrl?: string | null;
   nearby?: NearbyData;
   priceContext?: PriceContext | null;
   demographics?: DemographicsData | null;
@@ -71,6 +78,11 @@ const initialInput: InputForm = {
   price: "",
   size: "",
   highlights: "",
+  outdoorImageUrl: "",
+  indoorImageUrl: "",
+  floorPlanImageUrl: "",
+  extraImageUrls: [],
+  videoUrl: "",
 };
 
 export default function CreateListingModal({ open, onClose }: CreateListingModalProps) {
@@ -93,6 +105,8 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
   const [mapOpen, setMapOpen] = useState(false);
   const [selectedSuggestIndex, setSelectedSuggestIndex] = useState(-1);
   const imageInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
+  const cropSlotRef = useRef<"outdoor" | "indoor" | "floorPlan" | "extra" | null>(null);
   const addressWrapperRef = useRef<HTMLDivElement>(null);
   const suggestDebounceRef = useRef<NodeJS.Timeout | null>(null);
   const modalRef = useRef<HTMLDivElement>(null);
@@ -203,6 +217,96 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
     setMapOpen(false);
   };
 
+  const uploadImageBlob = async (blob: Blob, onUrl: (url: string) => void) => {
+    setImageUploading(true);
+    setPublishError("");
+    try {
+      const formData = new FormData();
+      formData.append("file", blob, "cropped.jpg");
+      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      const data = await res.json();
+      if (!res.ok) {
+        setPublishError(data.error || "Kunde inte ladda upp bilden.");
+        return;
+      }
+      if (data.url) {
+        onUrl(data.url);
+        toast.success("Bild uppladdad");
+      }
+    } catch {
+      setPublishError("Uppladdning misslyckades. Försök igen.");
+    } finally {
+      setImageUploading(false);
+    }
+  };
+
+  const handleImageUpload = async (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      setPublishError("Endast bilder (JPEG, PNG, GIF, WebP) stöds.");
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setPublishError("Bilden får max vara 10 MB.");
+      return;
+    }
+    setCropFile(file);
+  };
+
+  const handleCropped = (blob: Blob) => {
+    const slot = cropSlotRef.current;
+    setCropFile(null);
+    cropSlotRef.current = null;
+    if (slot === "outdoor") {
+      uploadImageBlob(blob, (url) => updateInput({ outdoorImageUrl: url }));
+    } else if (slot === "indoor") {
+      uploadImageBlob(blob, (url) => updateInput({ indoorImageUrl: url }));
+    } else if (slot === "floorPlan") {
+      uploadImageBlob(blob, (url) => updateInput({ floorPlanImageUrl: url }));
+    } else if (slot === "extra") {
+      uploadImageBlob(blob, (url) => updateInput({ extraImageUrls: [...(input.extraImageUrls || []), url] }));
+    } else if (generated) {
+      uploadImageBlob(blob, (url) => {
+        setGenerated((g) => {
+          if (!g) return g;
+          const current = g.imageUrls?.length ? g.imageUrls : (g.imageUrl ? [g.imageUrl] : []);
+          const next = [...current, url].slice(0, 10);
+          return { ...g, imageUrls: next, imageUrl: next[0] || "" };
+        });
+      });
+    }
+  };
+
+  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("video/")) {
+      setPublishError("Endast video (MP4, WebM) stöds.");
+      return;
+    }
+    if (file.size > 50 * 1024 * 1024) {
+      setPublishError("Videon får max vara 50 MB.");
+      return;
+    }
+    setImageUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      const data = await res.json();
+      if (res.ok && data.url) {
+        updateInput({ videoUrl: data.url });
+        toast.success("Video uppladdad");
+      } else {
+        setPublishError(data.error || "Kunde inte ladda upp videon.");
+      }
+    } catch {
+      setPublishError("Uppladdning misslyckades.");
+    } finally {
+      setImageUploading(false);
+    }
+    e.target.value = "";
+  };
+
   const toggleTag = (tag: string) => {
     if (!generated) return;
     setGenerated((g) => {
@@ -221,6 +325,15 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
     try {
       const priceNum = Number(input.price);
       const sizeNum = Number(input.size);
+      const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
+      const toFullUrl = (u: string) => (u.startsWith("/") ? `${baseUrl}${u}` : u);
+      const imageUrls = [
+        toFullUrl(input.outdoorImageUrl),
+        toFullUrl(input.indoorImageUrl),
+        ...(input.floorPlanImageUrl ? [toFullUrl(input.floorPlanImageUrl)] : []),
+        ...(input.extraImageUrls || []).map(toFullUrl),
+      ].filter(Boolean);
+
       const body: Record<string, unknown> = {
         address: input.address.trim(),
         type: input.type,
@@ -228,6 +341,7 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
         price: priceNum,
         size: sizeNum,
         highlights: input.highlights.trim() || undefined,
+        imageUrls: imageUrls.length > 0 ? imageUrls : undefined,
       };
       if (input.lat != null && input.lng != null && !Number.isNaN(input.lat) && !Number.isNaN(input.lng)) {
         body.lat = input.lat;
@@ -258,6 +372,8 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
         areaSummary: data.areaSummary,
         imageUrl: generated.imageUrl,
         imageUrls: generated.imageUrls ?? (generated.imageUrl ? [generated.imageUrl] : []),
+        videoUrl: generated.videoUrl,
+        floorPlanImageUrl: generated.floorPlanImageUrl,
         nearby: data.nearby,
         priceContext: data.priceContext ?? null,
         demographics: data.demographics ?? null,
@@ -297,11 +413,28 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
       setGenerateError("Ange storlek (m²)");
       return;
     }
+    if (!input.outdoorImageUrl?.trim()) {
+      setGenerateError("Ladda upp minst en bild av fasaden/utsidan");
+      return;
+    }
+    if (!input.indoorImageUrl?.trim()) {
+      setGenerateError("Ladda upp minst en bild av insidan");
+      return;
+    }
 
     setStep("generating");
     setGenerateError("");
 
     try {
+      const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
+      const toFullUrl = (u: string) => (u.startsWith("/") ? `${baseUrl}${u}` : u);
+      const imageUrls = [
+        toFullUrl(input.outdoorImageUrl),
+        toFullUrl(input.indoorImageUrl),
+        ...(input.floorPlanImageUrl ? [toFullUrl(input.floorPlanImageUrl)] : []),
+        ...(input.extraImageUrls || []).map(toFullUrl),
+      ].filter(Boolean);
+
       const body: Record<string, unknown> = {
         address: input.address.trim(),
         type: input.type,
@@ -309,6 +442,7 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
         price: priceNum,
         size: sizeNum,
         highlights: input.highlights.trim() || undefined,
+        imageUrls,
       };
       if (input.lat != null && input.lng != null && !Number.isNaN(input.lat) && !Number.isNaN(input.lng)) {
         body.lat = input.lat;
@@ -328,6 +462,12 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
         return;
       }
 
+      const imgs = [
+        input.outdoorImageUrl,
+        input.indoorImageUrl,
+        ...(input.floorPlanImageUrl ? [input.floorPlanImageUrl] : []),
+        ...(input.extraImageUrls || []),
+      ].filter(Boolean);
       setGenerated({
         title: data.title ?? "",
         description: data.description ?? "",
@@ -341,7 +481,10 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
         price: data.price ?? priceNum,
         size: data.size ?? sizeNum,
         areaSummary: data.areaSummary,
-        imageUrl: "",
+        imageUrl: imgs[0] ?? "",
+        imageUrls: imgs,
+        videoUrl: input.videoUrl || null,
+        floorPlanImageUrl: input.floorPlanImageUrl || null,
         nearby: data.nearby,
         priceContext: data.priceContext ?? null,
         demographics: data.demographics ?? null,
@@ -357,51 +500,6 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
   const handleBackToEdit = () => {
     setStep("input");
     setPublishError("");
-  };
-
-  const uploadImageBlob = async (blob: Blob) => {
-    setImageUploading(true);
-    setPublishError("");
-    try {
-      const formData = new FormData();
-      formData.append("file", blob, "cropped.jpg");
-      const res = await fetch("/api/upload", { method: "POST", body: formData });
-      const data = await res.json();
-      if (!res.ok) {
-        setPublishError(data.error || "Kunde inte ladda upp bilden.");
-        return;
-      }
-      if (data.url && generated) {
-        setGenerated((g) => {
-          if (!g) return g;
-          const current = g.imageUrls?.length ? g.imageUrls : (g.imageUrl ? [g.imageUrl] : []);
-          const next = [...current, data.url].slice(0, 5);
-          return { ...g, imageUrls: next, imageUrl: next[0] || "" };
-        });
-        toast.success("Bild uppladdad");
-      }
-    } catch {
-      setPublishError("Uppladdning misslyckades. Försök igen.");
-    } finally {
-      setImageUploading(false);
-    }
-  };
-
-  const handleImageUpload = async (file: File) => {
-    if (!file.type.startsWith("image/")) {
-      setPublishError("Endast bilder (JPEG, PNG, GIF, WebP) stöds.");
-      return;
-    }
-    if (file.size > 10 * 1024 * 1024) {
-      setPublishError("Bilden får max vara 10 MB.");
-      return;
-    }
-    setCropFile(file);
-  };
-
-  const handleCropped = (blob: Blob) => {
-    setCropFile(null);
-    uploadImageBlob(blob);
   };
 
   const handlePublish = async () => {
@@ -429,6 +527,11 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
           tags: generated.tags,
           imageUrl: imgs[0] || "",
           imageUrls: imgs.length > 0 ? imgs : undefined,
+          videoUrl: generated.videoUrl || undefined,
+          floorPlanImageUrl: generated.floorPlanImageUrl || undefined,
+          nearby: generated.nearby,
+          priceContext: generated.priceContext,
+          demographics: generated.demographics,
           lat: generated.lat,
           lng: generated.lng,
         }),
@@ -535,6 +638,8 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
 
   return (
     <>
+    <input ref={imageInputRef} type="file" accept="image/jpeg,image/png,image/gif,image/webp" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleImageUpload(f); e.target.value = ""; }} />
+    <ImageCropModal open={!!cropFile} imageFile={cropFile} onClose={() => { setCropFile(null); cropSlotRef.current = null; }} onCropped={handleCropped} />
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4">
       <div className="absolute inset-0 bg-navy/40 backdrop-blur-sm" onClick={handleClose} />
 
@@ -733,6 +838,85 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
                     className="w-full px-4 py-3 bg-muted/50 rounded-xl text-sm border border-border/60 focus:border-navy/30 focus:bg-white outline-none transition-all resize-none leading-relaxed"
                   />
                 </div>
+
+                <div className="space-y-4">
+                  <label className="block text-[11px] font-semibold text-gray-400 tracking-[0.1em] uppercase">Bilder *</label>
+                  <p className="text-[13px] text-gray-500">Ladda upp minst en bild av fasaden/utsidan och en bild av insidan. AI:n använder bilderna för att skriva en bättre beskrivning.</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="border-2 border-dashed rounded-xl p-4 min-h-[100px] flex flex-col items-center justify-center gap-2 bg-muted/20">
+                      <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Utsida *</span>
+                      {input.outdoorImageUrl ? (
+                        <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-muted/50">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={input.outdoorImageUrl} alt="Utsida" className="w-full h-full object-cover" />
+                          <button type="button" onClick={() => updateInput({ outdoorImageUrl: "" })} className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 text-white flex items-center justify-center text-sm hover:bg-black/80" aria-label="Ta bort">×</button>
+                        </div>
+                      ) : (
+                        <button type="button" onClick={() => { cropSlotRef.current = "outdoor"; imageInputRef.current?.click(); }} disabled={imageUploading} className="py-2.5 px-3 bg-navy text-white text-[13px] font-semibold rounded-xl hover:bg-navy/90 disabled:opacity-60">
+                          {imageUploading ? "Laddar upp..." : "Ladda upp"}
+                        </button>
+                      )}
+                    </div>
+                    <div className="border-2 border-dashed rounded-xl p-4 min-h-[100px] flex flex-col items-center justify-center gap-2 bg-muted/20">
+                      <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Insida *</span>
+                      {input.indoorImageUrl ? (
+                        <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-muted/50">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={input.indoorImageUrl} alt="Insida" className="w-full h-full object-cover" />
+                          <button type="button" onClick={() => updateInput({ indoorImageUrl: "" })} className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 text-white flex items-center justify-center text-sm hover:bg-black/80" aria-label="Ta bort">×</button>
+                        </div>
+                      ) : (
+                        <button type="button" onClick={() => { cropSlotRef.current = "indoor"; imageInputRef.current?.click(); }} disabled={imageUploading} className="py-2.5 px-3 bg-navy text-white text-[13px] font-semibold rounded-xl hover:bg-navy/90 disabled:opacity-60">
+                          {imageUploading ? "Laddar upp..." : "Ladda upp"}
+                        </button>
+                      )}
+                    </div>
+                    <div className="border-2 border-dashed rounded-xl p-4 min-h-[80px] flex flex-col items-center justify-center gap-2 bg-muted/20">
+                      <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Planlösning</span>
+                      {input.floorPlanImageUrl ? (
+                        <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-muted/50">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={input.floorPlanImageUrl} alt="Planlösning" className="w-full h-full object-cover" />
+                          <button type="button" onClick={() => updateInput({ floorPlanImageUrl: "" })} className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 text-white flex items-center justify-center text-sm hover:bg-black/80" aria-label="Ta bort">×</button>
+                        </div>
+                      ) : (
+                        <button type="button" onClick={() => { cropSlotRef.current = "floorPlan"; imageInputRef.current?.click(); }} disabled={imageUploading} className="py-2 px-3 bg-muted/80 text-navy text-[12px] font-semibold rounded-xl hover:bg-muted disabled:opacity-60">
+                          {imageUploading ? "..." : "Ladda upp"}
+                        </button>
+                      )}
+                    </div>
+                    <div className="border-2 border-dashed rounded-xl p-4 min-h-[80px] flex flex-col items-center justify-center gap-2 bg-muted/20">
+                      <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Fler bilder</span>
+                      <div className="flex flex-wrap gap-2">
+                        {(input.extraImageUrls || []).map((url, i) => (
+                          <div key={url} className="relative w-16 h-12 rounded-lg overflow-hidden bg-muted/50 shrink-0">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={url} alt="" className="w-full h-full object-cover" />
+                            <button type="button" onClick={() => updateInput({ extraImageUrls: (input.extraImageUrls || []).filter((_, j) => j !== i) })} className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-black/60 text-white flex items-center justify-center text-xs" aria-label="Ta bort">×</button>
+                          </div>
+                        ))}
+                        {((input.extraImageUrls?.length ?? 0) < 5) && (
+                          <button type="button" onClick={() => { cropSlotRef.current = "extra"; imageInputRef.current?.click(); }} disabled={imageUploading} className="w-16 h-12 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 hover:border-navy/40 hover:text-navy disabled:opacity-60">+</button>
+                        )}
+                      </div>
+                    </div>
+                    <div className="border-2 border-dashed rounded-xl p-4 min-h-[80px] flex flex-col items-center justify-center gap-2 bg-muted/20 sm:col-span-2">
+                      <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Video (valfritt)</span>
+                      <input ref={videoInputRef} type="file" accept="video/mp4,video/webm" className="hidden" onChange={handleVideoUpload} />
+                      {input.videoUrl ? (
+                        <div className="relative w-full max-w-md">
+                          {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+                          <video src={input.videoUrl} controls className="max-h-32 rounded-lg w-full" />
+                          <button type="button" onClick={() => updateInput({ videoUrl: "" })} className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 text-white flex items-center justify-center text-sm hover:bg-black/80" aria-label="Ta bort">×</button>
+                        </div>
+                      ) : (
+                        <button type="button" onClick={() => videoInputRef.current?.click()} disabled={imageUploading} className="py-2 px-3 bg-muted/80 text-navy text-[12px] font-semibold rounded-xl hover:bg-muted disabled:opacity-60">
+                          {imageUploading ? "Laddar upp..." : "Ladda upp video (MP4/WebM)"}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
             </>
           )}
@@ -760,6 +944,8 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
               size: generated.size,
               imageUrl: generated.imageUrl,
               imageUrls: generated.imageUrls ?? (generated.imageUrl ? [generated.imageUrl] : []),
+              videoUrl: generated.videoUrl ?? undefined,
+              floorPlanImageUrl: generated.floorPlanImageUrl ?? undefined,
               featured: false,
               createdAt: new Date().toISOString(),
               lat: generated.lat,
@@ -774,6 +960,9 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
               priceContext: generated.priceContext ?? null,
               demographics: generated.demographics ?? null,
             };
+            const areaDataForPreview = (generated.nearby || generated.priceContext || generated.demographics)
+              ? { demographics: generated.demographics ?? null, nearby: generated.nearby ?? { restaurants: 0, shops: 0, gyms: 0, busStops: { count: 0 }, trainStations: { count: 0 }, parking: 0, schools: 0, healthcare: 0 }, priceContext: generated.priceContext ?? null }
+              : undefined;
             return (
               <div className="animate-fade-in">
                 {publishError && (
@@ -900,6 +1089,7 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
                     compact
                     editableDescription
                     onDescriptionChange={(desc) => setGenerated((g) => (g ? { ...g, description: desc } : g))}
+                    areaData={areaDataForPreview}
                     contactSlot={
                       <>
                         <p className="text-[13px] text-gray-500 py-2">Kontaktknappar visas för besökare efter publicering.</p>

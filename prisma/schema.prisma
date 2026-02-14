@@ -38,7 +38,10 @@ model Listing {
   price       Int
   size        Int
   imageUrl    String   @default("")
-  imageUrls   String[] @default([]) // Up to 5 images; when set, takes precedence over imageUrl
+  imageUrls   String[] @default([]) // Up to 10 images; when set, takes precedence over imageUrl
+  videoUrl    String?  // Optional video (MP4/WebM)
+  floorPlanImageUrl String? // Planritning
+  areaData    Json?    // { nearby?, priceContext?, demographics? } from APIs at creation
   featured    Boolean  @default(false)
   viewCount   Int      @default(0)
   createdAt   DateTime @default(now())

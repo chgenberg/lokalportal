@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Ogiltig JSON" }, { status: 400 });
   }
 
-  const { address, type, category, price, size, highlights = "", lat: bodyLat, lng: bodyLng } = body as Record<string, unknown>;
+  const { address, type, category, price, size, highlights = "", lat: bodyLat, lng: bodyLng, imageUrls: bodyImageUrls } = body as Record<string, unknown>;
   if (!address || typeof address !== "string" || !address.trim()) {
     return NextResponse.json({ error: "Adress krävs" }, { status: 400 });
   }
@@ -54,6 +54,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Ogiltig storlek (m²)." }, { status: 400 });
   }
 
+  const imageUrls = Array.isArray(bodyImageUrls)
+    ? bodyImageUrls
+        .filter((u): u is string => typeof u === "string" && u.trim().length > 0)
+        .map((u) => String(u).trim().slice(0, 2000))
+    : [];
+
   const input: GenerateInput = {
     address: address.trim(),
     type: type as GenerateInput["type"],
@@ -63,6 +69,7 @@ export async function POST(request: NextRequest) {
     highlights: typeof highlights === "string" ? highlights : "",
     lat: hasBodyCoords ? Number(bodyLat) : undefined,
     lng: hasBodyCoords ? Number(bodyLng) : undefined,
+    imageUrls: imageUrls.length > 0 ? imageUrls : undefined,
   };
 
   try {

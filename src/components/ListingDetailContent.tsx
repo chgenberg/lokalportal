@@ -263,10 +263,20 @@ export default function ListingDetailContent({
             </div>
 
             {("videoUrl" in listing && listing.videoUrl) && (
-              <div className="mb-8">
+              <div className="bg-white rounded-2xl border border-border/40 p-6 sm:p-8 shadow-sm">
                 <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-3">Video</p>
                 <div className="rounded-xl overflow-hidden border border-border/40 bg-black/5">
+                  {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
                   <video src={listing.videoUrl} controls className="w-full max-h-[400px]" />
+                </div>
+              </div>
+            )}
+
+            {("floorPlanImageUrl" in listing && listing.floorPlanImageUrl) && (
+              <div className="bg-white rounded-2xl border border-border/40 p-6 sm:p-8 shadow-sm">
+                <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-3">Planlösning</p>
+                <div className="rounded-xl overflow-hidden border border-border/40 bg-muted/20">
+                  <Image src={listing.floorPlanImageUrl} alt="Planlösning" width={800} height={600} className="w-full h-auto object-contain max-h-[500px]" unoptimized />
                 </div>
               </div>
             )}

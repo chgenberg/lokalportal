@@ -10,7 +10,9 @@ export interface Listing {
   size: number;
   imageUrl: string;
   imageUrls?: string[]; // Up to 10 images; when present, takes precedence
-  videoUrl?: string;
+  videoUrl?: string | null;
+  floorPlanImageUrl?: string | null;
+  areaData?: { nearby?: NearbyData; priceContext?: PriceContext | null; demographics?: DemographicsData | null } | null;
   featured: boolean;
   createdAt: string;
   lat: number;

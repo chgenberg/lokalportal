@@ -40,8 +40,12 @@ export async function GET(
       listing.viewCount = (listing.viewCount ?? 0) + 1;
     }
     const { owner, ...rest } = listing;
+    const areaDataRaw = (rest as { areaData?: unknown }).areaData as { nearby?: unknown; priceContext?: unknown; demographics?: unknown } | null | undefined;
     return NextResponse.json({
       ...rest,
+      videoUrl: listing.videoUrl ?? undefined,
+      floorPlanImageUrl: listing.floorPlanImageUrl ?? undefined,
+      areaData: areaDataRaw ?? undefined,
       createdAt: listing.createdAt.toISOString(),
       owner: owner ? { role: owner.role, logoUrl: owner.logoUrl, companyName: owner.companyName, name: owner.name } : undefined,
       contact: {
@@ -75,7 +79,7 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { title, description, city, address, type, category, price, size, tags, imageUrl, imageUrls } = body;
+    const { title, description, city, address, type, category, price, size, tags, imageUrl, imageUrls, videoUrl, floorPlanImageUrl } = body;
 
     if (!title || !description || !city || !address || !type || !category || price == null || price === "" || size == null || size === "") {
       return NextResponse.json({ error: "Alla obligatoriska fält måste fyllas i" }, { status: 400 });
@@ -98,8 +102,10 @@ export async function PUT(
       return NextResponse.json({ error: "Ogiltig storlek (m²)." }, { status: 400 });
     }
 
-    const urls = Array.isArray(imageUrls) ? imageUrls.slice(0, 5).filter((u): u is string => typeof u === "string").map((u) => u.trim().slice(0, 2000)).filter(Boolean) : undefined;
+    const urls = Array.isArray(imageUrls) ? imageUrls.slice(0, 10).filter((u): u is string => typeof u === "string").map((u) => u.trim().slice(0, 2000)).filter(Boolean) : undefined;
     const imageUrlStr = urls?.length ? urls[0]! : (typeof imageUrl === "string" ? imageUrl.trim().slice(0, 2000) : listing.imageUrl || "");
+    const videoUrlStr = videoUrl !== undefined ? (typeof videoUrl === "string" ? videoUrl.trim().slice(0, 2000) || null : null) : listing.videoUrl;
+    const floorPlanStr = floorPlanImageUrl !== undefined ? (typeof floorPlanImageUrl === "string" ? floorPlanImageUrl.trim().slice(0, 2000) || null : null) : listing.floorPlanImageUrl;
 
     const updated = await prisma.listing.update({
       where: { id },
@@ -114,6 +120,8 @@ export async function PUT(
         size: Math.floor(sizeNum),
         imageUrl: imageUrlStr,
         ...(urls && { imageUrls: urls }),
+        videoUrl: videoUrlStr,
+        floorPlanImageUrl: floorPlanStr,
         tags: Array.isArray(tags) ? tags.slice(0, 20).filter((t: unknown) => typeof t === "string").map((t: string) => t.trim().slice(0, 50)) : listing.tags,
       },
     });

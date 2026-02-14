@@ -27,27 +27,26 @@ export default function ListingDetailPage() {
   const [pdfDownloading, setPdfDownloading] = useState(false);
 
   useEffect(() => {
-    const fetchListing = async () => {
+    const run = async () => {
+      if (!id) return;
       try {
         const res = await fetch(`/api/listings/${id}`);
-        if (!res.ok) { setError(res.status === 404 ? "Annonsen hittades inte." : "Kunde inte ladda annonsen."); setListing(null); return; }
-        setListing(await res.json());
+        if (!res.ok) { setError(res.status === 404 ? "Annonsen hittades inte." : "Kunde inte ladda annonsen."); setListing(null); setLoading(false); return; }
+        const data = await res.json();
+        setListing(data);
+        const ad = data.areaData;
+        if (ad && (ad.nearby || ad.priceContext || ad.demographics)) {
+          setAreaData({ demographics: ad.demographics ?? null, nearby: ad.nearby ?? { restaurants: 0, shops: 0, gyms: 0, busStops: { count: 0 }, trainStations: { count: 0 }, parking: 0, schools: 0, healthcare: 0 }, priceContext: ad.priceContext ?? null });
+        } else {
+          const areaRes = await fetch(`/api/listings/${id}/area`);
+          if (areaRes.ok) {
+            const areaJson = await areaRes.json();
+            setAreaData({ demographics: areaJson.demographics ?? null, nearby: areaJson.nearby ?? { restaurants: 0, shops: 0, gyms: 0, busStops: { count: 0 }, trainStations: { count: 0 }, parking: 0, schools: 0, healthcare: 0 }, priceContext: areaJson.priceContext ?? null });
+          }
+        }
       } catch { setError("Ett fel uppstod."); setListing(null); } finally { setLoading(false); }
     };
-    if (id) fetchListing();
-  }, [id]);
-
-  useEffect(() => {
-    const fetchArea = async () => {
-      try {
-        const res = await fetch(`/api/listings/${id}/area`);
-        if (res.ok) {
-          const data = await res.json();
-          setAreaData({ demographics: data.demographics ?? null, nearby: data.nearby ?? { restaurants: 0, shops: 0, gyms: 0, busStops: { count: 0 }, trainStations: { count: 0 }, parking: 0, schools: 0, healthcare: 0 }, priceContext: data.priceContext ?? null });
-        }
-      } catch { /* ignore */ }
-    };
-    if (id) fetchArea();
+    run();
   }, [id]);
 
   useEffect(() => {
