@@ -262,6 +262,15 @@ export default function ListingDetailContent({
               )}
             </div>
 
+            {("videoUrl" in listing && listing.videoUrl) && (
+              <div className="mb-8">
+                <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-3">Video</p>
+                <div className="rounded-xl overflow-hidden border border-border/40 bg-black/5">
+                  <video src={listing.videoUrl} controls className="w-full max-h-[400px]" />
+                </div>
+              </div>
+            )}
+
             {/* Områdesanalys – demographics, nearby amenities, price context */}
             {areaData && (areaData.demographics || areaData.nearby || (areaData.priceContext && areaData.priceContext.count >= 2)) && (
               <div className="bg-white rounded-2xl border border-border/40 p-6 sm:p-8 shadow-sm">

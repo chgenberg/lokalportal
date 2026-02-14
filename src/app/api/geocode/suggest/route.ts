@@ -18,6 +18,14 @@ function extractHouseNumberFromQuery(q: string): string | undefined {
   return m ? m[1] : undefined;
 }
 
+/** Swedish postcode: normalize "41118" → "411 18" */
+function formatSwedishPostcode(pc: string | undefined): string | undefined {
+  if (!pc || typeof pc !== "string") return undefined;
+  const digits = pc.replace(/\D/g, "");
+  if (digits.length === 5) return `${digits.slice(0, 3)} ${digits.slice(3)}`;
+  return pc.trim() || undefined;
+}
+
 /** Build short address: "Gatuadress, postnummer Ort" */
 function buildShortAddress(
   addr: Record<string, string | undefined>,
@@ -25,9 +33,14 @@ function buildShortAddress(
 ): string {
   const road = addr.road || addr.street || addr.footway;
   const houseNumber = addr.house_number || houseNumberFromQuery;
-  const postcode = addr.postcode;
+  const postcode = formatSwedishPostcode(addr.postcode ?? addr.postal_code);
+  const cleanMunicipality = (s: string | undefined) => {
+    if (!s) return undefined;
+    const t = s.replace(/\s+kommun$/i, "").replace(/\s+Stad$/i, "").trim();
+    return t.replace(/s$/, "") || t;
+  };
   const locality =
-    addr.village || addr.town || addr.city || addr.municipality?.replace(/\s+kommun$/, "") || addr.suburb || addr.neighbourhood;
+    addr.city || addr.town || addr.village || cleanMunicipality(addr.municipality) || addr.suburb || addr.neighbourhood;
 
   const streetPart = [road, houseNumber].filter(Boolean).join(" ");
   const locationPart = [postcode, locality].filter(Boolean).join(" ");
@@ -55,11 +68,14 @@ export async function GET(request: NextRequest) {
 
   const houseNumberFromQuery = extractHouseNumberFromQuery(q);
   const encoded = encodeURIComponent(q);
-  const url = `https://nominatim.openstreetmap.org/search?q=${encoded}&format=json&addressdetails=1&limit=${LIMIT}&countrycodes=se`;
+  const url = `https://nominatim.openstreetmap.org/search?q=${encoded}&format=jsonv2&addressdetails=1&limit=${LIMIT}&countrycodes=se`;
 
   try {
     const res = await fetch(url, {
-      headers: { "User-Agent": NOMINATIM_USER_AGENT },
+      headers: {
+        "User-Agent": NOMINATIM_USER_AGENT,
+        "Accept-Language": "sv",
+      },
       signal: AbortSignal.timeout(5000),
     });
     if (!res.ok) return NextResponse.json({ suggestions: [] });
@@ -69,9 +85,17 @@ export async function GET(request: NextRequest) {
       lon: string;
       display_name?: string;
       address?: Record<string, string>;
+      addresstype?: string;
+      place_rank?: number;
     }>;
 
-    const suggestions: SuggestItem[] = (data || []).map((item) => {
+    const sorted = [...(data || [])].sort((a, b) => {
+      const rankA = a.place_rank ?? 0;
+      const rankB = b.place_rank ?? 0;
+      return rankB - rankA;
+    });
+
+    const suggestions: SuggestItem[] = sorted.map((item) => {
       const addr = item.address || {};
       const city = addr.city || addr.town || addr.village || addr.municipality || addr.county;
       const short = buildShortAddress(addr, houseNumberFromQuery);

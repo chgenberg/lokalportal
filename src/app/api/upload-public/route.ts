@@ -4,14 +4,17 @@ import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { randomUUID } from "crypto";
 
-/** Public upload for lead flow (skapa-annons). Images only, no auth required. */
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
-const ALLOWED_MIME = ["image/jpeg", "image/png", "image/gif", "image/webp"] as const;
+/** Public upload for lead flow (skapa-annons). Images and video, no auth required. */
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5 MB
+const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50 MB
+const ALLOWED_MIME = ["image/jpeg", "image/png", "image/gif", "image/webp", "video/mp4", "video/webm"] as const;
 const MIME_TO_EXT: Record<string, string> = {
   "image/jpeg": ".jpg",
   "image/png": ".png",
   "image/gif": ".gif",
   "image/webp": ".webp",
+  "video/mp4": ".mp4",
+  "video/webm": ".webm",
 };
 
 const MIME_MAGIC: Record<string, (buf: Buffer) => boolean> = {
@@ -72,22 +75,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Ingen fil bifogad" }, { status: 400 });
     }
 
-    if (file.size > MAX_FILE_SIZE) {
+    const isVideo = file.type.startsWith("video/");
+    const maxSize = isVideo ? MAX_VIDEO_SIZE : MAX_IMAGE_SIZE;
+    if (file.size > maxSize) {
       return NextResponse.json(
-        { error: "Filen är för stor. Max 5 MB för anonym uppladdning." },
+        { error: isVideo ? "Videon får max vara 50 MB." : "Bilden får max vara 5 MB." },
         { status: 400 }
       );
     }
 
     if (!(ALLOWED_MIME as readonly string[]).includes(file.type)) {
       return NextResponse.json(
-        { error: "Endast bilder (JPEG, PNG, GIF, WebP) stöds." },
+        { error: "Endast bilder (JPEG, PNG, GIF, WebP) och video (MP4, WebM) stöds." },
         { status: 400 }
       );
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());
-    if (!verifyFileContent(file.type, buffer)) {
+    if (!isVideo && !verifyFileContent(file.type, buffer)) {
       return NextResponse.json(
         { error: "Filens innehåll matchar inte den angivna filtypen." },
         { status: 400 }

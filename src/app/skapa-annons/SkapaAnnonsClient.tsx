@@ -36,6 +36,9 @@ interface InputForm {
   lng?: number;
   outdoorImageUrl: string;
   indoorImageUrl: string;
+  floorPlanImageUrl: string;
+  extraImageUrls: string[];
+  videoUrl: string;
 }
 
 interface GeneratedListing {
@@ -53,6 +56,7 @@ interface GeneratedListing {
   areaSummary?: string;
   imageUrl: string;
   imageUrls?: string[];
+  videoUrl?: string;
   nearby?: NearbyData;
   priceContext?: PriceContext | null;
   demographics?: DemographicsData | null;
@@ -67,6 +71,9 @@ const initialInput: InputForm = {
   highlights: "",
   outdoorImageUrl: "",
   indoorImageUrl: "",
+  floorPlanImageUrl: "",
+  extraImageUrls: [],
+  videoUrl: "",
 };
 
 export default function SkapaAnnonsClient() {
@@ -85,7 +92,7 @@ export default function SkapaAnnonsClient() {
   const [imageUploading, setImageUploading] = useState(false);
   const [imageError, setImageError] = useState("");
   const [cropFile, setCropFile] = useState<File | null>(null);
-  const cropSlotRef = useRef<"outdoor" | "indoor" | null>(null);
+  const cropSlotRef = useRef<"outdoor" | "indoor" | "floorPlan" | "extra" | null>(null);
   const [generationVersion, setGenerationVersion] = useState(1);
   const [regenerating, setRegenerating] = useState(false);
   const [pdfDownloading, setPdfDownloading] = useState(false);
@@ -94,6 +101,7 @@ export default function SkapaAnnonsClient() {
   const addressWrapperRef = useRef<HTMLDivElement>(null);
   const suggestDebounceRef = useRef<NodeJS.Timeout | null>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
 
   const DRAFT_KEY = "skapa-annons-draft";
 
@@ -297,8 +305,51 @@ export default function SkapaAnnonsClient() {
       uploadImageBlob(blob, (url) => updateInput({ outdoorImageUrl: url }));
     } else if (slot === "indoor") {
       uploadImageBlob(blob, (url) => updateInput({ indoorImageUrl: url }));
+    } else if (slot === "floorPlan") {
+      uploadImageBlob(blob, (url) => updateInput({ floorPlanImageUrl: url }));
+    } else if (slot === "extra") {
+      uploadImageBlob(blob, (url) =>
+        setInput((prev) => ({
+          ...prev,
+          extraImageUrls: [...(prev.extraImageUrls || []), url],
+        }))
+      );
     } else {
       uploadImageBlob(blob);
+    }
+  };
+
+  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    if (!file.type.startsWith("video/")) {
+      setImageError("Endast video (MP4, WebM) stöds.");
+      return;
+    }
+    if (file.size > 50 * 1024 * 1024) {
+      setImageError("Videon får max vara 50 MB.");
+      return;
+    }
+    setImageUploading(true);
+    setImageError("");
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/upload-public", { method: "POST", body: formData });
+      const data = await res.json();
+      if (!res.ok) {
+        setImageError(data.error || "Kunde inte ladda upp videon.");
+        return;
+      }
+      if (data.url) {
+        updateInput({ videoUrl: data.url });
+        toast.success("Video uppladdad");
+      }
+    } catch {
+      setImageError("Kunde inte ladda upp videon.");
+    } finally {
+      setImageUploading(false);
     }
   };
 
@@ -370,19 +421,24 @@ export default function SkapaAnnonsClient() {
 
     try {
       const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
+      const toFullUrl = (u: string) => (u.startsWith("/") ? `${baseUrl}${u}` : u);
       const imageUrls = [
-        input.outdoorImageUrl.startsWith("/") ? `${baseUrl}${input.outdoorImageUrl}` : input.outdoorImageUrl,
-        input.indoorImageUrl.startsWith("/") ? `${baseUrl}${input.indoorImageUrl}` : input.indoorImageUrl,
+        toFullUrl(input.outdoorImageUrl),
+        toFullUrl(input.indoorImageUrl),
+        ...(input.floorPlanImageUrl ? [toFullUrl(input.floorPlanImageUrl)] : []),
+        ...(input.extraImageUrls || []).map(toFullUrl),
       ];
       const body: Record<string, unknown> = {
         email: leadEmail.trim().toLowerCase(),
         address: input.address.trim(),
         type: input.type,
-        category: input.categories[0], // primary category for AI generation
+        category: input.categories[0],
         price: priceNum,
         size: sizeNum,
         highlights: input.highlights.trim() || undefined,
         imageUrls,
+        floorPlanImageUrl: input.floorPlanImageUrl ? toFullUrl(input.floorPlanImageUrl) : undefined,
+        videoUrl: input.videoUrl ? toFullUrl(input.videoUrl) : undefined,
       };
       if (input.lat != null && input.lng != null && !Number.isNaN(input.lat) && !Number.isNaN(input.lng)) {
         body.lat = input.lat;
@@ -415,7 +471,13 @@ export default function SkapaAnnonsClient() {
         size: data.size ?? sizeNum,
         areaSummary: data.areaSummary,
         imageUrl: input.outdoorImageUrl || input.indoorImageUrl || "",
-        imageUrls: [input.outdoorImageUrl, input.indoorImageUrl].filter(Boolean),
+        imageUrls: [
+          input.outdoorImageUrl,
+          input.indoorImageUrl,
+          ...(input.floorPlanImageUrl ? [input.floorPlanImageUrl] : []),
+          ...(input.extraImageUrls || []),
+        ].filter(Boolean),
+        videoUrl: input.videoUrl || undefined,
         nearby: data.nearby,
         priceContext: data.priceContext ?? null,
         demographics: data.demographics ?? null,
@@ -447,9 +509,12 @@ export default function SkapaAnnonsClient() {
       const priceNum = parsePriceInput(input.price) || 0;
       const sizeNum = parseInt(input.size, 10) || 0;
       const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
+      const toFullUrl = (u: string) => (u.startsWith("/") ? `${baseUrl}${u}` : u);
       const imageUrls = [
-        input.outdoorImageUrl.startsWith("/") ? `${baseUrl}${input.outdoorImageUrl}` : input.outdoorImageUrl,
-        input.indoorImageUrl.startsWith("/") ? `${baseUrl}${input.indoorImageUrl}` : input.indoorImageUrl,
+        toFullUrl(input.outdoorImageUrl),
+        toFullUrl(input.indoorImageUrl),
+        ...(input.floorPlanImageUrl ? [toFullUrl(input.floorPlanImageUrl)] : []),
+        ...(input.extraImageUrls || []).map(toFullUrl),
       ].filter(Boolean);
       const body: Record<string, unknown> = {
         email: leadEmail.trim(),
@@ -490,6 +555,7 @@ export default function SkapaAnnonsClient() {
         areaSummary: data.areaSummary,
         imageUrl: generated.imageUrl,
         imageUrls: generated.imageUrls,
+        videoUrl: generated.videoUrl,
         nearby: data.nearby,
         priceContext: data.priceContext ?? null,
         demographics: data.demographics ?? null,
@@ -555,7 +621,7 @@ export default function SkapaAnnonsClient() {
         className="hidden"
         onChange={(e) => {
           const f = e.target.files?.[0];
-          if (f) {
+          if (f && f.type.startsWith("image/")) {
             if (step === "input" && cropSlotRef.current) {
               handleImageUpload(f);
             } else {
@@ -867,6 +933,91 @@ export default function SkapaAnnonsClient() {
                       </button>
                     )}
                   </div>
+                  <div className="border-2 border-dashed rounded-xl p-4 min-h-[100px] flex flex-col items-center justify-center gap-2 bg-muted/20 hover:bg-muted/30 transition-colors">
+                    <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Planlösning (valfritt)</span>
+                    {input.floorPlanImageUrl ? (
+                      <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-muted/50">
+                        <img src={input.floorPlanImageUrl} alt="Planlösning" className="w-full h-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => updateInput({ floorPlanImageUrl: "" })}
+                          className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 text-white flex items-center justify-center text-sm hover:bg-black/80"
+                          aria-label="Ta bort bild"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => { cropSlotRef.current = "floorPlan"; imageInputRef.current?.click(); }}
+                        disabled={imageUploading}
+                        className="py-2.5 px-3 bg-muted/80 text-navy text-[13px] font-semibold rounded-xl hover:bg-muted transition-colors disabled:opacity-60"
+                      >
+                        {imageUploading ? "Laddar upp..." : "Ladda upp planlösning"}
+                      </button>
+                    )}
+                  </div>
+                  <div className="border-2 border-dashed rounded-xl p-4 min-h-[100px] flex flex-col items-center justify-center gap-2 bg-muted/20 hover:bg-muted/30 transition-colors">
+                    <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Fler bilder (valfritt)</span>
+                    <div className="flex flex-wrap gap-2">
+                      {(input.extraImageUrls || []).map((url, i) => (
+                        <div key={url} className="relative w-20 h-14 rounded-lg overflow-hidden bg-muted/50 shrink-0">
+                          <img src={url} alt="" className="w-full h-full object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => updateInput({ extraImageUrls: (input.extraImageUrls || []).filter((_, j) => j !== i) })}
+                            className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-black/60 text-white flex items-center justify-center text-xs hover:bg-black/80"
+                            aria-label="Ta bort"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                      {((input.extraImageUrls?.length ?? 0) < 5) && (
+                        <button
+                          type="button"
+                          onClick={() => { cropSlotRef.current = "extra"; imageInputRef.current?.click(); }}
+                          disabled={imageUploading}
+                          className="w-20 h-14 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 hover:border-navy/40 hover:text-navy transition-colors disabled:opacity-60"
+                        >
+                          +
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  <div className="border-2 border-dashed rounded-xl p-4 min-h-[100px] flex flex-col items-center justify-center gap-2 bg-muted/20 hover:bg-muted/30 transition-colors">
+                    <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Video (valfritt)</span>
+                    <input
+                      ref={videoInputRef}
+                      type="file"
+                      accept="video/mp4,video/webm"
+                      className="hidden"
+                      onChange={handleVideoUpload}
+                    />
+                    {input.videoUrl ? (
+                      <div className="relative w-full">
+                        <video src={input.videoUrl} controls className="max-h-32 rounded-lg" />
+                        <button
+                          type="button"
+                          onClick={() => updateInput({ videoUrl: "" })}
+                          className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 text-white flex items-center justify-center text-sm hover:bg-black/80"
+                          aria-label="Ta bort video"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => videoInputRef.current?.click()}
+                        disabled={imageUploading}
+                        className="py-2.5 px-3 bg-muted/80 text-navy text-[13px] font-semibold rounded-xl hover:bg-muted transition-colors disabled:opacity-60"
+                      >
+                        {imageUploading ? "Laddar upp..." : "Ladda upp video (MP4/WebM)"}
+                      </button>
+                    )}
+                  </div>
                 </div>
                 {imageError && <p className="text-[12px] text-red-600">{imageError}</p>}
               </div>
@@ -909,6 +1060,7 @@ export default function SkapaAnnonsClient() {
                   size: generated.size,
                   imageUrl: generated.imageUrl,
                   imageUrls: generated.imageUrls,
+                  videoUrl: generated.videoUrl,
                   featured: false,
                   createdAt: new Date().toISOString(),
                   lat: generated.lat,

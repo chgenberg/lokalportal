@@ -28,7 +28,7 @@ const ASPECT = 16 / 9;
 export default function ImageCropModal({ open, imageFile, onClose, onCropped }: ImageCropModalProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
+  const [zoom, setZoom] = useState(0.5);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -96,6 +96,9 @@ export default function ImageCropModal({ open, imageFile, onClose, onCropped }: 
             onCropChange={setCrop}
             onCropComplete={onCropComplete}
             onZoomChange={setZoom}
+            minZoom={0.25}
+            maxZoom={3}
+            objectFit="contain"
             style={{ containerStyle: { background: "#f8fafc" } }}
           />
         </div>
@@ -106,9 +109,9 @@ export default function ImageCropModal({ open, imageFile, onClose, onCropped }: 
             <input
               aria-label="Zoom"
               type="range"
-              min={1}
+              min={0.25}
               max={3}
-              step={0.1}
+              step={0.05}
               value={zoom}
               onChange={(e) => setZoom(Number(e.target.value))}
               className="w-28 accent-navy"

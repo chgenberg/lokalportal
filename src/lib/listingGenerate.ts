@@ -877,9 +877,11 @@ export async function generateListingContent(
   const userContent = userContentParts.filter(Boolean).join("\n");
   const imageUrls = input.imageUrls ?? [];
 
+  const hasLocalhostImages = imageUrls.some((u) => u.includes("localhost") || u.includes("127.0.0.1"));
+
   // Add vision instruction when images are provided
   const visionInstruction = imageUrls.length > 0
-    ? "\n\nBILDER: Användaren har bifogat bilder av lokalen (fasad/utsida och insida). Beskriv det du ser – fasaden, utrustning, planlösning, skick – och väv in det i beskrivningen. Var specifik om vad bilderna visar."
+    ? "\n\nBILDER: Användaren har bifogat bilder av lokalen (fasad/utsida, insida, planlösning m.m.). Beskriv det du ser – fasaden, utrustning, rum, planlösning, skick – och väv in det i beskrivningen. Om det finns en planlösningsritning, beskriv rummens placering och storlek utifrån den. Var specifik om vad bilderna visar."
     : "";
 
   const openai = new OpenAI({ apiKey: openaiApiKey, timeout: 30_000 });
@@ -897,101 +899,85 @@ export async function generateListingContent(
 
   let raw: string | undefined;
 
-  // Strategy 0: GPT-4o Vision when images provided (images must be publicly accessible URLs)
-  if (imageUrls.length > 0) {
+  // Strategy 0: gpt-5.2 Responses API with Vision (when images provided, skip if localhost)
+  if (imageUrls.length > 0 && !hasLocalhostImages) {
     try {
       const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXTAUTH_URL || "https://hittayta.se";
-      const content: Array<{ type: "text"; text: string } | { type: "image_url"; image_url: { url: string } }> = [
-        { type: "text", text: userContent + visionInstruction },
-      ];
-      for (const u of imageUrls.slice(0, 5)) {
+      const content: Array<
+        | { type: "input_text"; text: string }
+        | { type: "input_image"; image_url: string; detail: "auto" }
+      > = [{ type: "input_text", text: userContent + visionInstruction }];
+      for (const u of imageUrls.slice(0, 10)) {
         const url = u.startsWith("http") ? u : `${baseUrl}${u.startsWith("/") ? "" : "/"}${u}`;
-        content.push({ type: "image_url", image_url: { url } });
+        content.push({ type: "input_image", image_url: url, detail: "auto" });
       }
-      console.log("[generate] Using gpt-4o Vision with", content.length - 1, "images");
-      const completion = await openai.chat.completions.create({
-        model: "gpt-4o",
-        messages: [
-          { role: "system", content: GPT_SYSTEM },
-          { role: "user", content },
-        ],
-        response_format: { type: "json_object" },
-        max_tokens: 1500,
-      });
-      raw = completion.choices[0]?.message?.content?.trim();
-      if (raw) console.log("[generate] gpt-4o Vision succeeded");
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      console.warn("[generate] gpt-4o Vision failed:", msg);
-    }
-  }
-
-  // Strategy 1: Responses API with gpt-5.2 (text-only)
-  if (!raw) {
-  try {
-    console.log("[generate] Trying gpt-5.2 via Responses API...");
-    const response = await openai.responses.create({
-      model: "gpt-5.2",
-      instructions: GPT_SYSTEM,
-      input: userContent,
-      text: {
-        format: {
-          type: "json_schema",
-          name: "listing",
-          strict: true,
-          schema: JSON_SCHEMA,
-        },
-      },
-    });
-    raw = response.output_text?.trim();
-    if (raw) console.log("[generate] gpt-5.2 succeeded");
-  } catch (err1: unknown) {
-    const msg = err1 instanceof Error ? err1.message : String(err1);
-    console.warn("[generate] gpt-5.2 Responses API failed:", msg);
-
-    // Strategy 2: Responses API with gpt-4.1-mini
-    try {
-      console.log("[generate] Trying gpt-4.1-mini via Responses API...");
-      const response2 = await openai.responses.create({
-        model: "gpt-4.1-mini",
+      console.log("[generate] Using gpt-5.2 Responses API with", content.length - 1, "images");
+      const response = await openai.responses.create({
+        model: "gpt-5.2",
         instructions: GPT_SYSTEM,
-        input: userContent,
+        input: [{ type: "message", role: "user", content }],
         text: {
           format: {
             type: "json_schema",
-            name: "listing_fb",
+            name: "listing",
             strict: true,
             schema: JSON_SCHEMA,
           },
         },
+        max_output_tokens: 1500,
       });
-      raw = response2.output_text?.trim();
-      if (raw) console.log("[generate] gpt-4.1-mini succeeded");
-    } catch (err2: unknown) {
-      const msg2 = err2 instanceof Error ? err2.message : String(err2);
-      console.warn("[generate] gpt-4.1-mini Responses API failed:", msg2);
+      raw = response.output_text?.trim();
+      if (raw) console.log("[generate] gpt-5.2 Vision succeeded");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.warn("[generate] gpt-5.2 Vision failed:", msg);
+    }
+  }
 
-      // Strategy 3: Chat Completions API fallback (widest compatibility)
+  // Strategy 1: gpt-5.2 Responses API (text-only)
+  if (!raw) {
+    try {
+      console.log("[generate] Trying gpt-5.2 Responses API (text)...");
+      const response = await openai.responses.create({
+        model: "gpt-5.2",
+        instructions: GPT_SYSTEM,
+        input: userContent + (hasLocalhostImages ? visionInstruction : ""),
+        text: {
+          format: {
+            type: "json_schema",
+            name: "listing",
+            strict: true,
+            schema: JSON_SCHEMA,
+          },
+        },
+        max_output_tokens: 1500,
+      });
+      raw = response.output_text?.trim();
+      if (raw) console.log("[generate] gpt-5.2 succeeded");
+    } catch (err1: unknown) {
+      const msg = err1 instanceof Error ? err1.message : String(err1);
+      console.warn("[generate] gpt-5.2 failed:", msg);
+
+      // Strategy 2: gpt-4o Chat Completions fallback
       try {
-        console.log("[generate] Trying gpt-4o via Chat Completions API...");
+        console.log("[generate] Fallback: gpt-4o Chat Completions...");
         const completion = await openai.chat.completions.create({
           model: "gpt-4o",
           messages: [
             { role: "system", content: GPT_SYSTEM },
-            { role: "user", content: userContent },
+            { role: "user", content: userContent + (hasLocalhostImages ? visionInstruction : "") },
           ],
           response_format: { type: "json_object" },
           max_tokens: 1500,
         });
         raw = completion.choices[0]?.message?.content?.trim();
-        if (raw) console.log("[generate] gpt-4o Chat Completions succeeded");
-      } catch (err3: unknown) {
-        const msg3 = err3 instanceof Error ? err3.message : String(err3);
-        console.error("[generate] All strategies failed. Last error:", msg3);
-        throw new Error("Kunde inte generera annons – alla modeller misslyckades");
+        if (raw) console.log("[generate] gpt-4o fallback succeeded");
+      } catch (err2: unknown) {
+        const msg2 = err2 instanceof Error ? err2.message : String(err2);
+        console.error("[generate] All strategies failed. Last error:", msg2);
+        throw new Error("Kunde inte generera annons. Försök igen senare.");
       }
     }
-  }
   }
   if (!raw) throw new Error("Kunde inte generera annons – tomt svar");
   const parsed = JSON.parse(raw) as { title?: string; description?: string; tags?: string[] };

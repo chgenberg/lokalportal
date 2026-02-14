@@ -9,7 +9,8 @@ export interface Listing {
   price: number;
   size: number;
   imageUrl: string;
-  imageUrls?: string[]; // Up to 5 images; when present, takes precedence
+  imageUrls?: string[]; // Up to 10 images; when present, takes precedence
+  videoUrl?: string;
   featured: boolean;
   createdAt: string;
   lat: number;
