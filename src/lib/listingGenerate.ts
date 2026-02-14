@@ -36,6 +36,7 @@ export interface GenerateInput {
   highlights?: string;
   lat?: number;
   lng?: number;
+  imageUrls?: string[];
 }
 
 export interface GenerateResult {
@@ -874,8 +875,14 @@ export async function generateListingContent(
     );
   }
   const userContent = userContentParts.filter(Boolean).join("\n");
+  const imageUrls = input.imageUrls ?? [];
 
-  const openai = new OpenAI({ apiKey: openaiApiKey, timeout: 25_000 });
+  // Add vision instruction when images are provided
+  const visionInstruction = imageUrls.length > 0
+    ? "\n\nBILDER: Användaren har bifogat bilder av lokalen (fasad/utsida och insida). Beskriv det du ser – fasaden, utrustning, planlösning, skick – och väv in det i beskrivningen. Var specifik om vad bilderna visar."
+    : "";
+
+  const openai = new OpenAI({ apiKey: openaiApiKey, timeout: 30_000 });
 
   const JSON_SCHEMA = {
     type: "object" as const,
@@ -890,7 +897,37 @@ export async function generateListingContent(
 
   let raw: string | undefined;
 
-  // Strategy 1: Responses API with gpt-5.2
+  // Strategy 0: GPT-4o Vision when images provided (images must be publicly accessible URLs)
+  if (imageUrls.length > 0) {
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXTAUTH_URL || "https://hittayta.se";
+      const content: Array<{ type: "text"; text: string } | { type: "image_url"; image_url: { url: string } }> = [
+        { type: "text", text: userContent + visionInstruction },
+      ];
+      for (const u of imageUrls.slice(0, 5)) {
+        const url = u.startsWith("http") ? u : `${baseUrl}${u.startsWith("/") ? "" : "/"}${u}`;
+        content.push({ type: "image_url", image_url: { url } });
+      }
+      console.log("[generate] Using gpt-4o Vision with", content.length - 1, "images");
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          { role: "system", content: GPT_SYSTEM },
+          { role: "user", content },
+        ],
+        response_format: { type: "json_object" },
+        max_tokens: 1500,
+      });
+      raw = completion.choices[0]?.message?.content?.trim();
+      if (raw) console.log("[generate] gpt-4o Vision succeeded");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.warn("[generate] gpt-4o Vision failed:", msg);
+    }
+  }
+
+  // Strategy 1: Responses API with gpt-5.2 (text-only)
+  if (!raw) {
   try {
     console.log("[generate] Trying gpt-5.2 via Responses API...");
     const response = await openai.responses.create({
@@ -954,6 +991,7 @@ export async function generateListingContent(
         throw new Error("Kunde inte generera annons – alla modeller misslyckades");
       }
     }
+  }
   }
   if (!raw) throw new Error("Kunde inte generera annons – tomt svar");
   const parsed = JSON.parse(raw) as { title?: string; description?: string; tags?: string[] };

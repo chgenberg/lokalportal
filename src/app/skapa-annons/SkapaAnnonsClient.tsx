@@ -34,6 +34,8 @@ interface InputForm {
   highlights: string;
   lat?: number;
   lng?: number;
+  outdoorImageUrl: string;
+  indoorImageUrl: string;
 }
 
 interface GeneratedListing {
@@ -50,6 +52,7 @@ interface GeneratedListing {
   size: number;
   areaSummary?: string;
   imageUrl: string;
+  imageUrls?: string[];
   nearby?: NearbyData;
   priceContext?: PriceContext | null;
   demographics?: DemographicsData | null;
@@ -62,6 +65,8 @@ const initialInput: InputForm = {
   price: "",
   size: "",
   highlights: "",
+  outdoorImageUrl: "",
+  indoorImageUrl: "",
 };
 
 export default function SkapaAnnonsClient() {
@@ -80,6 +85,7 @@ export default function SkapaAnnonsClient() {
   const [imageUploading, setImageUploading] = useState(false);
   const [imageError, setImageError] = useState("");
   const [cropFile, setCropFile] = useState<File | null>(null);
+  const cropSlotRef = useRef<"outdoor" | "indoor" | null>(null);
   const [generationVersion, setGenerationVersion] = useState(1);
   const [regenerating, setRegenerating] = useState(false);
   const [pdfDownloading, setPdfDownloading] = useState(false);
@@ -97,7 +103,9 @@ export default function SkapaAnnonsClient() {
       const raw = localStorage.getItem(DRAFT_KEY);
       if (!raw) return null;
       const parsed = JSON.parse(raw) as unknown;
-      if (parsed && typeof parsed === "object" && "address" in parsed) return parsed as InputForm;
+      if (parsed && typeof parsed === "object" && "address" in parsed) {
+        return { ...initialInput, ...parsed } as InputForm;
+      }
       return null;
     } catch {
       return null;
@@ -236,7 +244,10 @@ export default function SkapaAnnonsClient() {
     setMapOpen(false);
   };
 
-  const uploadImageBlob = async (blob: Blob) => {
+  const uploadImageBlob = async (
+    blob: Blob,
+    onSuccess?: (url: string) => void
+  ) => {
     setImageUploading(true);
     setImageError("");
     try {
@@ -248,8 +259,14 @@ export default function SkapaAnnonsClient() {
         setImageError(data.error || "Kunde inte ladda upp bilden.");
         return;
       }
-      if (data.url && generated) {
-        setGenerated((g) => (g ? { ...g, imageUrl: data.url } : g));
+      if (data.url) {
+        if (onSuccess) {
+          onSuccess(data.url);
+        } else if (generated) {
+          const current = generated.imageUrls?.length ? generated.imageUrls : (generated.imageUrl ? [generated.imageUrl] : []);
+          const next = [...current, data.url];
+          setGenerated((g) => (g ? { ...g, imageUrl: next[0] || "", imageUrls: next } : g));
+        }
         toast.success("Bild uppladdad");
       }
     } catch {
@@ -272,8 +289,17 @@ export default function SkapaAnnonsClient() {
   };
 
   const handleCropped = (blob: Blob) => {
+    const slot = cropSlotRef.current;
+    cropSlotRef.current = null;
     setCropFile(null);
-    uploadImageBlob(blob);
+
+    if (slot === "outdoor") {
+      uploadImageBlob(blob, (url) => updateInput({ outdoorImageUrl: url }));
+    } else if (slot === "indoor") {
+      uploadImageBlob(blob, (url) => updateInput({ indoorImageUrl: url }));
+    } else {
+      uploadImageBlob(blob);
+    }
   };
 
   const handleSubmitEmail = async (e: React.FormEvent) => {
@@ -330,11 +356,24 @@ export default function SkapaAnnonsClient() {
       setGenerateError("Ange storlek (m²)");
       return;
     }
+    if (!input.outdoorImageUrl?.trim()) {
+      setGenerateError("Ladda upp minst en bild av fasaden/utsidan");
+      return;
+    }
+    if (!input.indoorImageUrl?.trim()) {
+      setGenerateError("Ladda upp minst en bild av insidan");
+      return;
+    }
 
     setStep("generating");
     setGenerateError("");
 
     try {
+      const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
+      const imageUrls = [
+        input.outdoorImageUrl.startsWith("/") ? `${baseUrl}${input.outdoorImageUrl}` : input.outdoorImageUrl,
+        input.indoorImageUrl.startsWith("/") ? `${baseUrl}${input.indoorImageUrl}` : input.indoorImageUrl,
+      ];
       const body: Record<string, unknown> = {
         email: leadEmail.trim().toLowerCase(),
         address: input.address.trim(),
@@ -343,6 +382,7 @@ export default function SkapaAnnonsClient() {
         price: priceNum,
         size: sizeNum,
         highlights: input.highlights.trim() || undefined,
+        imageUrls,
       };
       if (input.lat != null && input.lng != null && !Number.isNaN(input.lat) && !Number.isNaN(input.lng)) {
         body.lat = input.lat;
@@ -374,7 +414,8 @@ export default function SkapaAnnonsClient() {
         price: data.price ?? priceNum,
         size: data.size ?? sizeNum,
         areaSummary: data.areaSummary,
-        imageUrl: "",
+        imageUrl: input.outdoorImageUrl || input.indoorImageUrl || "",
+        imageUrls: [input.outdoorImageUrl, input.indoorImageUrl].filter(Boolean),
         nearby: data.nearby,
         priceContext: data.priceContext ?? null,
         demographics: data.demographics ?? null,
@@ -405,6 +446,11 @@ export default function SkapaAnnonsClient() {
     try {
       const priceNum = parsePriceInput(input.price) || 0;
       const sizeNum = parseInt(input.size, 10) || 0;
+      const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
+      const imageUrls = [
+        input.outdoorImageUrl.startsWith("/") ? `${baseUrl}${input.outdoorImageUrl}` : input.outdoorImageUrl,
+        input.indoorImageUrl.startsWith("/") ? `${baseUrl}${input.indoorImageUrl}` : input.indoorImageUrl,
+      ].filter(Boolean);
       const body: Record<string, unknown> = {
         email: leadEmail.trim(),
         address: input.address.trim(),
@@ -413,6 +459,7 @@ export default function SkapaAnnonsClient() {
         price: priceNum,
         size: sizeNum,
         highlights: input.highlights.trim() || undefined,
+        imageUrls: imageUrls.length > 0 ? imageUrls : undefined,
       };
       if (input.lat != null && input.lng != null && !Number.isNaN(input.lat) && !Number.isNaN(input.lng)) {
         body.lat = input.lat;
@@ -442,6 +489,7 @@ export default function SkapaAnnonsClient() {
         size: data.size ?? sizeNum,
         areaSummary: data.areaSummary,
         imageUrl: generated.imageUrl,
+        imageUrls: generated.imageUrls,
         nearby: data.nearby,
         priceContext: data.priceContext ?? null,
         demographics: data.demographics ?? null,
@@ -469,6 +517,7 @@ export default function SkapaAnnonsClient() {
       price: generated.price,
       size: generated.size,
       imageUrl: generated.imageUrl,
+      imageUrls: generated.imageUrls,
       featured: false,
       createdAt: new Date().toISOString(),
       lat: generated.lat,
@@ -499,6 +548,30 @@ export default function SkapaAnnonsClient() {
 
   return (
     <div className="min-h-screen bg-muted/30">
+      <input
+        ref={imageInputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/gif,image/webp"
+        className="hidden"
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) {
+            if (step === "input" && cropSlotRef.current) {
+              handleImageUpload(f);
+            } else {
+              cropSlotRef.current = null;
+              handleImageUpload(f);
+            }
+          }
+          e.target.value = "";
+        }}
+      />
+      <ImageCropModal
+        open={!!cropFile}
+        imageFile={cropFile}
+        onClose={() => { setCropFile(null); cropSlotRef.current = null; }}
+        onCropped={handleCropped}
+      />
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-12 md:py-16">
         <div className="mb-10">
           <Link href="/" className="text-[12px] text-gray-500 hover:text-navy transition-colors tracking-wide">
@@ -739,6 +812,64 @@ export default function SkapaAnnonsClient() {
                   className="w-full px-4 py-3 bg-muted/50 rounded-xl text-sm border border-border/60 focus:border-navy/30 focus:bg-white outline-none transition-all resize-none leading-relaxed"
                 />
               </div>
+
+              <div className="space-y-4">
+                <label className="block text-[11px] font-semibold text-gray-400 tracking-[0.1em] uppercase">Bilder *</label>
+                <p className="text-[13px] text-gray-500">Ladda upp minst en bild av fasaden/utsidan och en bild av insidan. AI:n använder bilderna för att skriva en bättre beskrivning.</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="border-2 border-dashed rounded-xl p-4 min-h-[120px] flex flex-col items-center justify-center gap-2 bg-muted/20 hover:bg-muted/30 transition-colors">
+                    <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Bild utsida *</span>
+                    {input.outdoorImageUrl ? (
+                      <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-muted/50">
+                        <img src={input.outdoorImageUrl} alt="Utsida" className="w-full h-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => updateInput({ outdoorImageUrl: "" })}
+                          className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 text-white flex items-center justify-center text-sm hover:bg-black/80"
+                          aria-label="Ta bort bild"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => { cropSlotRef.current = "outdoor"; imageInputRef.current?.click(); }}
+                        disabled={imageUploading}
+                        className="py-3 px-4 bg-navy text-white text-[13px] font-semibold rounded-xl hover:bg-navy/90 transition-colors disabled:opacity-60"
+                      >
+                        {imageUploading ? "Laddar upp..." : "Ladda upp bild"}
+                      </button>
+                    )}
+                  </div>
+                  <div className="border-2 border-dashed rounded-xl p-4 min-h-[120px] flex flex-col items-center justify-center gap-2 bg-muted/20 hover:bg-muted/30 transition-colors">
+                    <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Bild insida *</span>
+                    {input.indoorImageUrl ? (
+                      <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-muted/50">
+                        <img src={input.indoorImageUrl} alt="Insida" className="w-full h-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => updateInput({ indoorImageUrl: "" })}
+                          className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 text-white flex items-center justify-center text-sm hover:bg-black/80"
+                          aria-label="Ta bort bild"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => { cropSlotRef.current = "indoor"; imageInputRef.current?.click(); }}
+                        disabled={imageUploading}
+                        className="py-3 px-4 bg-navy text-white text-[13px] font-semibold rounded-xl hover:bg-navy/90 transition-colors disabled:opacity-60"
+                      >
+                        {imageUploading ? "Laddar upp..." : "Ladda upp bild"}
+                      </button>
+                    )}
+                  </div>
+                </div>
+                {imageError && <p className="text-[12px] text-red-600">{imageError}</p>}
+              </div>
             </div>
             <button
               type="button"
@@ -777,6 +908,7 @@ export default function SkapaAnnonsClient() {
                   price: generated.price,
                   size: generated.size,
                   imageUrl: generated.imageUrl,
+                  imageUrls: generated.imageUrls,
                   featured: false,
                   createdAt: new Date().toISOString(),
                   lat: generated.lat,
@@ -790,72 +922,53 @@ export default function SkapaAnnonsClient() {
                 onDescriptionChange={(desc) => setGenerated((g) => (g ? { ...g, description: desc } : g))}
                 contactSlot={
                   <div className="p-6 border-t border-border/40 space-y-4">
-                    <div className="flex flex-col sm:flex-row gap-3">
+                    <div className="flex flex-col gap-3">
                       <button
                         type="button"
                         onClick={handleDownloadPdf}
                         disabled={pdfDownloading}
-                        className="flex-1 min-w-0 py-3.5 px-4 bg-navy text-white text-[13px] font-semibold rounded-xl flex items-center justify-center gap-2 hover:bg-navy/90 transition-colors whitespace-nowrap shrink-0 disabled:opacity-60 disabled:cursor-not-allowed"
+                        className="w-full py-3.5 px-4 bg-navy text-white text-[13px] font-semibold rounded-xl flex items-center justify-center gap-2 hover:bg-navy/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                       >
                         {pdfDownloading ? (
                           <span className="animate-pulse">Laddar ner...</span>
                         ) : (
                           <>
-                        <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                        Ladda ner PDF
-                        </>
+                            <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            Ladda ner PDF
+                          </>
                         )}
                       </button>
                       <button
                         type="button"
-                        onClick={handleFinish}
-                        className="min-w-fit shrink-0 py-3.5 px-4 border border-border/60 text-gray-600 text-[13px] font-medium rounded-xl hover:bg-muted/50 hover:border-navy/20 hover:text-navy transition-colors whitespace-nowrap"
-                      >
-                        Klar – nästa steg
-                      </button>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-3 text-sm">
-                      <button
-                        type="button"
                         onClick={handleRegenerate}
                         disabled={generationVersion >= MAX_REGENERATIONS || regenerating}
-                        className="text-gray-500 hover:text-navy transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full py-3.5 px-4 bg-muted/80 text-navy text-[13px] font-semibold rounded-xl flex items-center justify-center gap-2 hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {regenerating ? "Genererar..." : `Generera ny text (${generationVersion}/${MAX_REGENERATIONS})`}
                       </button>
-                      <input
-                        ref={imageInputRef}
-                        type="file"
-                        accept="image/jpeg,image/png,image/gif,image/webp"
-                        className="hidden"
-                        onChange={(e) => {
-                          const f = e.target.files?.[0];
-                          if (f) handleImageUpload(f);
-                          e.target.value = "";
-                        }}
-                      />
-                      <ImageCropModal
-                        open={!!cropFile}
-                        imageFile={cropFile}
-                        onClose={() => setCropFile(null)}
-                        onCropped={handleCropped}
-                      />
                       <button
                         type="button"
-                        onClick={() => imageInputRef.current?.click()}
+                        onClick={() => { cropSlotRef.current = null; imageInputRef.current?.click(); }}
                         disabled={imageUploading}
-                        className="text-gray-500 hover:text-navy transition-colors disabled:opacity-50"
+                        className="w-full py-3.5 px-4 bg-muted/80 text-navy text-[13px] font-semibold rounded-xl flex items-center justify-center gap-2 hover:bg-muted transition-colors disabled:opacity-50"
                       >
-                        {imageUploading ? "Laddar upp..." : generated.imageUrl ? "Byt bild" : "Ladda upp bild (valfritt)"}
+                        {imageUploading ? "Laddar upp..." : generated.imageUrl ? "Byt bild" : "Ladda upp fler bilder"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleFinish}
+                        className="w-full py-3.5 px-4 border-2 border-border/60 text-gray-600 text-[13px] font-medium rounded-xl hover:bg-muted/50 hover:border-navy/20 hover:text-navy transition-colors"
+                      >
+                        Klar – nästa steg
                       </button>
                       <button
                         type="button"
                         onClick={() => { setStep("input"); setGenerateError(""); }}
-                        className="text-gray-400 hover:text-navy transition-colors"
+                        className="w-full py-2.5 text-[12px] text-gray-500 hover:text-navy transition-colors"
                       >
-                        &larr; Redigera grunddata
+                        ← Redigera grunddata
                       </button>
                     </div>
                     {imageError && <p className="text-[12px] text-red-600">{imageError}</p>}
