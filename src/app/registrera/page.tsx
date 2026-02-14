@@ -49,7 +49,7 @@ export default function RegisterPage() {
   return (
     <AuthLayout
       title="Skapa konto"
-      subtitle={step === "role" ? "Välj din kontotyp" : `Registrerar som ${role === "landlord" ? "hyresvärd" : role === "agent" ? "mäklare" : "hyresgäst"}`}
+      subtitle={step === "role" ? "Välj din kontotyp" : `Registrerar som ${role === "landlord" ? "hyresvärd / säljare" : role === "agent" ? "mäklare" : "hyresgäst / köpare"}`}
     >
         {step === "role" ? (
           <div className="space-y-3">
@@ -59,7 +59,7 @@ export default function RegisterPage() {
                   <span className="text-[13px] font-bold text-navy group-hover:text-white transition-colors">H</span>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-navy mb-1 tracking-tight">Hyresvärd</h3>
+                  <h3 className="font-semibold text-navy mb-1 tracking-tight">Hyresvärd / säljare</h3>
                   <p className="text-[12px] text-gray-400 leading-relaxed">Publicera annonser och kommunicera med hyresgäster</p>
                 </div>
               </div>
@@ -83,7 +83,7 @@ export default function RegisterPage() {
                   <span className="text-[13px] font-bold text-navy group-hover:text-white transition-colors">G</span>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-navy mb-1 tracking-tight">Hyresgäst</h3>
+                  <h3 className="font-semibold text-navy mb-1 tracking-tight">Hyresgäst / köpare</h3>
                   <p className="text-[12px] text-gray-400 leading-relaxed">Sök lokaler, spara favoriter och kontakta hyresvärdar</p>
                 </div>
               </div>

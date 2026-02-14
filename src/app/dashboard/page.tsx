@@ -888,7 +888,7 @@ function DashboardContent() {
           {!profile && <p className="text-sm text-gray-500">Laddar...</p>}
           <div className="mt-4 pt-4 border-t border-border">
             <p className="text-xs text-gray-500">Roll</p>
-            <p className="text-sm font-medium text-navy mt-0.5">{session?.user?.role === "agent" ? "Mäklare" : isLandlord ? "Hyresvärd" : "Hyresgäst"}</p>
+            <p className="text-sm font-medium text-navy mt-0.5">{session?.user?.role === "agent" ? "Mäklare" : isLandlord ? "Hyresvärd / säljare" : "Hyresgäst / köpare"}</p>
           </div>
         </div>
         <button onClick={() => signOut({ callbackUrl: "/" })} className="px-6 py-3 bg-navy/5 text-navy text-sm font-medium rounded-xl hover:bg-navy/10 transition-colors">Logga ut</button>

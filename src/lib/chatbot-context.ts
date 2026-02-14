@@ -17,7 +17,7 @@ ANNONSPAKET (priser):
 - Företag: 2495 kr/30 dagar – obegränsat, toppplacering, egen företagssida
 Årsvis ger 20% rabatt.
 
-KONTOTYP: Hyresvärd, Hyresgäst, Mäklare. Mäklare kan profilera annonser med egen logotyp.
+KONTOTYP: Hyresvärd / säljare, Hyresgäst / köpare, Mäklare. Mäklare kan profilera annonser med egen logotyp.
 
 GRATIS: Skapa gratis annons-PDF på /skapa-annons – ingen registrering krävs för att generera PDF.
 

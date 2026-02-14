@@ -140,7 +140,7 @@ export default function DashboardLayoutClient({ children }: { children: React.Re
             </div>
             <div className="min-w-0">
               <p className="font-semibold text-navy text-sm truncate">{session.user.name}</p>
-              <p className="text-[11px] text-gray-400 truncate">{session?.user?.role === "agent" ? "Mäklare" : isLandlord ? "Hyresvärd" : "Hyresgäst"}</p>
+              <p className="text-[11px] text-gray-400 truncate">{session?.user?.role === "agent" ? "Mäklare" : isLandlord ? "Hyresvärd / säljare" : "Hyresgäst / köpare"}</p>
             </div>
           </div>
         </div>

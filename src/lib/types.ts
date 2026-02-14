@@ -101,8 +101,8 @@ export const typeLabels: Record<string, string> = {
 };
 
 export const roleLabels: Record<string, string> = {
-  landlord: "Hyresvärd",
-  tenant: "Hyresgäst",
+  landlord: "Hyresvärd / säljare",
+  tenant: "Hyresgäst / köpare",
   agent: "Mäklare",
 };
 
