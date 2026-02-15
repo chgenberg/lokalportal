@@ -28,7 +28,7 @@ const ASPECT = 16 / 9;
 export default function ImageCropModal({ open, imageFile, onClose, onCropped }: ImageCropModalProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(0.5);
+  const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -53,6 +53,9 @@ export default function ImageCropModal({ open, imageFile, onClose, onCropped }: 
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   useEffect(() => {
     if (open && imageFile) {
+      // Reset crop & zoom for every new image
+      setCrop({ x: 0, y: 0 });
+      setZoom(1);
       const url = URL.createObjectURL(imageFile);
       setImageUrl(url);
       return () => URL.revokeObjectURL(url);
@@ -98,7 +101,7 @@ export default function ImageCropModal({ open, imageFile, onClose, onCropped }: 
             onZoomChange={setZoom}
             minZoom={0.25}
             maxZoom={3}
-            objectFit="contain"
+            objectFit="horizontal-cover"
             style={{ containerStyle: { background: "#f8fafc" } }}
           />
         </div>
