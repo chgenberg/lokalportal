@@ -96,7 +96,7 @@ function ListingPdf({ data, logoSrc }: { data: PdfBody; logoSrc: string }) {
             ...(pricePerSqm > 0 ? [{ label: `Kr/m²${data.type === "rent" ? "/mån" : ""}`, value: `${fmtNum(pricePerSqm)} kr` }] : []),
             { label: "Plats", value: data.city },
           ].map((f, i) => (
-            <View key={i} style={{ flex: 1, paddingVertical: 14, paddingHorizontal: 12, alignItems: "center", borderRight: `1px solid ${C.border}` }}>
+            <View key={i} style={{ flex: 1, paddingVertical: 10, paddingHorizontal: 10, alignItems: "center", borderRight: `1px solid ${C.border}` }}>
               <Text style={{ fontSize: 7, fontWeight: "bold", color: C.textMuted, letterSpacing: 1, textTransform: "uppercase", marginBottom: 3 }}>{f.label}</Text>
               <Text style={{ fontSize: 14, fontWeight: "bold", color: C.navy }}>{f.value}</Text>
             </View>
@@ -104,11 +104,11 @@ function ListingPdf({ data, logoSrc }: { data: PdfBody; logoSrc: string }) {
         </View>
 
         {/* Content */}
-        <View style={{ paddingHorizontal: 36, paddingTop: 20 }}>
+        <View style={{ paddingHorizontal: 36, paddingTop: 14 }}>
 
           {/* Gallery */}
           {galleryImgs.length > 0 && (
-            <View style={{ flexDirection: "row", gap: 6, marginBottom: 18 }}>
+            <View style={{ flexDirection: "row", gap: 6, marginBottom: 12 }}>
               {galleryImgs.map((img, i) => (
                 <Image key={i} src={img} style={{ flex: 1, height: 90, objectFit: "cover", borderRadius: 4 }} />
               ))}
@@ -117,7 +117,7 @@ function ListingPdf({ data, logoSrc }: { data: PdfBody; logoSrc: string }) {
 
           {/* Tags */}
           {data.tags.length > 0 && (
-            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 4, marginBottom: 16 }}>
+            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 4, marginBottom: 12 }}>
               {data.tags.map((t, i) => (
                 <Text key={i} style={{ fontSize: 8, fontWeight: "bold", color: C.navy, backgroundColor: C.muted, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10, border: `1px solid ${C.border}` }}>{t}</Text>
               ))}
@@ -125,7 +125,7 @@ function ListingPdf({ data, logoSrc }: { data: PdfBody; logoSrc: string }) {
           )}
 
           {/* Description */}
-          <View style={{ marginBottom: 18 }}>
+          <View style={{ marginBottom: 14 }}>
             <Text style={{ fontSize: 8, fontWeight: "bold", color: C.goldDark, letterSpacing: 1, textTransform: "uppercase", marginBottom: 8, paddingBottom: 5, borderBottom: `2px solid ${C.gold}` }}>Om lokalen</Text>
             {descParagraphs.slice(0, 4).map((p, i) => (
               <Text key={i} style={{ fontSize: 9, lineHeight: 1.6, color: "#334155", marginBottom: 6 }}>{p}</Text>
@@ -134,7 +134,7 @@ function ListingPdf({ data, logoSrc }: { data: PdfBody; logoSrc: string }) {
 
           {/* Price comparison */}
           {pc && pc.medianPrice > 0 && (
-            <View style={{ backgroundColor: C.muted, borderRadius: 8, padding: 16, marginBottom: 14, border: `1px solid ${C.border}` }}>
+            <View style={{ backgroundColor: C.muted, borderRadius: 8, padding: 14, marginBottom: 10, border: `1px solid ${C.border}` }}>
               <Text style={{ fontSize: 8, fontWeight: "bold", color: C.navy, letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 3 }}>Prisjämförelse</Text>
               <Text style={{ fontSize: 7, color: C.textMuted, marginBottom: 12 }}>Kr/m²{data.type === "rent" ? " per månad" : ""} jämfört med {pc.count} liknande lokaler</Text>
               {[
@@ -161,8 +161,8 @@ function ListingPdf({ data, logoSrc }: { data: PdfBody; logoSrc: string }) {
 
           {/* Location score */}
           {nearby && (nearby.transit?.length || nearby.restaurants?.length || nearby.parking?.length) ? (
-            <View style={{ backgroundColor: C.muted, borderRadius: 8, padding: 16, marginBottom: 14, border: `1px solid ${C.border}` }}>
-              <Text style={{ fontSize: 8, fontWeight: "bold", color: C.navy, letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 10 }}>Lägesanalys</Text>
+            <View style={{ backgroundColor: C.muted, borderRadius: 8, padding: 14, marginBottom: 10, border: `1px solid ${C.border}` }}>
+              <Text style={{ fontSize: 8, fontWeight: "bold", color: C.navy, letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 8 }}>Lägesanalys</Text>
               <View style={{ flexDirection: "row", gap: 10, marginBottom: 12 }}>
                 {[
                   { icon: "🚇", label: "Kollektivtrafik", items: nearby.transit },
@@ -207,8 +207,8 @@ function ListingPdf({ data, logoSrc }: { data: PdfBody; logoSrc: string }) {
 
           {/* Demographics */}
           {demo && (
-            <View style={{ backgroundColor: C.muted, borderRadius: 8, padding: 16, marginBottom: 14, border: `1px solid ${C.border}` }}>
-              <Text style={{ fontSize: 8, fontWeight: "bold", color: C.navy, letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 10 }}>Områdesstatistik – {demo.city}</Text>
+            <View style={{ backgroundColor: C.muted, borderRadius: 8, padding: 14, marginBottom: 10, border: `1px solid ${C.border}` }}>
+              <Text style={{ fontSize: 8, fontWeight: "bold", color: C.navy, letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 8 }}>Områdesstatistik – {demo.city}</Text>
               <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
                 {[
                   { icon: "👥", value: fmtNum(demo.population), label: "Invånare" },
@@ -228,7 +228,7 @@ function ListingPdf({ data, logoSrc }: { data: PdfBody; logoSrc: string }) {
           )}
 
           {/* Contact */}
-          <View style={{ backgroundColor: C.navy, borderRadius: 8, padding: 18, flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+          <View style={{ backgroundColor: C.navy, borderRadius: 8, padding: 14, flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
             <View>
               <Text style={{ color: C.white, fontSize: 11, fontWeight: "bold" }}>{data.contact.name}</Text>
               <Text style={{ color: "rgba(255,255,255,0.5)", fontSize: 8, marginTop: 2 }}>{data.contact.email}{data.contact.phone ? ` · ${data.contact.phone}` : ""}</Text>
