@@ -16,7 +16,7 @@ export async function GET(
   try {
     const listing = await prisma.listing.findUnique({
       where: { id },
-      select: { city: true, lat: true, lng: true, category: true, type: true },
+      select: { city: true, address: true, lat: true, lng: true, category: true, type: true },
     });
     if (!listing) {
       return NextResponse.json({ error: "Annonsen hittades inte" }, { status: 404 });
@@ -26,7 +26,7 @@ export async function GET(
     const lng = listing.lng ?? 0;
     const primaryCategory = ((listing.category ?? "").split(",")[0]?.trim()) || (listing.category ?? "");
     const [areaData, priceContext] = await Promise.all([
-      fetchAreaData(listing.city, lat, lng),
+      fetchAreaData(listing.city, lat, lng, listing.address ?? undefined),
       fetchAreaPriceContext(listing.city, primaryCategory, listing.type),
     ]);
 
@@ -34,6 +34,8 @@ export async function GET(
       demographics: areaData.demographics,
       nearby: areaData.nearby,
       priceContext,
+      walkability: areaData.walkability,
+      areaContext: areaData.areaContext,
     });
   } catch {
     return NextResponse.json({ error: "Kunde inte hämta områdesdata" }, { status: 500 });

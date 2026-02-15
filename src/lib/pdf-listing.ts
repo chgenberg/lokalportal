@@ -1,12 +1,14 @@
 "use client";
 
 import type { Listing } from "@/lib/types";
-import type { NearbyData, PriceContext, DemographicsData } from "@/lib/types";
+import type { NearbyData, PriceContext, DemographicsData, WalkabilityData, AreaContext } from "@/lib/types";
 
 export interface PdfListingInput extends Listing {
   nearby?: NearbyData;
   priceContext?: PriceContext | null;
   demographics?: DemographicsData | null;
+  walkability?: WalkabilityData | null;
+  areaContext?: AreaContext | null;
 }
 
 export async function generateListingPdfBlob(input: PdfListingInput): Promise<Blob> {
@@ -25,6 +27,8 @@ export async function generateListingPdfBlob(input: PdfListingInput): Promise<Bl
     nearby: input.nearby,
     priceContext: input.priceContext,
     demographics: input.demographics,
+    walkability: input.walkability,
+    areaContext: input.areaContext,
   };
 
   const res = await fetch("/api/pdf", {

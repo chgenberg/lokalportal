@@ -12,7 +12,7 @@ export interface Listing {
   imageUrls?: string[]; // Up to 10 images; when present, takes precedence
   videoUrl?: string | null;
   floorPlanImageUrl?: string | null;
-  areaData?: { nearby?: NearbyData; priceContext?: PriceContext | null; demographics?: DemographicsData | null } | null;
+  areaData?: { nearby?: NearbyData; priceContext?: PriceContext | null; demographics?: DemographicsData | null; walkability?: WalkabilityData | null; areaContext?: AreaContext | null } | null;
   featured: boolean;
   createdAt: string;
   lat: number;
@@ -163,4 +163,29 @@ export interface DemographicsData {
   totalBusinesses?: number;
   /** Reported crimes per 100 000 inhabitants (BRÅ) */
   crimeRate?: number;
+}
+
+/** Walkability & bikeability scores calculated from OSM data */
+export interface WalkabilityData {
+  /** 0-100 walkability score */
+  walkScore: number;
+  /** 0-100 bikeability score */
+  bikeScore: number;
+  /** Human-readable label: "Utmärkt", "Mycket bra", "Bra", "Godkänt", "Bilberoende" */
+  walkLabel: string;
+  bikeLabel: string;
+  /** Number of cycleways found within radius */
+  cycleways: number;
+  /** Number of footways/pedestrian paths found within radius */
+  footways: number;
+}
+
+/** Wikipedia area context */
+export interface AreaContext {
+  /** Short summary of the area/district from Wikipedia (max ~300 chars) */
+  summary: string;
+  /** Wikipedia article title */
+  title: string;
+  /** Full URL to the Wikipedia article */
+  url: string;
 }

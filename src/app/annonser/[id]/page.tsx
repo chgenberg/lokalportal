@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { formatCategories } from "@/lib/types";
-import type { Listing, DemographicsData, NearbyData, PriceContext } from "@/lib/types";
+import type { Listing, DemographicsData, NearbyData, PriceContext, WalkabilityData, AreaContext } from "@/lib/types";
 import FavoriteButton from "@/components/FavoriteButton";
 import ListingDetailContent from "@/components/ListingDetailContent";
 import ScrollProgressBar from "@/components/ScrollProgressBar";
@@ -18,7 +18,7 @@ export default function ListingDetailPage() {
   const { data: session } = useSession();
   const id = params.id as string;
   const [listing, setListing] = useState<Listing | null>(null);
-  const [areaData, setAreaData] = useState<{ demographics: DemographicsData | null; nearby: NearbyData; priceContext: PriceContext | null } | null>(null);
+  const [areaData, setAreaData] = useState<{ demographics: DemographicsData | null; nearby: NearbyData; priceContext: PriceContext | null; walkability?: WalkabilityData | null; areaContext?: AreaContext | null } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [favorited, setFavorited] = useState(false);
@@ -36,12 +36,12 @@ export default function ListingDetailPage() {
         setListing(data);
         const ad = data.areaData;
         if (ad && (ad.nearby || ad.priceContext || ad.demographics)) {
-          setAreaData({ demographics: ad.demographics ?? null, nearby: ad.nearby ?? { restaurants: 0, shops: 0, gyms: 0, busStops: { count: 0 }, trainStations: { count: 0 }, parking: 0, schools: 0, healthcare: 0 }, priceContext: ad.priceContext ?? null });
+          setAreaData({ demographics: ad.demographics ?? null, nearby: ad.nearby ?? { restaurants: 0, shops: 0, gyms: 0, busStops: { count: 0 }, trainStations: { count: 0 }, parking: 0, schools: 0, healthcare: 0 }, priceContext: ad.priceContext ?? null, walkability: ad.walkability ?? null, areaContext: ad.areaContext ?? null });
         } else {
           const areaRes = await fetch(`/api/listings/${id}/area`);
           if (areaRes.ok) {
             const areaJson = await areaRes.json();
-            setAreaData({ demographics: areaJson.demographics ?? null, nearby: areaJson.nearby ?? { restaurants: 0, shops: 0, gyms: 0, busStops: { count: 0 }, trainStations: { count: 0 }, parking: 0, schools: 0, healthcare: 0 }, priceContext: areaJson.priceContext ?? null });
+            setAreaData({ demographics: areaJson.demographics ?? null, nearby: areaJson.nearby ?? { restaurants: 0, shops: 0, gyms: 0, busStops: { count: 0 }, trainStations: { count: 0 }, parking: 0, schools: 0, healthcare: 0 }, priceContext: areaJson.priceContext ?? null, walkability: areaJson.walkability ?? null, areaContext: areaJson.areaContext ?? null });
           }
         }
       } catch { setError("Ett fel uppstod."); setListing(null); } finally { setLoading(false); }
@@ -185,6 +185,8 @@ export default function ListingDetailPage() {
                     nearby: areaData?.nearby,
                     priceContext: areaData?.priceContext,
                     demographics: areaData?.demographics,
+                    walkability: areaData?.walkability,
+                    areaContext: areaData?.areaContext,
                   });
                   toast.success("PDF nedladdad");
                 } catch {
