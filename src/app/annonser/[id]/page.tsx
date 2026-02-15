@@ -15,7 +15,7 @@ import { toast } from "sonner";
 export default function ListingDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
   const id = params.id as string;
   const [listing, setListing] = useState<Listing | null>(null);
   const [areaData, setAreaData] = useState<{ demographics: DemographicsData | null; nearby: NearbyData; priceContext: PriceContext | null } | null>(null);
@@ -149,7 +149,6 @@ export default function ListingDetailPage() {
   };
   const jsonLdStr = JSON.stringify(listingJsonLd).replace(/<\/script/gi, "<\\/script").replace(/<\//g, "<\\/");
 
-  const showStickyCta = status !== "loading" && !session?.user;
 
   return (
     <div className="min-h-screen bg-muted/30 pb-20">
@@ -220,19 +219,6 @@ export default function ListingDetailPage() {
         }
       />
 
-      {showStickyCta && (
-        <div className="fixed bottom-0 left-0 right-0 z-40 px-4 py-3 bg-navy text-white shadow-lg animate-slide-up border-t border-white/10">
-          <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
-            <p className="text-[13px] text-white/90">Intresserad? Logga in för att kontakta annonsören.</p>
-            <Link
-              href={`/logga-in?callback=${encodeURIComponent(`/annonser/${id}`)}`}
-              className="w-full sm:w-auto py-2.5 px-6 bg-white text-navy text-[13px] font-semibold rounded-xl text-center hover:bg-white/95 transition-colors"
-            >
-              Logga in
-            </Link>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
