@@ -107,8 +107,8 @@ export default function KontaktPage() {
             <div className="bg-white rounded-2xl border border-border/40 p-6 shadow-sm">
               <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-4">Vanliga frågor</p>
               <div className="space-y-2">
-                <Link href="/annonspaket" className="block text-[13px] text-navy/60 hover:text-navy transition-colors">
-                  Annonspaket och priser &rarr;
+                <Link href="/skapa-annons" className="block text-[13px] text-navy/60 hover:text-navy transition-colors">
+                  Skapa annons &rarr;
                 </Link>
                 <Link href="/skapa-annons" className="block text-[13px] text-navy/60 hover:text-navy transition-colors">
                   Skapa gratis annons-PDF &rarr;

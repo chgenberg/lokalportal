@@ -50,15 +50,7 @@ function DashboardContent() {
   const [perListingStats, setPerListingStats] = useState<PerListingStats>([]);
   const [timeSeries, setTimeSeries] = useState<TimeSeries | null>(null);
 
-  const [createForm, setCreateForm] = useState({
-    title: "", description: "", city: "", address: "",
-    type: "rent" as "sale" | "rent", category: "" as string,
-    price: "", size: "", tags: [] as string[], imageUrl: "",
-  });
-  const [createError, setCreateError] = useState("");
-  const [createSuccess, setCreateSuccess] = useState(false);
   const [imageUploading, setImageUploading] = useState(false);
-  const createImageInputRef = useRef<HTMLInputElement>(null);
 
   const [editingListingId, setEditingListingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<{
@@ -161,32 +153,6 @@ function DashboardContent() {
     };
     if (session?.user) fetchData();
   }, [session, isLandlord]);
-
-  const handleCreateImageUpload = async (file: File) => {
-    if (!file.type.startsWith("image/")) { setCreateError("Endast bilder (JPEG, PNG, GIF, WebP) stöds."); return; }
-    if (file.size > 10 * 1024 * 1024) { setCreateError("Bilden får max vara 10 MB."); return; }
-    setCreateError(""); setImageUploading(true);
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-      const res = await fetch("/api/upload", { method: "POST", body: formData });
-      if (!res.ok) { const data = await res.json(); setCreateError(data.error || "Kunde inte ladda upp bilden."); return; }
-      const data = await res.json();
-      setCreateForm((p) => ({ ...p, imageUrl: data.url || "" }));
-    } catch { setCreateError("Uppladdning misslyckades."); } finally { setImageUploading(false); }
-  };
-
-  const handleCreateListing = async (e: React.FormEvent) => {
-    e.preventDefault(); setCreateError(""); setCreateSuccess(false);
-    try {
-      const res = await fetch("/api/listings/create", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...createForm, price: parseInt(createForm.price, 10), size: parseInt(createForm.size, 10) }) });
-      if (!res.ok) { const data = await res.json(); setCreateError(data.error || "Kunde inte skapa annons"); return; }
-      setCreateSuccess(true);
-      setCreateForm({ title: "", description: "", city: "", address: "", type: "rent", category: "", price: "", size: "", tags: [], imageUrl: "" });
-    } catch { setCreateError("Något gick fel"); }
-  };
-
-  const toggleCreateTag = (tag: string) => { setCreateForm((prev) => ({ ...prev, tags: prev.tags.includes(tag) ? prev.tags.filter((t) => t !== tag) : [...prev.tags, tag] })); };
 
   const removeFavorite = async (listingId: string) => {
     try { await fetch("/api/favorites", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ listingId }) }); setFavorites((prev) => prev.filter((l) => l.id !== listingId)); } catch { /* */ }
@@ -387,15 +353,13 @@ function DashboardContent() {
           </div>
         )}
 
-        {isLandlord && (
-          <Link href="/dashboard?tab=create" className="block">
-            <div className="bg-white rounded-2xl border border-border p-6 hover:border-navy/20 hover:shadow-md transition-all border-dashed">
-              <p className="text-2xl font-bold text-navy mb-1">+</p>
-              <p className="font-semibold text-navy">Skapa ny annons</p>
-              <p className="text-xs text-gray-500 mt-1">Publicera en lokal</p>
-            </div>
-          </Link>
-        )}
+        <Link href="/skapa-annons" className="block">
+          <div className="bg-white rounded-2xl border border-border p-6 hover:border-navy/20 hover:shadow-md transition-all border-dashed">
+            <p className="text-2xl font-bold text-navy mb-1">+</p>
+            <p className="font-semibold text-navy">Skapa ny annons</p>
+            <p className="text-xs text-gray-500 mt-1">Publicera en lokal med AI</p>
+          </div>
+        </Link>
 
         {!isLandlord && conversations.length > 0 && (
           <div className="bg-white rounded-2xl border border-border p-6">
@@ -554,7 +518,7 @@ function DashboardContent() {
               <option value="views">Flest visningar</option>
               <option value="favorites">Flest sparade</option>
             </select>
-            <Link href="/dashboard?tab=create" className="px-4 py-2.5 bg-navy text-white text-sm font-medium rounded-xl hover:bg-navy-light transition-colors whitespace-nowrap">Ny annons</Link>
+            <Link href="/skapa-annons" className="px-4 py-2.5 bg-navy text-white text-sm font-medium rounded-xl hover:bg-navy-light transition-colors whitespace-nowrap">Ny annons</Link>
           </div>
         </div>
         {listings.length === 0 ? (
@@ -562,7 +526,7 @@ function DashboardContent() {
             <p className="text-2xl text-gray-200 mb-4">0</p>
             <h3 className="font-semibold text-navy mb-2">Inga annonser ännu</h3>
             <p className="text-sm text-gray-500 mb-6">Skapa din första annons för att nå potentiella hyresgäster</p>
-            <Link href="/dashboard?tab=create" className="px-6 py-3 bg-navy text-white text-sm font-medium rounded-xl hover:bg-navy-light transition-colors">Skapa annons</Link>
+            <Link href="/skapa-annons" className="px-6 py-3 bg-navy text-white text-sm font-medium rounded-xl hover:bg-navy-light transition-colors">Skapa annons</Link>
           </div>
         ) : (
           <div className="space-y-4">
@@ -713,102 +677,10 @@ function DashboardContent() {
     return <StatisticsTab overview={statsOverview} perListing={perListingStats} timeSeries={timeSeries} formatPrice={formatPrice} listings={listings} />;
   }
 
-  if (tab === "create" && isLandlord) {
-    return (
-      <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-navy">Skapa ny annons</h1>
-        <form onSubmit={handleCreateListing} className="bg-white rounded-2xl border border-border p-6 space-y-5">
-          {createError && <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">{createError}</div>}
-          {createSuccess && <div className="p-3 bg-navy/5 border border-navy/10 rounded-xl text-sm text-navy">Annons skapad! Du kan se den under &quot;Mina annonser&quot;.</div>}
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="sm:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Bild (valfritt)</label>
-              <input ref={createImageInputRef} type="file" accept="image/jpeg,image/png,image/gif,image/webp" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleCreateImageUpload(f); e.target.value = ""; }} />
-              {createForm.imageUrl ? (
-                <div className="relative inline-block">
-                  <img src={createForm.imageUrl} alt="Förhandsgranskning" className="h-40 w-auto rounded-xl border border-border object-cover" />
-                  <button type="button" onClick={() => setCreateForm((p) => ({ ...p, imageUrl: "" }))} className="absolute top-2 right-2 w-8 h-8 rounded-full bg-navy text-white flex items-center justify-center text-sm hover:bg-navy-light transition-colors" aria-label="Ta bort bild">×</button>
-                </div>
-              ) : (
-                <div
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => createImageInputRef.current?.click()}
-                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); createImageInputRef.current?.click(); } }}
-                  onDragOver={(e) => { e.preventDefault(); e.currentTarget.classList.add("border-navy", "bg-navy/5"); }}
-                  onDragLeave={(e) => { e.currentTarget.classList.remove("border-navy", "bg-navy/5"); }}
-                  onDrop={(e) => { e.preventDefault(); e.currentTarget.classList.remove("border-navy", "bg-navy/5"); const f = e.dataTransfer.files[0]; if (f) handleCreateImageUpload(f); }}
-                  className="w-full py-8 border-2 border-dashed border-border rounded-xl text-sm text-gray-500 hover:border-navy hover:text-navy transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-navy/20"
-                >
-                  {imageUploading ? "Laddar upp..." : "Klicka eller släpp en bild här (max 10 MB)"}
-                </div>
-              )}
-              <p className="text-xs text-gray-400 mt-1">JPEG, PNG, GIF eller WebP. Max 10 MB.</p>
-            </div>
-            <div className="sm:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Rubrik</label>
-              <input type="text" value={createForm.title} onChange={(e) => setCreateForm((p) => ({ ...p, title: e.target.value }))} required className="w-full px-4 py-3 bg-muted rounded-xl text-sm border border-border focus:border-navy outline-none" placeholder="T.ex. Modern kontorslokal i centrala Stockholm" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Stad</label>
-              <input type="text" value={createForm.city} onChange={(e) => setCreateForm((p) => ({ ...p, city: e.target.value }))} required className="w-full px-4 py-3 bg-muted rounded-xl text-sm border border-border focus:border-navy outline-none" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Adress</label>
-              <input type="text" value={createForm.address} onChange={(e) => setCreateForm((p) => ({ ...p, address: e.target.value }))} required className="w-full px-4 py-3 bg-muted rounded-xl text-sm border border-border focus:border-navy outline-none" />
-            </div>
-            <CustomSelect
-              label="Typ"
-              value={createForm.type}
-              onChange={(v) => setCreateForm((p) => ({ ...p, type: v as "sale" | "rent" }))}
-              options={[
-                { value: "rent", label: "Uthyres" },
-                { value: "sale", label: "Till salu" },
-              ]}
-            />
-            <div className="sm:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Kategori</label>
-              <div className="flex flex-wrap gap-2">
-                {allCategories.map((cat) => {
-                  const cats = createForm.category ? createForm.category.split(",") : [];
-                  const active = cats.includes(cat);
-                  return (
-                    <button key={cat} type="button" onClick={() => setCreateForm((p) => {
-                      const curr = p.category ? p.category.split(",") : [];
-                      const next = active ? curr.filter((c) => c !== cat) : [...curr, cat];
-                      return { ...p, category: next.join(",") };
-                    })} className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border ${active ? "bg-navy text-white border-navy" : "bg-white text-gray-500 border-border hover:border-navy/20 hover:text-navy"}`}>{categoryLabels[cat]}</button>
-                  );
-                })}
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Pris (kr)</label>
-              <input type="text" inputMode="numeric" value={formatPriceInput(createForm.price)} onChange={(e) => setCreateForm((p) => ({ ...p, price: parsePriceInput(e.target.value) }))} required className="w-full px-4 py-3 bg-muted rounded-xl text-sm border border-border focus:border-navy outline-none" placeholder={createForm.type === "rent" ? "25 000" : "3 500 000"} />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Storlek (m²)</label>
-              <input type="number" value={createForm.size} onChange={(e) => setCreateForm((p) => ({ ...p, size: e.target.value }))} required min="1" className="w-full px-4 py-3 bg-muted rounded-xl text-sm border border-border focus:border-navy outline-none" />
-            </div>
-            <div className="sm:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Beskrivning</label>
-              <textarea value={createForm.description} onChange={(e) => setCreateForm((p) => ({ ...p, description: e.target.value }))} required rows={4} className="w-full px-4 py-3 bg-muted rounded-xl text-sm border border-border focus:border-navy outline-none resize-none" placeholder="Beskriv lokalen..." />
-            </div>
-            <div className="sm:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Egenskaper</label>
-              <div className="flex flex-wrap gap-2">
-                {availableTags.map((tag) => {
-                  const active = createForm.tags.includes(tag);
-                  return <button key={tag} type="button" onClick={() => toggleCreateTag(tag)} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${active ? "bg-navy text-white" : "bg-muted border border-border text-gray-600 hover:border-navy"}`}>{tag}</button>;
-                })}
-              </div>
-            </div>
-          </div>
-          <button type="submit" className="w-full py-3.5 bg-navy text-white text-sm font-semibold rounded-xl hover:bg-navy-light transition-colors">Publicera annons</button>
-        </form>
-      </div>
-    );
+  // "create" tab redirects to /skapa-annons
+  if (tab === "create") {
+    if (typeof window !== "undefined") router.replace("/skapa-annons");
+    return null;
   }
 
   if (tab === "settings") {

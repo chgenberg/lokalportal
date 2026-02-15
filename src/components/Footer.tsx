@@ -28,7 +28,7 @@ export default function Footer() {
             <ul className="space-y-3">
               <li><Link href="/annonser" className="text-[13px] text-white/40 hover:text-white transition-colors">Alla annonser</Link></li>
               <li><Link href="/kategorier" className="text-[13px] text-white/40 hover:text-white transition-colors">Kategorier</Link></li>
-              <li><Link href="/annonspaket" className="text-[13px] text-white/40 hover:text-white transition-colors">Annonspaket</Link></li>
+              <li><Link href="/skapa-annons" className="text-[13px] text-white/40 hover:text-white transition-colors">Skapa annons</Link></li>
               <li><Link href="/sa-hyr-du-ut-en-lokal" className="text-[13px] text-white/40 hover:text-white transition-colors">Så hyr du ut en lokal</Link></li>
               <li><Link href="/karta" className="text-[13px] text-white/40 hover:text-white transition-colors">Karta</Link></li>
             </ul>

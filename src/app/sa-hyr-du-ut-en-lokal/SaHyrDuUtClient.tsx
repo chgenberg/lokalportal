@@ -139,10 +139,10 @@ export default function SaHyrDuUtClient() {
               Skapa annons
             </Link>
             <Link
-              href="/annonspaket"
+              href="/sa-hyr-du-ut-en-lokal"
               className="inline-flex items-center justify-center px-6 py-3 bg-white/10 text-white font-medium rounded-xl hover:bg-white/20 transition-colors"
             >
-              Se annonspaket
+              Läs mer
             </Link>
           </div>
         </div>

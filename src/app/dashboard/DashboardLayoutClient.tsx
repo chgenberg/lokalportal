@@ -107,7 +107,7 @@ export default function DashboardLayoutClient({ children }: { children: React.Re
     { href: "/dashboard?tab=listings", label: "Mina annonser", icon: IconBuilding, show: isLandlord },
     { href: "/dashboard?tab=favorites", label: "Favoriter", icon: IconHeart, show: !isLandlord },
     { href: "/dashboard?tab=statistics", label: "Statistik", icon: IconChart, show: isLandlord },
-    { href: "/dashboard?tab=create", label: "Ny annons", icon: IconPlus, show: isLandlord },
+    { href: "/skapa-annons", label: "Ny annons", icon: IconPlus, show: true },
     { href: "/dashboard?tab=settings", label: "Inställningar", icon: IconSettings, show: true },
   ];
 
