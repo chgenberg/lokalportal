@@ -340,45 +340,6 @@ export default function ListingDetailContent({
               </div>
             )}
 
-            {/* Prisjämförelse – visuell stapeldiagram */}
-            {areaData?.priceContext && areaData.priceContext.count >= 2 && listing.size > 0 && (() => {
-              const pc = areaData.priceContext!;
-              const pricePerSqm = Math.round(listing.price / listing.size);
-              const bars = [
-                { label: "Denna lokal", value: pricePerSqm, accent: true },
-                { label: "Medianpris", value: Math.round(pc.medianPrice), accent: false },
-                { label: "Lägsta", value: Math.round(pc.minPrice), accent: false },
-                { label: "Högsta", value: Math.round(pc.maxPrice), accent: false },
-              ];
-              const maxVal = Math.max(pricePerSqm, pc.maxPrice) * 1.15;
-              return (
-                <div className="bg-white rounded-2xl border border-border/40 p-6 sm:p-8 shadow-sm">
-                  <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-1">Prisjämförelse</p>
-                  <p className="text-[12px] text-gray-400 mb-5">Kr/m²{listing.type === "rent" ? " per månad" : ""} – baserat på {pc.count} liknande lokaler</p>
-                  <div className="space-y-3">
-                    {bars.map((bar, i) => {
-                      const pct = Math.min((bar.value / maxVal) * 100, 100);
-                      return (
-                        <div key={i} className="flex items-center gap-3">
-                          <span className="w-20 text-[12px] text-gray-500 text-right shrink-0">{bar.label}</span>
-                          <div className="flex-1 h-7 bg-muted/60 rounded-lg overflow-hidden">
-                            <div
-                              className={`h-full rounded-lg flex items-center justify-end pr-3 transition-all duration-500 ${bar.accent ? "bg-gold" : "bg-navy/20"}`}
-                              style={{ width: `${Math.max(pct, 12)}%` }}
-                            >
-                              <span className={`text-[11px] font-bold ${bar.accent ? "text-navy" : "text-navy/70"}`}>
-                                {bar.value.toLocaleString("sv-SE")} kr
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })()}
-
             {/* Lägesanalys – visuella poängkort */}
             {areaData?.nearby && (areaData.nearby.restaurants > 0 || areaData.nearby.shops > 0 || areaData.nearby.busStops.count > 0 || areaData.nearby.trainStations.count > 0 || areaData.nearby.parking > 0 || areaData.nearby.schools > 0 || areaData.nearby.healthcare > 0 || areaData.nearby.gyms > 0) && (() => {
               const n = areaData.nearby;
