@@ -20,7 +20,7 @@ const FACTS = [
   "Lagerlokaler har blivit den snabbast växande segmentet inom kommersiella fastigheter.",
 ];
 
-const DURATION_MS = 100_000; // 100 seconds total
+const DURATION_MS = 60_000; // 60 seconds total
 const FACT_INTERVAL_MS = 6_000; // New fact every 6 seconds
 
 interface GeneratingProgressBarProps {
