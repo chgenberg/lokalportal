@@ -224,57 +224,58 @@ export default function ListingDetailContent({
                   </div>
                 </div>
               )}
-            </div>
 
-            <div className="bg-white rounded-2xl border border-border/40 p-6 sm:p-8 shadow-sm">
-              <div className="flex items-center justify-between mb-4">
-                <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase">Beskrivning</p>
-                {editableDescription && onDescriptionChange && !isEditingDescription && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setEditDraft(listing.description || "");
-                      setIsEditingDescription(true);
-                    }}
-                    className="text-[12px] text-navy/60 hover:text-navy transition-colors"
-                  >
-                    Redigera
-                  </button>
-                )}
-                {editableDescription && onDescriptionChange && isEditingDescription && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onDescriptionChange(editDraft.trim().slice(0, 5000));
-                      setIsEditingDescription(false);
-                    }}
-                    className="text-[12px] font-medium text-navy hover:underline"
-                  >
-                    Klart
-                  </button>
-                )}
-              </div>
-              {editableDescription && onDescriptionChange && isEditingDescription ? (
-                <textarea
-                  value={editDraft}
-                  onChange={(e) => setEditDraft(e.target.value)}
-                  className="w-full min-h-[200px] p-4 text-[15px] text-gray-600 leading-[1.7] border border-border/60 rounded-xl focus:border-navy/30 focus:outline-none resize-y"
-                  placeholder="Skriv beskrivningen här..."
-                  maxLength={5000}
-                />
-              ) : (
-                <div className="text-[15px] text-gray-600 leading-[1.7] max-w-[65ch]">
-                  {listing.description ? (
-                    listing.description.split(/\n\n+/).map((block, i) => (
-                      <p key={i} className="mb-4 last:mb-0 whitespace-pre-line">
-                        {block.trim()}
-                      </p>
-                    ))
-                  ) : (
-                    <p className="text-gray-400">Ingen beskrivning tillagd.</p>
+              {/* Beskrivning – i samma kort */}
+              <div className="px-6 py-5 border-t border-border/40">
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase">Beskrivning</p>
+                  {editableDescription && onDescriptionChange && !isEditingDescription && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditDraft(listing.description || "");
+                        setIsEditingDescription(true);
+                      }}
+                      className="text-[12px] text-navy/60 hover:text-navy transition-colors"
+                    >
+                      Redigera
+                    </button>
+                  )}
+                  {editableDescription && onDescriptionChange && isEditingDescription && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onDescriptionChange(editDraft.trim().slice(0, 5000));
+                        setIsEditingDescription(false);
+                      }}
+                      className="text-[12px] font-medium text-navy hover:underline"
+                    >
+                      Klart
+                    </button>
                   )}
                 </div>
-              )}
+                {editableDescription && onDescriptionChange && isEditingDescription ? (
+                  <textarea
+                    value={editDraft}
+                    onChange={(e) => setEditDraft(e.target.value)}
+                    className="w-full min-h-[200px] p-4 text-[15px] text-gray-600 leading-[1.7] border border-border/60 rounded-xl focus:border-navy/30 focus:outline-none resize-y"
+                    placeholder="Skriv beskrivningen här..."
+                    maxLength={5000}
+                  />
+                ) : (
+                  <div className="text-[15px] text-gray-600 leading-[1.7] max-w-[65ch]">
+                    {listing.description ? (
+                      listing.description.split(/\n\n+/).map((block, i) => (
+                        <p key={i} className="mb-4 last:mb-0 whitespace-pre-line">
+                          {block.trim()}
+                        </p>
+                      ))
+                    ) : (
+                      <p className="text-gray-400">Ingen beskrivning tillagd.</p>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
 
             {("videoUrl" in listing && listing.videoUrl) && (
