@@ -1,10 +1,15 @@
+import { Suspense } from "react";
 import SkapaAnnonsClient from "./SkapaAnnonsClient";
 
 export const metadata = {
-  title: "Skapa gratis annons-PDF | HittaYta.se",
-  description: "Generera en professionell annonstext med AI och ladda ner som PDF. Ingen registrering krävs.",
+  title: "Skapa annons | HittaYta.se",
+  description: "Generera en professionell annonstext med AI. Ladda ner som PDF eller publicera direkt på HittaYta.se.",
 };
 
 export default function SkapaAnnonsPage() {
-  return <SkapaAnnonsClient />;
+  return (
+    <Suspense>
+      <SkapaAnnonsClient />
+    </Suspense>
+  );
 }

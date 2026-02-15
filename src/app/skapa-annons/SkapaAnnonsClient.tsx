@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 import { availableTags, categoryLabels, allCategories, typeLabels } from "@/lib/types";
 import type { Listing, NearbyData, PriceContext, DemographicsData } from "@/lib/types";
@@ -24,7 +26,9 @@ interface SuggestItem {
   city?: string;
 }
 
-type Step = "email" | "input" | "generating" | "preview" | "done";
+type Step = "email" | "input" | "generating" | "preview" | "publishing" | "done";
+
+const PENDING_LISTING_KEY = "hy_pending_listing";
 
 interface InputForm {
   address: string;
@@ -78,6 +82,9 @@ const initialInput: InputForm = {
 };
 
 export default function SkapaAnnonsClient() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { data: session, status: sessionStatus } = useSession();
   const [step, setStep] = useState<Step>("email");
   const [leadEmail, setLeadEmail] = useState("");
   const [leadName, setLeadName] = useState("");
@@ -98,10 +105,164 @@ export default function SkapaAnnonsClient() {
   const [regenerating, setRegenerating] = useState(false);
   const [pdfDownloading, setPdfDownloading] = useState(false);
   const [aiDone, setAiDone] = useState(false);
+  const [publishError, setPublishError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const publishAttemptedRef = useRef(false);
   const addressWrapperRef = useRef<HTMLDivElement>(null);
   const suggestDebounceRef = useRef<NodeJS.Timeout | null>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
+
+  // ── Auto-publish after auth redirect ──
+  useEffect(() => {
+    if (sessionStatus !== "authenticated") return;
+    if (publishAttemptedRef.current) return;
+    const shouldPublish = searchParams.get("publish") === "true";
+    if (!shouldPublish) return;
+
+    const stored = sessionStorage.getItem(PENDING_LISTING_KEY);
+    if (!stored) return;
+
+    publishAttemptedRef.current = true;
+
+    try {
+      const data = JSON.parse(stored) as { generated: GeneratedListing; leadEmail: string; leadName: string; input: InputForm };
+      setGenerated(data.generated);
+      setLeadEmail(data.leadEmail);
+      setLeadName(data.leadName);
+      setInput(data.input);
+      setStep("publishing");
+
+      // Auto-publish
+      (async () => {
+        setSubmitting(true);
+        try {
+          const imgs = data.generated.imageUrls?.length ? data.generated.imageUrls : (data.generated.imageUrl ? [data.generated.imageUrl] : []);
+          const res = await fetch("/api/listings/create", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              title: data.generated.title.trim() || "Kommersiell lokal",
+              description: data.generated.description.trim() || "",
+              city: data.generated.city.trim(),
+              address: data.generated.address.trim(),
+              type: data.generated.type,
+              category: data.generated.category,
+              price: data.generated.price,
+              size: data.generated.size,
+              tags: data.generated.tags,
+              imageUrl: imgs[0] || "",
+              imageUrls: imgs.length > 0 ? imgs : undefined,
+              videoUrl: data.generated.videoUrl || undefined,
+              nearby: data.generated.nearby,
+              priceContext: data.generated.priceContext,
+              demographics: data.generated.demographics,
+              lat: data.generated.lat,
+              lng: data.generated.lng,
+            }),
+          });
+
+          if (!res.ok) {
+            const err = await res.json();
+            setPublishError(err.error || "Kunde inte skapa annons");
+            setStep("preview");
+            setSubmitting(false);
+            return;
+          }
+
+          const listing = await res.json();
+          sessionStorage.removeItem(PENDING_LISTING_KEY);
+
+          // Redirect to Stripe checkout
+          const stripeRes = await fetch("/api/stripe/create-checkout", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ listingId: listing.id }),
+          });
+          const stripeData = await stripeRes.json();
+
+          if (stripeRes.ok && stripeData.url) {
+            window.location.href = stripeData.url;
+          } else {
+            // Stripe not configured — publish free
+            toast.success("Annons publicerad!");
+            router.push("/dashboard");
+          }
+        } catch {
+          setPublishError("Något gick fel. Försök igen.");
+          setStep("preview");
+          setSubmitting(false);
+        }
+      })();
+    } catch {
+      sessionStorage.removeItem(PENDING_LISTING_KEY);
+    }
+  }, [sessionStatus, searchParams, router]);
+
+  // ── Publish handler (from preview) ──
+  const handlePublish = () => {
+    if (!generated) return;
+
+    // Save listing data to sessionStorage
+    sessionStorage.setItem(PENDING_LISTING_KEY, JSON.stringify({
+      generated,
+      leadEmail,
+      leadName,
+      input,
+    }));
+
+    if (session?.user) {
+      // Already logged in — go straight to publish
+      router.push("/skapa-annons?publish=true");
+    } else {
+      // Not logged in — show auth choice step
+      setStep("publishing");
+    }
+  };
+
+  const handlePublishFree = async () => {
+    if (!generated || !session?.user) return;
+    setSubmitting(true);
+    setPublishError("");
+    try {
+      const imgs = generated.imageUrls?.length ? generated.imageUrls : (generated.imageUrl ? [generated.imageUrl] : []);
+      const res = await fetch("/api/listings/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: generated.title.trim() || "Kommersiell lokal",
+          description: generated.description.trim() || "",
+          city: generated.city.trim(),
+          address: generated.address.trim(),
+          type: generated.type,
+          category: generated.category,
+          price: generated.price,
+          size: generated.size,
+          tags: generated.tags,
+          imageUrl: imgs[0] || "",
+          imageUrls: imgs.length > 0 ? imgs : undefined,
+          videoUrl: generated.videoUrl || undefined,
+          nearby: generated.nearby,
+          priceContext: generated.priceContext,
+          demographics: generated.demographics,
+          lat: generated.lat,
+          lng: generated.lng,
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        setPublishError(data.error || "Kunde inte publicera");
+        setSubmitting(false);
+        return;
+      }
+      sessionStorage.removeItem(PENDING_LISTING_KEY);
+      toast.success("Annons publicerad!");
+      router.push("/dashboard");
+    } catch {
+      setPublishError("Något gick fel. Försök igen.");
+      setSubmitting(false);
+    }
+  };
 
 
   const updateInput = (partial: Partial<InputForm>) => {
@@ -545,9 +706,7 @@ export default function SkapaAnnonsClient() {
     }
   };
 
-  const handleFinish = () => {
-    setStep("done");
-  };
+  // handleFinish removed — publish flow replaces it
 
   return (
     <div className="min-h-screen bg-muted/30">
@@ -581,17 +740,17 @@ export default function SkapaAnnonsClient() {
             &larr; Tillbaka till startsidan
           </Link>
           <h1 className="text-2xl md:text-3xl font-bold text-navy mt-4 tracking-tight">
-            Skapa gratis annons-PDF
+            Skapa annons
           </h1>
           <p className="text-[13px] text-gray-500 mt-2 leading-relaxed">
-            Fyll i uppgifterna nedan så genererar vårt AI en professionell annonstext. Ladda ner som PDF – ingen registrering krävs.
+            Fyll i uppgifterna nedan så genererar vårt AI en professionell annonstext. Ladda ner som PDF eller publicera direkt på HittaYta.se.
           </p>
         </div>
 
         {/* Progress */}
         <div className="flex items-center gap-2 mb-10">
-          {(["email", "input", "preview", "done"] as const).map((s, i) => {
-            const stepOrder = { email: 0, input: 1, generating: 1, preview: 2, done: 3 };
+          {(["email", "input", "preview", "publish"] as const).map((s, i) => {
+            const stepOrder: Record<Step, number> = { email: 0, input: 1, generating: 1, preview: 2, publishing: 3, done: 3 };
             const current = stepOrder[step];
             const filled = current >= i;
             return (
@@ -987,12 +1146,28 @@ export default function SkapaAnnonsClient() {
                 onDescriptionChange={(desc) => setGenerated((g) => (g ? { ...g, description: desc } : g))}
                 contactSlot={
                   <div className="p-6 border-t border-border/40 space-y-4">
+                    {publishError && (
+                      <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-[13px] text-red-700">{publishError}</div>
+                    )}
                     <div className="flex flex-col gap-3">
+                      {/* Primary: Publish listing */}
+                      <button
+                        type="button"
+                        onClick={handlePublish}
+                        disabled={submitting}
+                        className="w-full py-3.5 px-4 bg-navy text-white text-[13px] font-semibold rounded-xl flex items-center justify-center gap-2 hover:bg-navy/90 transition-colors disabled:opacity-60"
+                      >
+                        <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                        </svg>
+                        Publicera annons (499 kr/mån)
+                      </button>
+                      {/* Secondary: Download PDF */}
                       <button
                         type="button"
                         onClick={handleDownloadPdf}
                         disabled={pdfDownloading}
-                        className="w-full py-3.5 px-4 bg-navy text-white text-[13px] font-semibold rounded-xl flex items-center justify-center gap-2 hover:bg-navy/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                        className="w-full py-3.5 px-4 bg-muted/80 text-navy text-[13px] font-semibold rounded-xl flex items-center justify-center gap-2 hover:bg-muted transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                       >
                         {pdfDownloading ? (
                           <span className="animate-pulse">Laddar ner...</span>
@@ -1001,7 +1176,7 @@ export default function SkapaAnnonsClient() {
                             <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                               <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
-                            Ladda ner PDF
+                            Ladda ner PDF (gratis)
                           </>
                         )}
                       </button>
@@ -1023,17 +1198,10 @@ export default function SkapaAnnonsClient() {
                       </button>
                       <button
                         type="button"
-                        onClick={handleFinish}
-                        className="w-full py-3.5 px-4 border-2 border-border/60 text-gray-600 text-[13px] font-medium rounded-xl hover:bg-muted/50 hover:border-navy/20 hover:text-navy transition-colors"
-                      >
-                        Klar – nästa steg
-                      </button>
-                      <button
-                        type="button"
                         onClick={() => { setStep("input"); setGenerateError(""); }}
                         className="w-full py-2.5 text-[12px] text-gray-500 hover:text-navy transition-colors"
                       >
-                        ← Redigera grunddata
+                        &larr; Redigera grunddata
                       </button>
                     </div>
                     {imageError && <p className="text-[12px] text-red-600">{imageError}</p>}
@@ -1141,23 +1309,80 @@ export default function SkapaAnnonsClient() {
           </div>
         )}
 
-        {/* Step: Done (upsell) */}
+        {/* Step: Publishing — auth required */}
+        {step === "publishing" && !session?.user && (
+          <div className="bg-white rounded-2xl border border-border/60 p-6 sm:p-8 shadow-sm animate-fade-in text-center">
+            <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-navy/10 flex items-center justify-center">
+              <svg className="w-8 h-8 text-navy" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </div>
+            <h2 className="text-xl font-bold text-navy mb-2">Skapa konto eller logga in</h2>
+            <p className="text-[13px] text-gray-500 mb-2 max-w-md mx-auto">
+              För att publicera din annons på HittaYta.se behöver du ett konto. Din annons är sparad och publiceras direkt efter inloggning.
+            </p>
+            <p className="text-[12px] text-gray-400 mb-8 max-w-md mx-auto">
+              Pris: 499 kr/mån. Avsluta när du vill.
+            </p>
+            {publishError && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-[13px] text-red-700">{publishError}</div>
+            )}
+            <div className="flex flex-col sm:flex-row gap-3 justify-center mb-6">
+              <Link
+                href={`/registrera?callback=${encodeURIComponent("/skapa-annons?publish=true")}`}
+                className="py-3.5 px-6 bg-navy text-white text-[13px] font-semibold rounded-xl tracking-wide text-center hover:bg-navy/90 transition-colors"
+              >
+                Skapa konto
+              </Link>
+              <Link
+                href={`/logga-in?callback=${encodeURIComponent("/skapa-annons?publish=true")}`}
+                className="py-3.5 px-6 border-2 border-navy text-navy text-[13px] font-semibold rounded-xl tracking-wide text-center hover:bg-navy/5 transition-colors"
+              >
+                Logga in
+              </Link>
+            </div>
+            <button
+              type="button"
+              onClick={() => setStep("preview")}
+              className="text-[12px] text-gray-400 hover:text-navy transition-colors"
+            >
+              &larr; Tillbaka till förhandsgranskning
+            </button>
+          </div>
+        )}
+
+        {/* Step: Publishing — already logged in, auto-publishing */}
+        {step === "publishing" && session?.user && (
+          <div className="bg-white rounded-2xl border border-border/60 p-6 sm:p-8 shadow-sm animate-fade-in text-center">
+            <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-navy/10 flex items-center justify-center">
+              <div className="w-8 h-8 border-2 border-navy/20 border-t-navy rounded-full animate-spin" />
+            </div>
+            <h2 className="text-lg font-bold text-navy mb-2">Publicerar din annons...</h2>
+            <p className="text-[13px] text-gray-500">Du skickas vidare till betalning om en stund.</p>
+            {publishError && (
+              <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-xl text-[13px] text-red-700">{publishError}</div>
+            )}
+          </div>
+        )}
+
+        {/* Step: Done */}
         {step === "done" && (
           <div className="bg-white rounded-2xl border border-border/60 p-6 sm:p-8 shadow-sm animate-fade-in text-center">
             <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-navy/10 flex items-center justify-center">
               <span className="text-2xl font-bold text-navy">&#10003;</span>
             </div>
-            <h2 className="text-xl font-bold text-navy mb-2">Tack! Din PDF är nedladdad</h2>
+            <h2 className="text-xl font-bold text-navy mb-2">Tack!</h2>
             <p className="text-[13px] text-gray-500 mb-8 max-w-md mx-auto">
-              Vill du publicera annonsen live på HittaYta.se och nå tusentals potentiella hyresgäster? Skapa ett konto – det tar bara en minut.
+              Vill du publicera annonsen live på HittaYta.se och nå tusentals potentiella hyresgäster?
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Link
-                href="/registrera"
+              <button
+                type="button"
+                onClick={handlePublish}
                 className="py-3.5 px-6 bg-navy text-white text-[13px] font-semibold rounded-xl tracking-wide text-center hover:bg-navy/90 transition-colors"
               >
-                Registrera dig gratis
-              </Link>
+                Publicera annons (499 kr/mån)
+              </button>
               <Link
                 href="/"
                 className="py-3.5 px-6 border border-border/60 text-gray-600 text-[13px] font-medium rounded-xl hover:bg-muted/50 transition-colors text-center"

@@ -111,7 +111,7 @@ function LoginContent() {
         </div>
 
         <div className="mt-8 text-center">
-          <p className="text-[13px] text-gray-400">Inget konto? <Link href="/registrera" className="text-navy font-semibold hover:underline">Registrera dig</Link></p>
+          <p className="text-[13px] text-gray-400">Inget konto? <Link href={callbackUrl !== "/dashboard" ? `/registrera?callback=${encodeURIComponent(callbackUrl)}` : "/registrera"} className="text-navy font-semibold hover:underline">Registrera dig</Link></p>
         </div>
 
         <div className="mt-8 pt-6 border-t border-border/40">
