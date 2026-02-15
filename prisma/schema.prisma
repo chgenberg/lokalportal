@@ -8,15 +8,16 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default(uuid())
-  email        String   @unique
-  passwordHash String
-  name         String
-  role         String   @default("tenant") // "landlord" | "tenant" | "agent"
-  phone        String?
-  logoUrl      String?  // mäklare: logotyp i annonser
-  companyName  String?  // mäklare: mäklarbyrå/företagsnamn
-  createdAt    DateTime @default(now())
+  id               String   @id @default(uuid())
+  email            String   @unique
+  passwordHash     String
+  name             String
+  role             String   @default("tenant") // "landlord" | "tenant" | "agent"
+  phone            String?
+  logoUrl          String?  // mäklare: logotyp i annonser
+  companyName      String?  // mäklare: mäklarbyrå/företagsnamn
+  stripeCustomerId String?  @unique // Stripe customer ID
+  createdAt        DateTime @default(now())
 
   listings              Listing[]
   favorites             Favorite[]
@@ -52,6 +53,12 @@ model Listing {
   contactName  String @default("")
   contactEmail String @default("")
   contactPhone String @default("")
+
+  // Stripe subscription
+  stripeSubscriptionId String?  @unique
+  stripeStatus         String   @default("free") // "free" | "active" | "past_due" | "canceled"
+  stripePriceId        String?
+  stripeCurrentPeriodEnd DateTime?
 
   ownerId String?
   owner   User?   @relation(fields: [ownerId], references: [id], onDelete: SetNull)

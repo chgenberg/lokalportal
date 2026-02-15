@@ -506,47 +506,84 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
     setPublishError("");
   };
 
-  const handlePublish = async () => {
-    if (!session?.user || !generated) return;
+  const createListing = async (): Promise<string | null> => {
+    if (!session?.user || !generated) return null;
     const imgs = generated.imageUrls?.length ? generated.imageUrls : (generated.imageUrl ? [generated.imageUrl] : []);
     if (!imgs.length) {
       setPublishError("Ladda upp en bild innan du publicerar.");
-      return;
+      return null;
     }
+    const res = await fetch("/api/listings/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        title: generated.title.trim() || "Kommersiell lokal",
+        description: generated.description.trim() || "",
+        city: generated.city.trim(),
+        address: generated.address.trim(),
+        type: generated.type,
+        category: generated.category,
+        price: generated.price,
+        size: generated.size,
+        tags: generated.tags,
+        imageUrl: imgs[0] || "",
+        imageUrls: imgs.length > 0 ? imgs : undefined,
+        videoUrl: generated.videoUrl || undefined,
+        floorPlanImageUrl: generated.floorPlanImageUrl || undefined,
+        nearby: generated.nearby,
+        priceContext: generated.priceContext,
+        demographics: generated.demographics,
+        lat: generated.lat,
+        lng: generated.lng,
+      }),
+    });
+    if (!res.ok) {
+      const data = await res.json();
+      setPublishError(data.error || "Kunde inte publicera");
+      return null;
+    }
+    const data = await res.json();
+    return data.id || null;
+  };
+
+  /** Publish with Stripe payment (499 kr/mån subscription) */
+  const handlePublishWithPayment = async () => {
+    if (!session?.user || !generated) return;
     setSubmitting(true);
     setPublishError("");
     try {
-      const res = await fetch("/api/listings/create", {
+      const listingId = await createListing();
+      if (!listingId) { setSubmitting(false); return; }
+
+      // Create Stripe Checkout session
+      const stripeRes = await fetch("/api/stripe/create-checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: generated.title.trim() || "Kommersiell lokal",
-          description: generated.description.trim() || "",
-          city: generated.city.trim(),
-          address: generated.address.trim(),
-          type: generated.type,
-          category: generated.category,
-          price: generated.price,
-          size: generated.size,
-          tags: generated.tags,
-          imageUrl: imgs[0] || "",
-          imageUrls: imgs.length > 0 ? imgs : undefined,
-          videoUrl: generated.videoUrl || undefined,
-          floorPlanImageUrl: generated.floorPlanImageUrl || undefined,
-          nearby: generated.nearby,
-          priceContext: generated.priceContext,
-          demographics: generated.demographics,
-          lat: generated.lat,
-          lng: generated.lng,
-        }),
+        body: JSON.stringify({ listingId }),
       });
-
-      if (!res.ok) {
-        const data = await res.json();
-        setPublishError(data.error || "Kunde inte publicera");
+      const stripeData = await stripeRes.json();
+      if (!stripeRes.ok || !stripeData.url) {
+        setPublishError(stripeData.error || "Kunde inte starta betalning");
         setSubmitting(false);
         return;
       }
+
+      // Redirect to Stripe Checkout
+      window.location.href = stripeData.url;
+    } catch {
+      setPublishError("Något gick fel. Försök igen.");
+      setSubmitting(false);
+    }
+  };
+
+  /** Publish without payment (dev/testing bypass) */
+  const handlePublishFree = async () => {
+    if (!session?.user || !generated) return;
+    setSubmitting(true);
+    setPublishError("");
+    try {
+      const listingId = await createListing();
+      if (!listingId) { setSubmitting(false); return; }
 
       setSubmitted(true);
       toast.success("Annons publicerad!");
@@ -1179,14 +1216,30 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
             )}
 
             {step === "preview" && (
-              <button
-                type="button"
-                onClick={handlePublish}
-                disabled={submitting || !(generated?.imageUrls?.length || generated?.imageUrl?.trim())}
-                className="px-6 py-2.5 bg-navy text-white text-[13px] font-semibold rounded-xl tracking-wide disabled:opacity-50 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
-              >
-                {submitting ? "Publicerar..." : (generated?.imageUrls?.length || generated?.imageUrl?.trim()) ? "Publicera annons" : "Ladda upp bild först"}
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handlePublishWithPayment}
+                  disabled={submitting || !(generated?.imageUrls?.length || generated?.imageUrl?.trim())}
+                  className="px-5 py-2.5 bg-navy text-white text-[13px] font-semibold rounded-xl tracking-wide disabled:opacity-50 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 flex items-center gap-2"
+                >
+                  {submitting ? "Vänta..." : (
+                    <>
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
+                      Publicera (499 kr/mån)
+                    </>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={handlePublishFree}
+                  disabled={submitting || !(generated?.imageUrls?.length || generated?.imageUrl?.trim())}
+                  className="px-4 py-2.5 border border-border/60 text-gray-500 text-[12px] font-medium rounded-xl hover:bg-muted/50 hover:text-navy transition-colors disabled:opacity-50"
+                  title="Publicera utan betalning (dev)"
+                >
+                  Publicera gratis
+                </button>
+              </div>
             )}
           </div>
         </div>

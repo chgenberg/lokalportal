@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef, Suspense } from "react";
 import { useSession, signOut } from "next-auth/react";
+import { toast } from "sonner";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -77,6 +78,24 @@ function DashboardContent() {
   const [logoUploading, setLogoUploading] = useState(false);
   const logoInputRef = useRef<HTMLInputElement>(null);
   const editImageInputRef = useRef<HTMLInputElement>(null);
+
+  // Handle Stripe payment redirect
+  useEffect(() => {
+    const payment = searchParams.get("payment");
+    if (payment === "success") {
+      toast.success("Betalning genomförd! Din annons är nu publicerad.");
+      // Clean URL
+      const url = new URL(window.location.href);
+      url.searchParams.delete("payment");
+      url.searchParams.delete("listing");
+      router.replace(url.pathname + url.search);
+    } else if (payment === "canceled") {
+      toast.error("Betalningen avbröts. Annonsen är sparad men inte aktiverad.");
+      const url = new URL(window.location.href);
+      url.searchParams.delete("payment");
+      router.replace(url.pathname + url.search);
+    }
+  }, [searchParams, router]);
 
   useEffect(() => {
     const fetchData = async () => {
