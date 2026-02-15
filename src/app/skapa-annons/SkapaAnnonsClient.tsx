@@ -1007,36 +1007,35 @@ export default function SkapaAnnonsClient() {
                 contactSlot={
                   <div className="p-6 border-t border-border/40 space-y-4">
                     <div className="flex flex-col gap-3">
-                      {/* Primary row: Publish + PDF side by side */}
-                      <div className="flex gap-2">
-                        <button
-                          type="button"
-                          onClick={handlePublish}
-                          className="flex-1 py-3 px-3 bg-navy text-white text-[11px] font-semibold rounded-xl flex items-center justify-center gap-1.5 hover:bg-navy/90 transition-colors whitespace-nowrap"
-                        >
-                          <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.8m2.58-5.84a14.927 14.927 0 00-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 01-2.448-2.448 14.9 14.9 0 01.06-.312m-2.24 2.39a4.493 4.493 0 00-1.757 4.306 4.493 4.493 0 004.306-1.758M16.5 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
-                          </svg>
-                          Publicera annons
-                        </button>
-                        <button
-                          type="button"
-                          onClick={handleDownloadPdf}
-                          disabled={pdfDownloading}
-                          className="flex-1 py-3 px-3 bg-muted/80 text-navy text-[11px] font-semibold rounded-xl flex items-center justify-center gap-1.5 hover:bg-muted transition-colors disabled:opacity-60 disabled:cursor-not-allowed whitespace-nowrap"
-                        >
-                          {pdfDownloading ? (
-                            <span className="animate-pulse">Laddar ner...</span>
-                          ) : (
-                            <>
-                              <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                              </svg>
-                              Ladda ner PDF (gratis)
-                            </>
-                          )}
-                        </button>
-                      </div>
+                      {/* Publish */}
+                      <button
+                        type="button"
+                        onClick={handlePublish}
+                        className="w-full py-3 px-4 bg-navy text-white text-[13px] font-semibold rounded-xl flex items-center justify-center gap-2 hover:bg-navy/90 transition-colors"
+                      >
+                        <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.8m2.58-5.84a14.927 14.927 0 00-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 01-2.448-2.448 14.9 14.9 0 01.06-.312m-2.24 2.39a4.493 4.493 0 00-1.757 4.306 4.493 4.493 0 004.306-1.758M16.5 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
+                        </svg>
+                        Publicera annons
+                      </button>
+                      {/* Download PDF */}
+                      <button
+                        type="button"
+                        onClick={handleDownloadPdf}
+                        disabled={pdfDownloading}
+                        className="w-full py-3 px-4 bg-muted/80 text-navy text-[13px] font-semibold rounded-xl flex items-center justify-center gap-2 hover:bg-muted transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                      >
+                        {pdfDownloading ? (
+                          <span className="animate-pulse">Laddar ner...</span>
+                        ) : (
+                          <>
+                            <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            Ladda ner PDF (gratis)
+                          </>
+                        )}
+                      </button>
                       <button
                         type="button"
                         onClick={handleRegenerate}
