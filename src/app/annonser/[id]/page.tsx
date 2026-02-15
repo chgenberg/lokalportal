@@ -10,8 +10,6 @@ import FavoriteButton from "@/components/FavoriteButton";
 import ListingDetailContent from "@/components/ListingDetailContent";
 import ScrollProgressBar from "@/components/ScrollProgressBar";
 import { downloadListingPdf } from "@/lib/pdf-listing";
-import type { PdfTemplate } from "@/lib/pdf-listing";
-import PdfTemplateSelector from "@/components/PdfTemplateSelector";
 import { toast } from "sonner";
 
 export default function ListingDetailPage() {
@@ -27,7 +25,6 @@ export default function ListingDetailPage() {
   const [contactLoading, setContactLoading] = useState(false);
   const [contactError, setContactError] = useState<string | null>(null);
   const [pdfDownloading, setPdfDownloading] = useState(false);
-  const [pdfTemplate, setPdfTemplate] = useState<PdfTemplate>(1);
 
   useEffect(() => {
     const run = async () => {
@@ -179,13 +176,12 @@ export default function ListingDetailPage() {
               </button>
               <FavoriteButton listingId={listing.id} initialFavorited={favorited} className="shrink-0 bg-white/80 text-navy rounded-xl p-2.5" />
             </div>
-            <PdfTemplateSelector value={pdfTemplate} onChange={setPdfTemplate} className="mb-2" />
             <button
               type="button"
               onClick={async () => {
                 setPdfDownloading(true);
                 try {
-                  await downloadListingPdf(listing, pdfTemplate);
+                  await downloadListingPdf(listing);
                   toast.success("PDF nedladdad");
                 } catch {
                   toast.error("Kunde inte ladda ner PDF. Försök igen.");

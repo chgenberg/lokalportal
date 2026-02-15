@@ -9,8 +9,7 @@ import { toast } from "sonner";
 import { formatPriceInput, parsePriceInput } from "@/lib/formatPrice";
 import ListingDetailContent from "@/components/ListingDetailContent";
 import { downloadListingPdf } from "@/lib/pdf-listing";
-import type { PdfTemplate } from "@/lib/pdf-listing";
-import PdfTemplateSelector from "@/components/PdfTemplateSelector";
+import GeneratingProgressBar from "@/components/GeneratingProgressBar";
 
 const AddressMapModal = dynamic(() => import("@/components/AddressMapModal"), { ssr: false });
 const ImageCropModal = dynamic(() => import("@/components/ImageCropModal"), { ssr: false });
@@ -98,7 +97,7 @@ export default function SkapaAnnonsClient() {
   const [generationVersion, setGenerationVersion] = useState(1);
   const [regenerating, setRegenerating] = useState(false);
   const [pdfDownloading, setPdfDownloading] = useState(false);
-  const [pdfTemplate, setPdfTemplate] = useState<PdfTemplate>(1);
+  const [aiDone, setAiDone] = useState(false);
   const addressWrapperRef = useRef<HTMLDivElement>(null);
   const suggestDebounceRef = useRef<NodeJS.Timeout | null>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
@@ -353,6 +352,7 @@ export default function SkapaAnnonsClient() {
     }
 
     setStep("generating");
+    setAiDone(false);
     setGenerateError("");
 
     try {
@@ -419,9 +419,10 @@ export default function SkapaAnnonsClient() {
         demographics: data.demographics ?? null,
       });
       setGenerationVersion(1);
-      setStep("preview");
+      setAiDone(true); // Progress bar will transition to preview
     } catch {
       setGenerateError("Något gick fel. Försök igen.");
+      setAiDone(false);
       setStep("input");
     }
   };
@@ -535,7 +536,7 @@ export default function SkapaAnnonsClient() {
       demographics: generated.demographics ?? null,
     };
     try {
-      await downloadListingPdf(previewListing, pdfTemplate);
+      await downloadListingPdf(previewListing);
       toast.success("PDF nedladdad");
     } catch {
       toast.error("Kunde inte ladda ner PDF. Försök igen.");
@@ -949,13 +950,10 @@ export default function SkapaAnnonsClient() {
 
         {/* Step: Generating */}
         {step === "generating" && (
-          <div className="bg-white rounded-2xl border border-border/60 p-12 text-center shadow-sm animate-fade-in">
-            <div className="w-12 h-12 border-4 border-navy/20 border-t-navy rounded-full animate-spin mx-auto mb-6" />
-            <p className="text-[15px] font-semibold text-navy mb-1">Skapar annons med AI</p>
-            <p className="text-[13px] text-gray-500 max-w-xs mx-auto">
-              Vi hämtar platsinformation, väder och statistik och skriver en säljande annons åt dig.
-            </p>
-          </div>
+          <GeneratingProgressBar
+            done={aiDone}
+            onComplete={() => setStep("preview")}
+          />
         )}
 
         {/* Step: Preview – resultat visas direkt */}
@@ -989,7 +987,6 @@ export default function SkapaAnnonsClient() {
                 onDescriptionChange={(desc) => setGenerated((g) => (g ? { ...g, description: desc } : g))}
                 contactSlot={
                   <div className="p-6 border-t border-border/40 space-y-4">
-                    <PdfTemplateSelector value={pdfTemplate} onChange={setPdfTemplate} className="mb-1" />
                     <div className="flex flex-col gap-3">
                       <button
                         type="button"

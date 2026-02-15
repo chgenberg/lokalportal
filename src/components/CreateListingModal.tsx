@@ -12,8 +12,7 @@ import { formatPriceInput, parsePriceInput } from "@/lib/formatPrice";
 import CustomSelect from "./CustomSelect";
 import ListingDetailContent from "./ListingDetailContent";
 import { downloadListingPdf, generateListingPdfBlob } from "@/lib/pdf-listing";
-import type { PdfTemplate } from "@/lib/pdf-listing";
-import PdfTemplateSelector from "./PdfTemplateSelector";
+import GeneratingProgressBar from "./GeneratingProgressBar";
 
 const AddressMapModal = dynamic(() => import("./AddressMapModal"), { ssr: false });
 const ImageCropModal = dynamic(() => import("./ImageCropModal"), { ssr: false });
@@ -106,7 +105,7 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
   const [suggestionsLoading, setSuggestionsLoading] = useState(false);
   const [mapOpen, setMapOpen] = useState(false);
   const [selectedSuggestIndex, setSelectedSuggestIndex] = useState(-1);
-  const [pdfTemplate, setPdfTemplate] = useState<PdfTemplate>(1);
+  const [aiDone, setAiDone] = useState(false);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
   const cropSlotRef = useRef<"outdoor" | "indoor" | "floorPlan" | "extra" | null>(null);
@@ -426,6 +425,7 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
     }
 
     setStep("generating");
+    setAiDone(false);
     setGenerateError("");
 
     try {
@@ -493,9 +493,10 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
         demographics: data.demographics ?? null,
       });
       setGenerationVersion(1);
-      setStep("preview");
+      setAiDone(true);
     } catch {
       setGenerateError("Något gick fel. Försök igen.");
+      setAiDone(false);
       setStep("input");
     }
   };
@@ -925,12 +926,11 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
           )}
 
           {step === "generating" && (
-            <div className="flex flex-col items-center justify-center py-16 animate-fade-in">
-              <div className="w-12 h-12 border-4 border-navy/20 border-t-navy rounded-full animate-spin mb-6" />
-              <p className="text-[15px] font-semibold text-navy mb-1">Skapar annons med AI</p>
-              <p className="text-[13px] text-gray-400 text-center max-w-xs">
-                Vi hämtar platsinformation, väder och statistik och skriver en säljande annons åt dig.
-              </p>
+            <div className="py-4">
+              <GeneratingProgressBar
+                done={aiDone}
+                onComplete={() => setStep("preview")}
+              />
             </div>
           )}
 
@@ -1096,13 +1096,12 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
                     contactSlot={
                       <>
                         <p className="text-[13px] text-gray-500 py-2">Kontaktknappar visas för besökare efter publicering.</p>
-                        <PdfTemplateSelector value={pdfTemplate} onChange={setPdfTemplate} className="mb-2" />
                         <div className="flex flex-wrap gap-2">
                           <button
                             type="button"
                             onClick={async () => {
                               try {
-                                await downloadListingPdf(previewListing, pdfTemplate);
+                                await downloadListingPdf(previewListing);
                                 toast.success("PDF nedladdad");
                               } catch {
                                 toast.error("Kunde inte ladda ner PDF. Försök igen.");
