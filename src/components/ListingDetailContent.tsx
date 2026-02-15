@@ -177,26 +177,26 @@ export default function ListingDetailContent({
           <div className="lg:col-span-2 space-y-6">
             <div className="bg-white rounded-2xl border border-border/40 shadow-sm overflow-hidden">
               {/* Nyckeltal */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-0 border-b border-border/40">
-                <div className="text-center py-5 px-4">
-                  <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-1">Pris</p>
-                  <p className="text-lg sm:text-xl font-bold text-navy tracking-tight">{formatPrice(listing.price, listing.type)}</p>
+              <div className="grid grid-cols-4 gap-0 border-b border-border/40">
+                <div className="text-center py-4 px-2">
+                  <p className="text-[10px] font-semibold text-gray-400 tracking-[0.12em] uppercase mb-0.5">Pris</p>
+                  <p className="text-sm font-bold text-navy tracking-tight whitespace-nowrap">{formatPrice(listing.price, listing.type)}</p>
                 </div>
-                <div className="text-center py-5 px-4 border-l border-border/40">
-                  <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-1">Storlek</p>
-                  <p className="text-lg sm:text-xl font-bold text-navy tracking-tight">{listing.size} m²</p>
+                <div className="text-center py-4 px-2 border-l border-border/40">
+                  <p className="text-[10px] font-semibold text-gray-400 tracking-[0.12em] uppercase mb-0.5">Storlek</p>
+                  <p className="text-sm font-bold text-navy tracking-tight whitespace-nowrap">{listing.size} m²</p>
                 </div>
-                <div className="text-center py-5 px-4 border-l border-border/40">
-                  <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-1">kr/m²</p>
-                  <p className="text-lg sm:text-xl font-bold text-navy tracking-tight">
+                <div className="text-center py-4 px-2 border-l border-border/40">
+                  <p className="text-[10px] font-semibold text-gray-400 tracking-[0.12em] uppercase mb-0.5">Kr/m²</p>
+                  <p className="text-sm font-bold text-navy tracking-tight whitespace-nowrap">
                     {listing.size > 0
                       ? `${Math.round(listing.price / listing.size).toLocaleString("sv-SE")} ${listing.type === "rent" ? "kr/m²/mån" : "kr/m²"}`
                       : "—"}
                   </p>
                 </div>
-                <div className="text-center py-5 px-4 border-l border-border/40">
-                  <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-1">Plats</p>
-                  <p className="text-lg font-bold text-navy tracking-tight">{listing.city}</p>
+                <div className="text-center py-4 px-2 border-l border-border/40">
+                  <p className="text-[10px] font-semibold text-gray-400 tracking-[0.12em] uppercase mb-0.5">Plats</p>
+                  <p className="text-sm font-bold text-navy tracking-tight whitespace-nowrap">{listing.city}</p>
                 </div>
               </div>
 
