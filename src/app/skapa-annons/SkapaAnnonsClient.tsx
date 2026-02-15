@@ -99,47 +99,11 @@ export default function SkapaAnnonsClient() {
   const [regenerating, setRegenerating] = useState(false);
   const [pdfDownloading, setPdfDownloading] = useState(false);
   const [pdfTemplate, setPdfTemplate] = useState<PdfTemplate>(1);
-  const [draftChecked, setDraftChecked] = useState(false);
-  const [showDraftBanner, setShowDraftBanner] = useState(false);
   const addressWrapperRef = useRef<HTMLDivElement>(null);
   const suggestDebounceRef = useRef<NodeJS.Timeout | null>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
 
-  const DRAFT_KEY = "skapa-annons-draft";
-
-  const loadDraft = (): InputForm | null => {
-    if (typeof window === "undefined") return null;
-    try {
-      const raw = localStorage.getItem(DRAFT_KEY);
-      if (!raw) return null;
-      const parsed = JSON.parse(raw) as unknown;
-      if (parsed && typeof parsed === "object" && "address" in parsed) {
-        return { ...initialInput, ...parsed } as InputForm;
-      }
-      return null;
-    } catch {
-      return null;
-    }
-  };
-
-  const saveDraft = (data: InputForm) => {
-    if (typeof window === "undefined") return;
-    try {
-      localStorage.setItem(DRAFT_KEY, JSON.stringify(data));
-    } catch {
-      /* ignore */
-    }
-  };
-
-  const clearDraft = () => {
-    if (typeof window === "undefined") return;
-    try {
-      localStorage.removeItem(DRAFT_KEY);
-    } catch {
-      /* ignore */
-    }
-  };
 
   const updateInput = (partial: Partial<InputForm>) => {
     setInput((prev) => ({ ...prev, ...partial }));
@@ -183,24 +147,6 @@ export default function SkapaAnnonsClient() {
     };
   }, [input.address, fetchSuggestions]);
 
-  useEffect(() => {
-    if (!draftChecked) {
-      const draft = loadDraft();
-      setDraftChecked(true);
-      if (draft) setShowDraftBanner(true);
-    }
-  }, [draftChecked]);
-
-  useEffect(() => {
-    if (step === "input" || step === "email") {
-      const t = setTimeout(() => saveDraft(input), 500);
-      return () => clearTimeout(t);
-    }
-  }, [input, step]);
-
-  useEffect(() => {
-    if (step === "done") clearDraft();
-  }, [step]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -212,19 +158,6 @@ export default function SkapaAnnonsClient() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleRestoreDraft = () => {
-    const draft = loadDraft();
-    if (draft) {
-      setInput(draft);
-      setShowDraftBanner(false);
-      setStep("input");
-    }
-  };
-
-  const handleDiscardDraft = () => {
-    clearDraft();
-    setShowDraftBanner(false);
-  };
 
   const handleSelectSuggestion = (item: SuggestItem) => {
     updateInput({ address: item.display_name, lat: item.lat, lng: item.lon });
@@ -669,27 +602,6 @@ export default function SkapaAnnonsClient() {
           })}
         </div>
 
-        {showDraftBanner && (
-          <div className="mb-6 p-4 rounded-xl bg-navy/5 border border-navy/10 flex flex-wrap items-center justify-between gap-3">
-            <p className="text-[13px] text-navy/80">Du har ett sparat utkast – vill du fortsätta?</p>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={handleRestoreDraft}
-                className="px-4 py-2 text-[13px] font-medium text-white bg-navy rounded-lg hover:bg-navy/90 transition-colors"
-              >
-                Återställ utkast
-              </button>
-              <button
-                type="button"
-                onClick={handleDiscardDraft}
-                className="px-4 py-2 text-[13px] font-medium text-gray-600 hover:text-navy transition-colors"
-              >
-                Ta bort
-              </button>
-            </div>
-          </div>
-        )}
 
         {/* Step: Email */}
         {step === "email" && (
