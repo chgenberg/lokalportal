@@ -5,14 +5,12 @@ import Link from "next/link";
 import Image from "next/image";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import CreateListingModal from "./CreateListingModal";
 
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [scrolled, setScrolled] = useState(false);
-  const [showCreateModal, setShowCreateModal] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const { data: session } = useSession();
   const router = useRouter();
@@ -51,24 +49,18 @@ export default function Header() {
     return () => clearInterval(interval);
   }, [session]);
 
-  const handleAnnonsera = () => {
-    setShowCreateModal(true);
-  };
-
   const isLandlord = session?.user?.role === "landlord" || session?.user?.role === "agent";
 
   const navLinks = session?.user
     ? [
         { href: "/annonser", label: "Alla annonser" },
         { href: "/karta", label: "Karta" },
-        { href: "/skapa-annons", label: "Skapa PDF" },
+        { href: "/dashboard", label: "Dashboard" },
       ]
     : [
         { href: "/annonser", label: "Alla annonser" },
         { href: "/karta", label: "Karta" },
         { href: "/kategorier", label: "Kategorier" },
-        { href: "/skapa-annons", label: "Skapa PDF" },
-        { href: "/annonspaket", label: "Annonspaket" },
       ];
 
   return (
@@ -108,14 +100,12 @@ export default function Header() {
             <div className="hidden md:flex items-center gap-2">
               {session?.user ? (
                 <>
-                  {isLandlord && (
-                    <button
-                      onClick={handleAnnonsera}
-                      className="px-5 py-2 bg-navy text-white text-[13px] font-semibold rounded-lg transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
-                    >
-                      Annonsera
-                    </button>
-                  )}
+                  <Link
+                    href="/skapa-annons"
+                    className="px-5 py-2 bg-navy text-white text-[13px] font-semibold rounded-lg transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
+                  >
+                    Annonsera
+                  </Link>
 
                   <div className="relative" ref={userMenuRef}>
                     <button
@@ -178,12 +168,12 @@ export default function Header() {
                   <Link href="/logga-in" className="px-4 py-2 text-[13px] font-medium text-gray-500 hover:text-navy rounded-lg hover:bg-navy/[0.03] transition-all">
                     Logga in
                   </Link>
-                  <button
-                    onClick={handleAnnonsera}
+                  <Link
+                    href="/skapa-annons"
                     className="px-5 py-2 bg-navy text-white text-[13px] font-semibold rounded-lg transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
                   >
                     Annonsera
-                  </button>
+                  </Link>
                 </>
               )}
             </div>
@@ -214,25 +204,17 @@ export default function Header() {
                       Meddelanden
                       {unreadCount > 0 && <span className="w-5 h-5 bg-navy text-white text-[10px] font-bold rounded-full flex items-center justify-center">{unreadCount}</span>}
                     </Link>
-                    {isLandlord && (
-                      <button
-                        onClick={() => { setMobileOpen(false); handleAnnonsera(); }}
-                        className="block w-full py-2.5 px-4 bg-navy text-white text-sm font-semibold rounded-lg text-center mt-2"
-                      >
-                        Annonsera
-                      </button>
-                    )}
+                    <Link href="/skapa-annons" onClick={() => setMobileOpen(false)} className="block w-full py-2.5 px-4 bg-navy text-white text-sm font-semibold rounded-lg text-center mt-2">
+                      Annonsera
+                    </Link>
                     <button onClick={() => { setMobileOpen(false); signOut({ callbackUrl: "/" }); }} className="block w-full text-left py-2.5 px-4 text-sm font-medium text-gray-400 hover:text-red-500 hover:bg-red-50/50 rounded-lg transition-all mt-1">Logga ut</button>
                   </>
                 ) : (
                   <>
                     <Link href="/logga-in" onClick={() => setMobileOpen(false)} className="block py-2.5 px-4 text-sm font-medium text-gray-500 hover:text-navy hover:bg-navy/[0.03] rounded-lg transition-all">Logga in</Link>
-                    <button
-                      onClick={() => { setMobileOpen(false); handleAnnonsera(); }}
-                      className="block w-full py-2.5 px-4 bg-navy text-white text-sm font-semibold rounded-lg text-center mt-2"
-                    >
+                    <Link href="/skapa-annons" onClick={() => setMobileOpen(false)} className="block w-full py-2.5 px-4 bg-navy text-white text-sm font-semibold rounded-lg text-center mt-2">
                       Annonsera
-                    </button>
+                    </Link>
                   </>
                 )}
               </div>
@@ -240,8 +222,6 @@ export default function Header() {
           </div>
         )}
       </header>
-
-      <CreateListingModal open={showCreateModal} onClose={() => setShowCreateModal(false)} />
     </>
   );
 }

@@ -5,8 +5,8 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
-import { availableTags, categoryLabels, allCategories, typeLabels } from "@/lib/types";
-import type { Listing, NearbyData, PriceContext, DemographicsData } from "@/lib/types";
+import { categoryLabels, allCategories, typeLabels } from "@/lib/types";
+import type { NearbyData, PriceContext, DemographicsData } from "@/lib/types";
 import { toast } from "sonner";
 import { formatPriceInput, parsePriceInput } from "@/lib/formatPrice";
 import ListingDetailContent from "@/components/ListingDetailContent";
@@ -766,9 +766,9 @@ export default function SkapaAnnonsClient() {
         {/* Step: Email */}
         {step === "email" && (
           <form onSubmit={handleSubmitEmail} className="bg-white rounded-2xl border border-border/60 p-6 sm:p-8 shadow-sm animate-fade-in">
-            <p className="text-[11px] font-semibold text-gray-400 tracking-[0.1em] uppercase mb-4">Steg 1 av 4</p>
+            <p className="text-[11px] font-semibold text-gray-400 tracking-[0.1em] uppercase mb-4">Steg 1 av 3</p>
             <h2 className="text-lg font-bold text-navy mb-2">Ange din e-post</h2>
-            <p className="text-[13px] text-gray-500 mb-6">Vi sparar din e-post så du kan använda verktyget. Du kan avregistrera dig när som helst.</p>
+            <p className="text-[13px] text-gray-500 mb-6">Vi sparar din e-post så att vi kan kontakta dig. Du kan avregistrera dig när som helst.</p>
             {emailError && (
               <div role="alert" className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-[13px] text-red-700">
                 {emailError}

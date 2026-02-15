@@ -133,10 +133,10 @@ export default function SaHyrDuUtClient() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
-              href="/registrera"
+              href="/skapa-annons"
               className="inline-flex items-center justify-center px-6 py-3 bg-gold text-navy font-semibold rounded-xl hover:bg-gold-light transition-colors"
             >
-              Skapa konto
+              Skapa annons
             </Link>
             <Link
               href="/annonspaket"

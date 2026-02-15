@@ -265,11 +265,27 @@ export default function ListingDetailContent({
                 ) : (
                   <div className="text-[15px] text-gray-600 leading-[1.7] max-w-[65ch]">
                     {listing.description ? (
-                      listing.description.split(/\n\n+/).map((block, i) => (
-                        <p key={i} className="mb-4 last:mb-0 whitespace-pre-line">
-                          {block.trim()}
-                        </p>
-                      ))
+                      (() => {
+                        // Split on double newlines first, then single newlines
+                        let blocks = listing.description.split(/\n\n+/).filter(b => b.trim());
+                        if (blocks.length <= 1) {
+                          blocks = listing.description.split(/\n/).filter(b => b.trim());
+                        }
+                        // If still one block and long, split by sentences
+                        if (blocks.length <= 1 && listing.description.length > 300) {
+                          const sentences = listing.description.match(/[^.!?]+[.!?]+/g) || [listing.description];
+                          const chunkSize = Math.max(1, Math.ceil(sentences.length / 5));
+                          blocks = [];
+                          for (let i = 0; i < sentences.length; i += chunkSize) {
+                            blocks.push(sentences.slice(i, i + chunkSize).join(" ").trim());
+                          }
+                        }
+                        return blocks.map((block, i) => (
+                          <p key={i} className="mb-4 last:mb-0">
+                            {block.trim()}
+                          </p>
+                        ));
+                      })()
                     ) : (
                       <p className="text-gray-400">Ingen beskrivning tillagd.</p>
                     )}
@@ -277,6 +293,33 @@ export default function ListingDetailContent({
                 )}
               </div>
             </div>
+
+            {/* Bildgalleri – alla bilder i rutnät */}
+            {images.length > 1 && (
+              <div className="bg-white rounded-2xl border border-border/40 p-6 sm:p-8 shadow-sm">
+                <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-4">Bilder ({images.length})</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {images.map((url, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => setLightboxIndex(i)}
+                      className="relative aspect-[4/3] rounded-xl overflow-hidden border border-border/40 hover:border-navy/30 hover:shadow-md transition-all group"
+                    >
+                      <Image
+                        src={url}
+                        alt={`${listing.title} – bild ${i + 1}`}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-300"
+                        sizes="(max-width: 640px) 50vw, 33vw"
+                        unoptimized={url.includes("/api/upload/")}
+                      />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {("videoUrl" in listing && listing.videoUrl) && (
               <div className="bg-white rounded-2xl border border-border/40 p-6 sm:p-8 shadow-sm">
@@ -297,108 +340,115 @@ export default function ListingDetailContent({
               </div>
             )}
 
-            {/* Områdesanalys – demographics, nearby amenities, price context */}
-            {areaData && (areaData.demographics || areaData.nearby || (areaData.priceContext && areaData.priceContext.count >= 2)) && (
+            {/* Prisjämförelse – visuell stapeldiagram */}
+            {areaData?.priceContext && areaData.priceContext.count >= 2 && listing.size > 0 && (() => {
+              const pc = areaData.priceContext!;
+              const pricePerSqm = Math.round(listing.price / listing.size);
+              const bars = [
+                { label: "Denna lokal", value: pricePerSqm, accent: true },
+                { label: "Medianpris", value: Math.round(pc.medianPrice), accent: false },
+                { label: "Lägsta", value: Math.round(pc.minPrice), accent: false },
+                { label: "Högsta", value: Math.round(pc.maxPrice), accent: false },
+              ];
+              const maxVal = Math.max(pricePerSqm, pc.maxPrice) * 1.15;
+              return (
+                <div className="bg-white rounded-2xl border border-border/40 p-6 sm:p-8 shadow-sm">
+                  <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-1">Prisjämförelse</p>
+                  <p className="text-[12px] text-gray-400 mb-5">Kr/m²{listing.type === "rent" ? " per månad" : ""} – baserat på {pc.count} liknande lokaler</p>
+                  <div className="space-y-3">
+                    {bars.map((bar, i) => {
+                      const pct = Math.min((bar.value / maxVal) * 100, 100);
+                      return (
+                        <div key={i} className="flex items-center gap-3">
+                          <span className="w-20 text-[12px] text-gray-500 text-right shrink-0">{bar.label}</span>
+                          <div className="flex-1 h-7 bg-muted/60 rounded-lg overflow-hidden">
+                            <div
+                              className={`h-full rounded-lg flex items-center justify-end pr-3 transition-all duration-500 ${bar.accent ? "bg-gold" : "bg-navy/20"}`}
+                              style={{ width: `${Math.max(pct, 12)}%` }}
+                            >
+                              <span className={`text-[11px] font-bold ${bar.accent ? "text-navy" : "text-navy/70"}`}>
+                                {bar.value.toLocaleString("sv-SE")} kr
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Lägesanalys – visuella poängkort */}
+            {areaData?.nearby && (areaData.nearby.restaurants > 0 || areaData.nearby.shops > 0 || areaData.nearby.busStops.count > 0 || areaData.nearby.trainStations.count > 0 || areaData.nearby.parking > 0 || areaData.nearby.schools > 0 || areaData.nearby.healthcare > 0 || areaData.nearby.gyms > 0) && (() => {
+              const n = areaData.nearby;
+              const categories = [
+                { label: "Kollektivtrafik", count: n.busStops.count + n.trainStations.count, detail: [n.busStops.count > 0 ? `${n.busStops.count} busshållplatser` : "", n.trainStations.count > 0 ? `${n.trainStations.count} tågstationer` : ""].filter(Boolean) },
+                { label: "Restauranger", count: n.restaurants, detail: [`${n.restaurants} restauranger`] },
+                { label: "Parkering", count: n.parking, detail: [`${n.parking} parkeringar`] },
+                { label: "Butiker", count: n.shops, detail: [`${n.shops} butiker`] },
+                { label: "Skolor", count: n.schools, detail: [`${n.schools} skolor`] },
+                { label: "Vård & apotek", count: n.healthcare, detail: [`${n.healthcare} vård/apotek`] },
+                { label: "Gym", count: n.gyms, detail: [`${n.gyms} gym`] },
+              ].filter(c => c.count > 0);
+              return (
+                <div className="bg-white rounded-2xl border border-border/40 p-6 sm:p-8 shadow-sm">
+                  <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-1">Lägesanalys</p>
+                  <p className="text-[12px] text-gray-400 mb-5">Inom 2,5 km från lokalen</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                    {categories.map((cat, i) => {
+                      const score = Math.min(cat.count, 5);
+                      return (
+                        <div key={i} className="bg-muted/40 rounded-xl p-4">
+                          <p className="text-[12px] font-semibold text-navy mb-2">{cat.label}</p>
+                          <div className="flex items-center gap-1.5 mb-2">
+                            {Array.from({ length: 5 }).map((_, di) => (
+                              <div key={di} className={`w-2.5 h-2.5 rounded-full ${di < score ? "bg-gold" : "bg-border"}`} />
+                            ))}
+                            <span className="text-[11px] font-bold text-navy ml-1">{score}/5</span>
+                          </div>
+                          {cat.detail.map((d, j) => (
+                            <p key={j} className="text-[11px] text-gray-500">{d}</p>
+                          ))}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Områdesstatistik – demografi */}
+            {areaData?.demographics && (
               <div className="bg-white rounded-2xl border border-border/40 p-6 sm:p-8 shadow-sm">
-                <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-4">Områdesanalys</p>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
-                  {areaData.demographics?.population && (
-                    <div className="bg-muted/40 rounded-xl p-3">
-                      <p className="text-[11px] text-gray-400 tracking-wide mb-0.5">Invånare</p>
-                      <p className="text-base font-bold text-navy">{areaData.demographics.population.toLocaleString("sv-SE")}</p>
+                <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-1">Områdesstatistik</p>
+                <p className="text-[12px] text-gray-400 mb-5">{areaData.demographics.city || listing.city}</p>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  {areaData.demographics.population > 0 && (
+                    <div className="text-center bg-muted/40 rounded-xl p-4">
+                      <p className="text-xl font-bold text-navy">{areaData.demographics.population.toLocaleString("sv-SE")}</p>
+                      <p className="text-[11px] text-gray-500 mt-1">Invånare</p>
                     </div>
                   )}
-                  {areaData.demographics?.medianIncome && (
-                    <div className="bg-muted/40 rounded-xl p-3">
-                      <p className="text-[11px] text-gray-400 tracking-wide mb-0.5">Medianinkomst</p>
-                      <p className="text-base font-bold text-navy">{areaData.demographics.medianIncome} tkr/år</p>
+                  {areaData.demographics.medianIncome && (
+                    <div className="text-center bg-muted/40 rounded-xl p-4">
+                      <p className="text-xl font-bold text-navy">{areaData.demographics.medianIncome} tkr</p>
+                      <p className="text-[11px] text-gray-500 mt-1">Medianinkomst/år</p>
                     </div>
                   )}
-                  {areaData.demographics?.workingAgePercent && (
-                    <div className="bg-muted/40 rounded-xl p-3">
-                      <p className="text-[11px] text-gray-400 tracking-wide mb-0.5">Arbetsför ålder</p>
-                      <p className="text-base font-bold text-navy">{areaData.demographics.workingAgePercent}%</p>
+                  {areaData.demographics.workingAgePercent && (
+                    <div className="text-center bg-muted/40 rounded-xl p-4">
+                      <p className="text-xl font-bold text-navy">{areaData.demographics.workingAgePercent}%</p>
+                      <p className="text-[11px] text-gray-500 mt-1">Arbetsför ålder</p>
                     </div>
                   )}
-                  {areaData.demographics?.totalBusinesses && (
-                    <div className="bg-muted/40 rounded-xl p-3">
-                      <p className="text-[11px] text-gray-400 tracking-wide mb-0.5">Företag</p>
-                      <p className="text-base font-bold text-navy">{areaData.demographics.totalBusinesses.toLocaleString("sv-SE")}</p>
-                    </div>
-                  )}
-                  {areaData.demographics?.crimeRate && (
-                    <div className="bg-muted/40 rounded-xl p-3">
-                      <p className="text-[11px] text-gray-400 tracking-wide mb-0.5">Brott/100k inv.</p>
-                      <p className="text-base font-bold text-navy">{areaData.demographics.crimeRate.toLocaleString("sv-SE")}</p>
-                    </div>
-                  )}
-                  {areaData.priceContext && areaData.priceContext.count >= 2 && (
-                    <div className="bg-muted/40 rounded-xl p-3 sm:col-span-2 sm:col-start-1">
-                      <p className="text-[11px] text-gray-400 tracking-wide mb-0.5">Medianpris liknande lokaler i {listing.city}</p>
-                      <p className="text-base font-bold text-navy">
-                        {areaData.priceContext.medianPrice.toLocaleString("sv-SE")} {listing.type === "rent" ? "kr/mån" : "kr"}
-                      </p>
-                      <p className="text-[11px] text-gray-400 mt-1">
-                        {areaData.priceContext.count} annonser · {areaData.priceContext.minPrice.toLocaleString("sv-SE")}–{areaData.priceContext.maxPrice.toLocaleString("sv-SE")} kr
-                      </p>
+                  {areaData.demographics.totalBusinesses && (
+                    <div className="text-center bg-muted/40 rounded-xl p-4">
+                      <p className="text-xl font-bold text-navy">{areaData.demographics.totalBusinesses.toLocaleString("sv-SE")}</p>
+                      <p className="text-[11px] text-gray-500 mt-1">Företag</p>
                     </div>
                   )}
                 </div>
-                {areaData.nearby && (areaData.nearby.restaurants > 0 || areaData.nearby.shops > 0 || areaData.nearby.busStops.count > 0 || areaData.nearby.trainStations.count > 0 || areaData.nearby.parking > 0 || areaData.nearby.schools > 0 || areaData.nearby.healthcare > 0 || areaData.nearby.gyms > 0) && (
-                  <>
-                    <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-3">Inom 2,5 km</p>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-[13px]">
-                      {areaData.nearby.restaurants > 0 && (
-                        <div className="flex items-center gap-2 text-gray-600">
-                          <span className="w-2 h-2 rounded-full bg-navy/30 shrink-0" />
-                          {areaData.nearby.restaurants} restauranger
-                        </div>
-                      )}
-                      {areaData.nearby.shops > 0 && (
-                        <div className="flex items-center gap-2 text-gray-600">
-                          <span className="w-2 h-2 rounded-full bg-navy/30 shrink-0" />
-                          {areaData.nearby.shops} butiker
-                        </div>
-                      )}
-                      {areaData.nearby.busStops.count > 0 && (
-                        <div className="flex items-center gap-2 text-gray-600">
-                          <span className="w-2 h-2 rounded-full bg-navy/30 shrink-0" />
-                          {areaData.nearby.busStops.count} busshållplatser
-                        </div>
-                      )}
-                      {areaData.nearby.trainStations.count > 0 && (
-                        <div className="flex items-center gap-2 text-gray-600">
-                          <span className="w-2 h-2 rounded-full bg-navy/30 shrink-0" />
-                          {areaData.nearby.trainStations.count} tågstationer
-                        </div>
-                      )}
-                      {areaData.nearby.parking > 0 && (
-                        <div className="flex items-center gap-2 text-gray-600">
-                          <span className="w-2 h-2 rounded-full bg-navy/30 shrink-0" />
-                          {areaData.nearby.parking} parkeringar
-                        </div>
-                      )}
-                      {areaData.nearby.schools > 0 && (
-                        <div className="flex items-center gap-2 text-gray-600">
-                          <span className="w-2 h-2 rounded-full bg-navy/30 shrink-0" />
-                          {areaData.nearby.schools} skolor
-                        </div>
-                      )}
-                      {areaData.nearby.healthcare > 0 && (
-                        <div className="flex items-center gap-2 text-gray-600">
-                          <span className="w-2 h-2 rounded-full bg-navy/30 shrink-0" />
-                          {areaData.nearby.healthcare} vård/apotek
-                        </div>
-                      )}
-                      {areaData.nearby.gyms > 0 && (
-                        <div className="flex items-center gap-2 text-gray-600">
-                          <span className="w-2 h-2 rounded-full bg-navy/30 shrink-0" />
-                          {areaData.nearby.gyms} gym
-                        </div>
-                      )}
-                    </div>
-                  </>
-                )}
                 <p className="text-[11px] text-gray-400 mt-4">Källa: SCB, BRÅ, OpenStreetMap</p>
               </div>
             )}
