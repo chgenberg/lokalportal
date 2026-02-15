@@ -175,17 +175,18 @@ export default function ListingDetailContent({
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
-            <div className="bg-white rounded-2xl border border-border/40 p-6 shadow-sm">
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <div className="text-center">
+            <div className="bg-white rounded-2xl border border-border/40 shadow-sm overflow-hidden">
+              {/* Nyckeltal */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-0 border-b border-border/40">
+                <div className="text-center py-5 px-4">
                   <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-1">Pris</p>
                   <p className="text-lg sm:text-xl font-bold text-navy tracking-tight">{formatPrice(listing.price, listing.type)}</p>
                 </div>
-                <div className="text-center sm:border-x border-border/40">
+                <div className="text-center py-5 px-4 border-l border-border/40">
                   <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-1">Storlek</p>
                   <p className="text-lg sm:text-xl font-bold text-navy tracking-tight">{listing.size} m²</p>
                 </div>
-                <div className="text-center">
+                <div className="text-center py-5 px-4 border-l border-border/40">
                   <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-1">kr/m²</p>
                   <p className="text-lg sm:text-xl font-bold text-navy tracking-tight">
                     {listing.size > 0
@@ -193,35 +194,37 @@ export default function ListingDetailContent({
                       : "—"}
                   </p>
                 </div>
-                <div className="text-center sm:border-l border-border/40">
+                <div className="text-center py-5 px-4 border-l border-border/40">
                   <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-1">Plats</p>
                   <p className="text-lg font-bold text-navy tracking-tight">{listing.city}</p>
                 </div>
               </div>
-            </div>
 
-            <div className="bg-white rounded-2xl border border-border/40 p-6 shadow-sm">
-              <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-2">Adress</p>
-              <p className="text-[15px] text-navy font-medium">
-                {listing.address}, {listing.city}
-              </p>
-            </div>
-
-            {listing.tags && listing.tags.length > 0 && (
-              <div className="bg-white rounded-2xl border border-border/40 p-6 shadow-sm">
-                <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-3">Egenskaper</p>
-                <div className="flex flex-wrap gap-2">
-                  {listing.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="px-3 py-1.5 text-[12px] font-medium rounded-full bg-navy/[0.04] text-navy/70 border border-navy/[0.08] hover:bg-navy/[0.08] transition-colors cursor-default"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
+              {/* Adress */}
+              <div className="px-6 py-4 border-b border-border/40">
+                <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-1">Adress</p>
+                <p className="text-[15px] text-navy font-medium">
+                  {listing.address}, {listing.city}
+                </p>
               </div>
-            )}
+
+              {/* Egenskaper */}
+              {listing.tags && listing.tags.length > 0 && (
+                <div className="px-6 py-4">
+                  <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-2">Egenskaper</p>
+                  <div className="flex flex-wrap gap-2">
+                    {listing.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="px-3 py-1.5 text-[12px] font-medium rounded-full bg-navy/[0.04] text-navy/70 border border-navy/[0.08] hover:bg-navy/[0.08] transition-colors cursor-default"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
 
             <div className="bg-white rounded-2xl border border-border/40 p-6 sm:p-8 shadow-sm">
               <div className="flex items-center justify-between mb-4">
