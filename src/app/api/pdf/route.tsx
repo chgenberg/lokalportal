@@ -52,9 +52,9 @@ function ListingPdf({ data, logoSrc }: { data: PdfBody; logoSrc: string }) {
   const pricePerSqm = data.size > 0 ? Math.round(data.price / data.size) : 0;
   const typeLabel = TYPE_LABELS[data.type] || data.type;
   const catLabel = fmtCats(data.category);
-  const images = (data.imageUrls || []).slice(0, 5);
+  const images = (data.imageUrls || []).slice(0, 10);
   const heroImg = images[0];
-  const galleryImgs = images.slice(1, 4);
+  const galleryImgs = images.slice(1);
   const descParagraphs = data.description.split(/\n\n+|\n/).filter(Boolean);
 
   const pc = data.priceContext;
@@ -108,9 +108,20 @@ function ListingPdf({ data, logoSrc }: { data: PdfBody; logoSrc: string }) {
 
           {/* Gallery */}
           {galleryImgs.length > 0 && (
-            <View style={{ flexDirection: "row", gap: 6, marginBottom: 12 }}>
-              {galleryImgs.map((img, i) => (
-                <Image key={i} src={img} style={{ flex: 1, height: 90, objectFit: "cover", borderRadius: 4 }} />
+            <View style={{ marginBottom: 12 }}>
+              {/* Render rows of 3 */}
+              {Array.from({ length: Math.ceil(galleryImgs.length / 3) }).map((_, rowIdx) => (
+                <View key={rowIdx} style={{ flexDirection: "row", gap: 6, marginBottom: rowIdx < Math.ceil(galleryImgs.length / 3) - 1 ? 6 : 0 }}>
+                  {galleryImgs.slice(rowIdx * 3, rowIdx * 3 + 3).map((img, i) => (
+                    <Image key={i} src={img} style={{ flex: 1, height: 85, objectFit: "cover", borderRadius: 4 }} />
+                  ))}
+                  {/* Fill empty slots so images don't stretch */}
+                  {galleryImgs.slice(rowIdx * 3, rowIdx * 3 + 3).length < 3 &&
+                    Array.from({ length: 3 - galleryImgs.slice(rowIdx * 3, rowIdx * 3 + 3).length }).map((_, i) => (
+                      <View key={`empty-${i}`} style={{ flex: 1 }} />
+                    ))
+                  }
+                </View>
               ))}
             </View>
           )}
@@ -228,14 +239,10 @@ function ListingPdf({ data, logoSrc }: { data: PdfBody; logoSrc: string }) {
           )}
 
           {/* Contact */}
-          <View style={{ backgroundColor: C.navy, borderRadius: 8, padding: 14, flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-            <View>
-              <Text style={{ color: C.white, fontSize: 11, fontWeight: "bold" }}>{data.contact.name}</Text>
-              <Text style={{ color: "rgba(255,255,255,0.5)", fontSize: 8, marginTop: 2 }}>{data.contact.email}{data.contact.phone ? ` · ${data.contact.phone}` : ""}</Text>
-            </View>
-            <View style={{ backgroundColor: C.gold, paddingHorizontal: 16, paddingVertical: 7, borderRadius: 4 }}>
-              <Text style={{ color: C.navy, fontSize: 8, fontWeight: "bold" }}>Kontakta</Text>
-            </View>
+          <View style={{ backgroundColor: C.navy, borderRadius: 8, padding: 14, flexDirection: "row", alignItems: "center", gap: 16, marginBottom: 10 }}>
+            <Text style={{ color: C.gold, fontSize: 9, fontWeight: "bold" }}>KONTAKT</Text>
+            <Text style={{ color: C.white, fontSize: 9, fontWeight: "bold" }}>{data.contact.name}</Text>
+            <Text style={{ color: "rgba(255,255,255,0.5)", fontSize: 8 }}>{data.contact.email}{data.contact.phone ? ` · ${data.contact.phone}` : ""}</Text>
           </View>
         </View>
 
