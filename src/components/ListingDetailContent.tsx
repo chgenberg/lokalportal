@@ -45,10 +45,15 @@ export default function ListingDetailContent({
   const [editDraft, setEditDraft] = useState(listing.description || "");
   const images = getListingImages(listing);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [primaryImageError, setPrimaryImageError] = useState(false);
 
   useEffect(() => {
     if (isEditingDescription) setEditDraft(listing.description || "");
   }, [listing.description, isEditingDescription]);
+
+  useEffect(() => {
+    setPrimaryImageError(false);
+  }, [images[0]]);
 
   return (
     <div className={`bg-muted/30 ${compact ? "" : "min-h-screen"}`}>
@@ -69,7 +74,7 @@ export default function ListingDetailContent({
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 -mt-2 pb-16">
         <div className="mb-8">
           <div className={`relative rounded-2xl overflow-hidden border border-border/40 shadow-lg shadow-navy/[0.06] ${compact ? "h-48 sm:h-72" : "h-72 sm:h-96"}`}>
-            {images.length > 0 ? (
+            {images.length > 0 && !primaryImageError ? (
               <>
                 <Image
                   src={images[0]!}
@@ -78,6 +83,8 @@ export default function ListingDetailContent({
                   className="object-cover cursor-pointer"
                   sizes="(max-width: 1024px) 100vw, 960px"
                   priority={showBackLink}
+                  unoptimized={images[0]!.includes("/api/upload/")}
+                  onError={() => setPrimaryImageError(true)}
                   onClick={() => images.length > 1 && setLightboxIndex(0)}
                 />
                 {images.length > 1 && !compact && (
@@ -89,14 +96,19 @@ export default function ListingDetailContent({
                         onClick={(e) => { e.stopPropagation(); setLightboxIndex(i); }}
                         className="w-12 h-12 rounded-lg overflow-hidden border-2 border-white/80 hover:border-white shadow-md shrink-0"
                       >
-                        <Image src={url} alt="" width={48} height={48} className="object-cover w-full h-full" />
+                        <Image src={url} alt="" width={48} height={48} className="object-cover w-full h-full" unoptimized={url.includes("/api/upload/")} />
                       </button>
                     ))}
                   </div>
                 )}
               </>
             ) : (
-              <PlaceholderImage category={listing.category} className="h-full w-full" />
+              <div className="relative w-full h-full">
+                <PlaceholderImage category={listing.category} className="h-full w-full" />
+                {primaryImageError && (
+                  <p className="absolute bottom-4 left-4 right-4 text-center text-[12px] text-gray-600 bg-white/90 py-2 rounded-lg shadow-sm">Bilden kunde inte laddas – filen finns inte längre. Ladda upp på nytt.</p>
+                )}
+              </div>
             )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
           <div className="absolute bottom-6 left-6 right-6">
