@@ -12,6 +12,8 @@ import { formatPriceInput, parsePriceInput } from "@/lib/formatPrice";
 import CustomSelect from "./CustomSelect";
 import ListingDetailContent from "./ListingDetailContent";
 import { downloadListingPdf, generateListingPdfBlob } from "@/lib/pdf-listing";
+import type { PdfTemplate } from "@/lib/pdf-listing";
+import PdfTemplateSelector from "./PdfTemplateSelector";
 
 const AddressMapModal = dynamic(() => import("./AddressMapModal"), { ssr: false });
 const ImageCropModal = dynamic(() => import("./ImageCropModal"), { ssr: false });
@@ -104,6 +106,7 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
   const [suggestionsLoading, setSuggestionsLoading] = useState(false);
   const [mapOpen, setMapOpen] = useState(false);
   const [selectedSuggestIndex, setSelectedSuggestIndex] = useState(-1);
+  const [pdfTemplate, setPdfTemplate] = useState<PdfTemplate>(1);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
   const cropSlotRef = useRef<"outdoor" | "indoor" | "floorPlan" | "extra" | null>(null);
@@ -1093,12 +1096,13 @@ export default function CreateListingModal({ open, onClose }: CreateListingModal
                     contactSlot={
                       <>
                         <p className="text-[13px] text-gray-500 py-2">Kontaktknappar visas för besökare efter publicering.</p>
+                        <PdfTemplateSelector value={pdfTemplate} onChange={setPdfTemplate} className="mb-2" />
                         <div className="flex flex-wrap gap-2">
                           <button
                             type="button"
                             onClick={async () => {
                               try {
-                                await downloadListingPdf(previewListing);
+                                await downloadListingPdf(previewListing, pdfTemplate);
                                 toast.success("PDF nedladdad");
                               } catch {
                                 toast.error("Kunde inte ladda ner PDF. Försök igen.");

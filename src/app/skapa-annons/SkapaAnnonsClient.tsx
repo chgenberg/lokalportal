@@ -9,6 +9,8 @@ import { toast } from "sonner";
 import { formatPriceInput, parsePriceInput } from "@/lib/formatPrice";
 import ListingDetailContent from "@/components/ListingDetailContent";
 import { downloadListingPdf } from "@/lib/pdf-listing";
+import type { PdfTemplate } from "@/lib/pdf-listing";
+import PdfTemplateSelector from "@/components/PdfTemplateSelector";
 
 const AddressMapModal = dynamic(() => import("@/components/AddressMapModal"), { ssr: false });
 const ImageCropModal = dynamic(() => import("@/components/ImageCropModal"), { ssr: false });
@@ -96,6 +98,7 @@ export default function SkapaAnnonsClient() {
   const [generationVersion, setGenerationVersion] = useState(1);
   const [regenerating, setRegenerating] = useState(false);
   const [pdfDownloading, setPdfDownloading] = useState(false);
+  const [pdfTemplate, setPdfTemplate] = useState<PdfTemplate>(1);
   const [draftChecked, setDraftChecked] = useState(false);
   const [showDraftBanner, setShowDraftBanner] = useState(false);
   const addressWrapperRef = useRef<HTMLDivElement>(null);
@@ -599,7 +602,7 @@ export default function SkapaAnnonsClient() {
       demographics: generated.demographics ?? null,
     };
     try {
-      await downloadListingPdf(previewListing);
+      await downloadListingPdf(previewListing, pdfTemplate);
       toast.success("PDF nedladdad");
     } catch {
       toast.error("Kunde inte ladda ner PDF. Försök igen.");
@@ -1074,6 +1077,7 @@ export default function SkapaAnnonsClient() {
                 onDescriptionChange={(desc) => setGenerated((g) => (g ? { ...g, description: desc } : g))}
                 contactSlot={
                   <div className="p-6 border-t border-border/40 space-y-4">
+                    <PdfTemplateSelector value={pdfTemplate} onChange={setPdfTemplate} className="mb-1" />
                     <div className="flex flex-col gap-3">
                       <button
                         type="button"
