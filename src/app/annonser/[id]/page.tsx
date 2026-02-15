@@ -181,7 +181,12 @@ export default function ListingDetailPage() {
               onClick={async () => {
                 setPdfDownloading(true);
                 try {
-                  await downloadListingPdf(listing);
+                  await downloadListingPdf({
+                    ...listing,
+                    nearby: areaData?.nearby,
+                    priceContext: areaData?.priceContext,
+                    demographics: areaData?.demographics,
+                  });
                   toast.success("PDF nedladdad");
                 } catch {
                   toast.error("Kunde inte ladda ner PDF. Försök igen.");
