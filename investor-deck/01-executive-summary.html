@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1280">
+  <title>HittaYta.se – Executive Summary</title>
+  <link rel="stylesheet" href="shared-styles.css">
+  <style>
+    .hero-split { display: grid; grid-template-columns: 1fr 1fr; height: 100%; }
+    .hero-left { padding: 80px 56px 60px; display: flex; flex-direction: column; justify-content: center; }
+    .hero-right {
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      position: relative; overflow: hidden;
+    }
+    .hero-right .dot-grid { opacity: 0.05; color: white; }
+    .tagline {
+      font-size: 13px; font-weight: 500; color: var(--gray-500);
+      border-left: 3px solid var(--gold); padding-left: 16px;
+      margin-top: 32px; line-height: 1.6;
+    }
+    .key-metrics {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
+      margin-top: 40px;
+    }
+    .metric-card {
+      background: var(--muted); border-radius: 12px; padding: 20px;
+      border: 1px solid var(--border);
+    }
+    .metric-card__value {
+      font-size: 28px; font-weight: 800; color: var(--navy);
+      letter-spacing: -0.03em;
+    }
+    .metric-card__label {
+      font-size: 11px; font-weight: 500; color: var(--gray-400);
+      margin-top: 4px; text-transform: uppercase; letter-spacing: 0.1em;
+    }
+    .right-stat {
+      text-align: center; padding: 24px;
+    }
+    .right-stat__value {
+      font-size: 56px; font-weight: 900; color: var(--gold);
+      letter-spacing: -0.04em; line-height: 1;
+    }
+    .right-stat__label {
+      font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.5);
+      margin-top: 8px; letter-spacing: 0.1em; text-transform: uppercase;
+    }
+    .right-stats-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 40px;
+      margin-top: 48px;
+    }
+    .right-divider {
+      width: 80px; height: 2px; background: var(--gold); opacity: 0.4;
+      margin: 0 auto;
+    }
+    .ask-badge {
+      position: absolute; bottom: 48px; right: 48px;
+      background: rgba(201,169,110,0.15); border: 1px solid rgba(201,169,110,0.3);
+      border-radius: 12px; padding: 16px 24px; text-align: center;
+    }
+    .ask-badge__label {
+      font-size: 10px; font-weight: 600; color: var(--gold);
+      letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 4px;
+    }
+    .ask-badge__value {
+      font-size: 24px; font-weight: 800; color: var(--white);
+      letter-spacing: -0.02em;
+    }
+  </style>
+</head>
+<body>
+  <div class="slide">
+    <div class="slide__header"></div>
+    <div class="hero-split">
+      <!-- Left side -->
+      <div class="hero-left">
+        <div class="logo-container" style="position:relative;top:0;left:0;margin-bottom:40px;">
+          <svg class="logo-icon" viewBox="0 0 40 40" fill="none">
+            <circle cx="20" cy="18" r="16" fill="none" stroke="#2B8FBF" stroke-width="2.5"/>
+            <path d="M20 34 L20 38" stroke="#2B8FBF" stroke-width="2.5" stroke-linecap="round"/>
+            <rect x="13" y="12" width="5" height="10" rx="1" fill="#2B8FBF" opacity="0.7"/>
+            <rect x="22" y="14" width="5" height="8" rx="1" fill="#2B8FBF" opacity="0.5"/>
+          </svg>
+          <span class="logo-text" style="color:var(--navy);">HittaYta.se</span>
+        </div>
+
+        <div class="slide__kicker">Investerarpresentation 2026</div>
+        <h1 class="slide__title slide__title--large">
+          Sveriges smartaste<br>marknadsplats för<br>kommersiella lokaler
+        </h1>
+        <div class="tagline">
+          Agentdriven plattform som matchar rätt lokal med rätt hyresgäst.<br>
+          Snabbare, smartare och mer transparent.
+        </div>
+
+        <div class="key-metrics">
+          <div class="metric-card">
+            <div class="metric-card__value">500+</div>
+            <div class="metric-card__label">Annonsörer</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-card__value">50+</div>
+            <div class="metric-card__label">Städer</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-card__value">499 kr</div>
+            <div class="metric-card__label">Per annons / månad</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-card__value">&lt;5 min</div>
+            <div class="metric-card__label">Agentgenererad annons</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right side -->
+      <div class="hero-right">
+        <div class="dot-grid"></div>
+        <div style="text-align:center;position:relative;z-index:1;">
+          <div style="font-size:11px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:24px;">Vår vision</div>
+          <div style="font-size:32px;font-weight:800;color:white;letter-spacing:-0.03em;line-height:1.2;max-width:400px;">
+            Göra lokalmarknaden<br>
+            <span style="color:var(--gold);">transparent & digital</span>
+          </div>
+          <div class="right-divider" style="margin-top:32px;"></div>
+          <div class="right-stats-grid">
+            <div class="right-stat">
+              <div class="right-stat__value">85B</div>
+              <div class="right-stat__label">SEK Marknadsvärde</div>
+            </div>
+            <div class="right-stat">
+              <div class="right-stat__value">2%</div>
+              <div class="right-stat__label">Digitaliserat</div>
+            </div>
+          </div>
+        </div>
+        <div class="ask-badge">
+          <div class="ask-badge__label">Seed-runda</div>
+          <div class="ask-badge__value">3 MSEK</div>
+        </div>
+      </div>
+    </div>
+    <div class="confidential">Konfidentiellt &middot; HittaYta.se 2026</div>
+    <div class="slide__page">01 / 08</div>
+  </div>
+</body>
+</html>

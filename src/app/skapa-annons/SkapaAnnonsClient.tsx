@@ -603,7 +603,7 @@ export default function SkapaAnnonsClient() {
             Skapa annons
           </h1>
           <p className="text-[13px] text-gray-500 mt-2 leading-relaxed">
-            Fyll i uppgifterna nedan så genererar vårt AI en professionell annonstext. Ladda ner som PDF eller publicera direkt på HittaYta.se.
+            Fyll i uppgifterna nedan så genererar vår agent en professionell annonstext. Ladda ner som PDF eller publicera direkt på HittaYta.se.
           </p>
         </div>
 
@@ -816,7 +816,7 @@ export default function SkapaAnnonsClient() {
 
               <div className="space-y-4">
                 <label className="block text-[11px] font-semibold text-gray-400 tracking-[0.1em] uppercase">Bilder *</label>
-                <p className="text-[13px] text-gray-500">Ladda upp minst en bild av fasaden/utsidan och en bild av insidan. AI:n använder bilderna för att skriva en bättre beskrivning.</p>
+                <p className="text-[13px] text-gray-500">Ladda upp minst en bild av fasaden/utsidan och en bild av insidan. Agenten använder bilderna för att skriva en bättre beskrivning.</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="border-2 border-dashed rounded-xl p-4 min-h-[120px] flex flex-col items-center justify-center gap-2 bg-muted/20 hover:bg-muted/30 transition-colors">
                     <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Bild utsida *</span>
@@ -962,7 +962,7 @@ export default function SkapaAnnonsClient() {
               onClick={handleGenerate}
               className="mt-6 w-full py-3.5 bg-navy text-white text-[13px] font-semibold rounded-xl tracking-wide transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
             >
-              Generera annons med AI
+              Generera annons
             </button>
           </div>
         )}

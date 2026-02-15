@@ -186,7 +186,7 @@ export default function OmOssClient() {
               {
                 year: "2024",
                 title: "Hittayta.se lanseras",
-                text: "Efter år av research, prototyper och alldeles för mycket kaffe lanseras Hittayta.se – med AI-genererade annonser, kartvisning och Thomas personliga kvalitetsstämpel på varje funktion.",
+                text: "Efter år av research, prototyper och alldeles för mycket kaffe lanseras Hittayta.se – med agentgenererade annonser, kartvisning och Thomas personliga kvalitetsstämpel på varje funktion.",
               },
             ].map((item) => (
               <div key={item.year} className="flex gap-5">
@@ -230,7 +230,7 @@ export default function OmOssClient() {
             Bakom humorn finns ett genuint uppdrag. Lokalmarknaden har länge varit opak, långsam och onödigt krånglig. Vi bygger Hittayta.se för att ändra på det.
           </p>
           <p className="text-[15px] text-gray-600 leading-relaxed mb-4">
-            Varje annonsör verifieras med BankID. Varje annons kan skapas med AI på under fem minuter. Och varje hyresgäst kan söka, filtrera och kontakta direkt – utan mellanhänder, utan krångel.
+            Varje annonsör verifieras med BankID. Varje annons kan skapas med vår agent på under fem minuter. Och varje hyresgäst kan söka, filtrera och kontakta direkt – utan mellanhänder, utan krångel.
           </p>
           <p className="text-[15px] text-gray-600 leading-relaxed">
             Thomas brukar säga: <em>&ldquo;En bra lokal kan förändra ett företag. En dålig plattform ska inte stå i vägen.&rdquo;</em> Vi håller med honom. Mest för att han är chefen.
@@ -269,7 +269,7 @@ export default function OmOssClient() {
               Kontakta oss
             </Link>
             <Link href="/skapa-annons" className="inline-block px-6 py-2.5 border border-white/15 text-white/70 text-[13px] font-medium rounded-xl hover:bg-white/[0.05] hover:text-white transition-all">
-              Testa AI-verktyget
+              Testa vår agent
             </Link>
           </div>
         </div>

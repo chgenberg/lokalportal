@@ -80,7 +80,7 @@ async function resolveImageToBase64(url: string, origin: string): Promise<string
   return await imageToBase64(fullUrl);
 }
 
-/* ── Description parser: split AI text into 5 labeled sections ── */
+/* ── Description parser: split agent text into 5 labeled sections ── */
 interface DescSection { heading: string; body: string }
 
 const SECTION_HEADINGS = [

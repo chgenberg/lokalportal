@@ -21,7 +21,7 @@ Ta reda på lokens starka sidor: läge, kommunikationer, parkering, takhöjd. De
       "Annonsen är ofta det första intrycket en intressent får av din lokal. Satsa på saker som verkligen säljer – bra bilder, tydlig beskrivning och en rubrik som fångar uppmärksamheten.",
     full: `En bra annons innehåller professionella bilder som visar hela lokalen: fasad, insida, eventuellt kök eller gemensamma utrymmen. Om du har en planlösning – inkludera den. Många hyresgäster vill förstå flödet och storleken på rummen.
 
-Beskrivningen ska vara konkret: storlek i kvm, takhöjd, vilka tillbehör som ingår (hisar, lastbrygga, fiber). Undvik floskler – siffror och fakta överträffar alltid vaga formuleringar. På Hittayta.se kan du generera en professionell annons med hjälp av AI om du vill spara tid.`,
+Beskrivningen ska vara konkret: storlek i kvm, takhöjd, vilka tillbehör som ingår (hisar, lastbrygga, fiber). Undvik floskler – siffror och fakta överträffar alltid vaga formuleringar. På Hittayta.se kan du generera en professionell annons med hjälp av vår agent om du vill spara tid.`,
   },
   {
     id: 3,

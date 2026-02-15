@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1280">
+  <title>HittaYta.se – Investering & Finansiellt</title>
+  <link rel="stylesheet" href="shared-styles.css">
+  <style>
+    .content-area {
+      position: absolute; top: 80px; left: 48px; right: 48px; bottom: 60px;
+      display: flex; flex-direction: column;
+    }
+    .ask-hero {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 40px;
+      margin-top: 24px;
+    }
+    .ask-left {
+      display: flex; flex-direction: column; justify-content: center;
+    }
+    .ask-amount {
+      font-size: 64px; font-weight: 900; color: var(--navy);
+      letter-spacing: -0.04em; line-height: 1;
+    }
+    .ask-amount span { color: var(--gold); }
+    .ask-type {
+      font-size: 16px; font-weight: 500; color: var(--gray-500);
+      margin-top: 8px;
+    }
+    .ask-use {
+      margin-top: 28px; display: flex; flex-direction: column; gap: 12px;
+    }
+    .use-item {
+      display: flex; align-items: center; gap: 12px;
+    }
+    .use-bar-container {
+      flex: 1; display: flex; flex-direction: column; gap: 4px;
+    }
+    .use-label {
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .use-label__text {
+      font-size: 13px; font-weight: 600; color: var(--navy);
+    }
+    .use-label__pct {
+      font-size: 12px; font-weight: 700; color: var(--gold);
+    }
+    .use-bar {
+      height: 8px; border-radius: 4px; background: var(--muted);
+      overflow: hidden;
+    }
+    .use-bar__fill {
+      height: 100%; border-radius: 4px;
+    }
+    .use-bar__fill--dev { background: var(--navy); }
+    .use-bar__fill--mkt { background: var(--gold); }
+    .use-bar__fill--ops { background: var(--blue-accent); }
+    .use-bar__fill--res { background: var(--gray-400); }
+
+    .ask-right {
+      background: var(--navy); border-radius: 20px; padding: 32px;
+      display: flex; flex-direction: column; justify-content: center;
+      position: relative; overflow: hidden;
+    }
+    .ask-right .dot-grid { opacity: 0.04; color: white; }
+    .ask-right__title {
+      font-size: 13px; font-weight: 600; color: var(--gold);
+      letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 20px;
+    }
+    .projection-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .projection-row:last-child { border-bottom: none; }
+    .projection-row__label {
+      font-size: 13px; color: rgba(255,255,255,0.5);
+    }
+    .projection-row__value {
+      font-size: 15px; font-weight: 700; color: white;
+    }
+    .projection-row__value--gold { color: var(--gold); }
+    .projection-row--highlight {
+      background: rgba(201,169,110,0.08); border-radius: 10px;
+      padding: 12px 16px; margin: 8px -16px;
+      border-bottom: none;
+    }
+
+    .bottom-section {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
+      margin-top: auto;
+    }
+    .why-invest {
+      background: var(--muted); border: 1px solid var(--border);
+      border-radius: 16px; padding: 24px;
+    }
+    .why-invest__title {
+      font-size: 13px; font-weight: 700; color: var(--navy);
+      letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 16px;
+    }
+    .why-item {
+      display: flex; gap: 10px; align-items: flex-start;
+      margin-bottom: 12px;
+    }
+    .why-item:last-child { margin-bottom: 0; }
+    .why-item__icon {
+      width: 24px; height: 24px; border-radius: 6px;
+      background: rgba(201,169,110,0.12); display: flex; align-items: center;
+      justify-content: center; font-size: 11px; flex-shrink: 0;
+      color: var(--gold);
+    }
+    .why-item__text {
+      font-size: 12px; color: var(--gray-600); line-height: 1.5;
+    }
+    .why-item__text strong { color: var(--navy); }
+
+    .contact-card {
+      background: var(--navy); border-radius: 16px; padding: 32px;
+      display: flex; flex-direction: column; justify-content: center;
+      align-items: center; text-align: center; position: relative;
+      overflow: hidden;
+    }
+    .contact-card .dot-grid { opacity: 0.04; color: white; }
+    .contact-card__title {
+      font-size: 20px; font-weight: 800; color: white;
+      margin-bottom: 8px; position: relative; z-index: 1;
+    }
+    .contact-card__subtitle {
+      font-size: 13px; color: rgba(255,255,255,0.4);
+      margin-bottom: 24px; position: relative; z-index: 1;
+    }
+    .contact-info {
+      display: flex; flex-direction: column; gap: 8px;
+      position: relative; z-index: 1;
+    }
+    .contact-row {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 13px; color: rgba(255,255,255,0.6);
+    }
+    .contact-row__icon {
+      width: 28px; height: 28px; border-radius: 8px;
+      background: rgba(201,169,110,0.15); display: flex; align-items: center;
+      justify-content: center; font-size: 12px; flex-shrink: 0;
+    }
+    .contact-row strong { color: white; }
+  </style>
+</head>
+<body>
+  <div class="slide">
+    <div class="slide__header"></div>
+
+    <div class="logo-container">
+      <svg class="logo-icon" viewBox="0 0 40 40" fill="none">
+        <circle cx="20" cy="18" r="16" fill="none" stroke="#2B8FBF" stroke-width="2.5"/>
+        <path d="M20 34 L20 38" stroke="#2B8FBF" stroke-width="2.5" stroke-linecap="round"/>
+        <rect x="13" y="12" width="5" height="10" rx="1" fill="#2B8FBF" opacity="0.7"/>
+        <rect x="22" y="14" width="5" height="8" rx="1" fill="#2B8FBF" opacity="0.5"/>
+      </svg>
+      <span class="logo-text">HittaYta.se</span>
+    </div>
+
+    <div class="content-area">
+      <div>
+        <div class="slide__kicker">Investering</div>
+        <h2 class="slide__title">Seed-runda: 3 MSEK f&ouml;r att<br>ta marknadsledande position</h2>
+      </div>
+
+      <div class="ask-hero">
+        <div class="ask-left">
+          <div class="ask-amount">3 <span>MSEK</span></div>
+          <div class="ask-type">Seed-runda &middot; Konvertibel eller equity</div>
+
+          <div class="ask-use">
+            <div class="use-item">
+              <div class="use-bar-container">
+                <div class="use-label">
+                  <span class="use-label__text">&#x1F4BB; Produktutveckling</span>
+                  <span class="use-label__pct">40%</span>
+                </div>
+                <div class="use-bar"><div class="use-bar__fill use-bar__fill--dev" style="width:40%;"></div></div>
+              </div>
+            </div>
+            <div class="use-item">
+              <div class="use-bar-container">
+                <div class="use-label">
+                  <span class="use-label__text">&#x1F4E3; Marknadsf&ouml;ring & S&auml;lj</span>
+                  <span class="use-label__pct">30%</span>
+                </div>
+                <div class="use-bar"><div class="use-bar__fill use-bar__fill--mkt" style="width:30%;"></div></div>
+              </div>
+            </div>
+            <div class="use-item">
+              <div class="use-bar-container">
+                <div class="use-label">
+                  <span class="use-label__text">&#x2601; Infrastruktur & Drift</span>
+                  <span class="use-label__pct">15%</span>
+                </div>
+                <div class="use-bar"><div class="use-bar__fill use-bar__fill--ops" style="width:15%;"></div></div>
+              </div>
+            </div>
+            <div class="use-item">
+              <div class="use-bar-container">
+                <div class="use-label">
+                  <span class="use-label__text">&#x1F4B0; Reserv</span>
+                  <span class="use-label__pct">15%</span>
+                </div>
+                <div class="use-bar"><div class="use-bar__fill use-bar__fill--res" style="width:15%;"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ask-right">
+          <div class="dot-grid"></div>
+          <div class="ask-right__title" style="position:relative;z-index:1;">5-&aring;rsprognos</div>
+          <div style="position:relative;z-index:1;">
+            <div class="projection-row">
+              <div class="projection-row__label">&Aring;r 1 &mdash; ARR</div>
+              <div class="projection-row__value">0.6 MSEK</div>
+            </div>
+            <div class="projection-row">
+              <div class="projection-row__label">&Aring;r 2 &mdash; ARR</div>
+              <div class="projection-row__value">2.4 MSEK</div>
+            </div>
+            <div class="projection-row">
+              <div class="projection-row__label">&Aring;r 3 &mdash; ARR</div>
+              <div class="projection-row__value projection-row__value--gold">7.2 MSEK</div>
+            </div>
+            <div class="projection-row projection-row--highlight">
+              <div class="projection-row__label">&Aring;r 3 &mdash; Break-even</div>
+              <div class="projection-row__value projection-row__value--gold">&#10003;</div>
+            </div>
+            <div class="projection-row">
+              <div class="projection-row__label">&Aring;r 4 &mdash; ARR</div>
+              <div class="projection-row__value">18 MSEK</div>
+            </div>
+            <div class="projection-row">
+              <div class="projection-row__label">&Aring;r 5 &mdash; ARR</div>
+              <div class="projection-row__value projection-row__value--gold">36 MSEK</div>
+            </div>
+            <div class="projection-row projection-row--highlight">
+              <div class="projection-row__label">&Aring;r 5 &mdash; Betalande kunder</div>
+              <div class="projection-row__value projection-row__value--gold">6 000+</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bottom-section">
+        <div class="why-invest">
+          <div class="why-invest__title">Varf&ouml;r investera nu?</div>
+          <div class="why-item">
+            <div class="why-item__icon">&#x1F680;</div>
+            <div class="why-item__text"><strong>First mover:</strong> Ingen dominerande digital plattform f&ouml;r kommersiella lokaler i Sverige.</div>
+          </div>
+          <div class="why-item">
+            <div class="why-item__icon">&#x1F9E0;</div>
+            <div class="why-item__text"><strong>Agentf&ouml;rdel:</strong> Unik agentmotor som genererar professionella annonser p&aring; minuter.</div>
+          </div>
+          <div class="why-item">
+            <div class="why-item__icon">&#x1F4B0;</div>
+            <div class="why-item__text"><strong>Bevisad modell:</strong> SaaS med ~90% bruttomarginal och 120x LTV/CAC-kvot.</div>
+          </div>
+          <div class="why-item">
+            <div class="why-item__icon">&#x1F4CA;</div>
+            <div class="why-item__text"><strong>Enorm marknad:</strong> 85 Mdr SEK totalmarknad, &lt;2% digitaliserad. Timing &auml;r perfekt.</div>
+          </div>
+        </div>
+
+        <div class="contact-card">
+          <div class="dot-grid"></div>
+          <div class="contact-card__title">Intresserad?</div>
+          <div class="contact-card__subtitle">Vi ber&auml;ttar g&auml;rna mer</div>
+          <div class="contact-info">
+            <div class="contact-row">
+              <div class="contact-row__icon">&#x1F464;</div>
+              <span><strong>Thomas Claesson</strong> &middot; Grundare</span>
+            </div>
+            <div class="contact-row">
+              <div class="contact-row__icon">&#x2709;</div>
+              <span>info@hittayta.se</span>
+            </div>
+            <div class="contact-row">
+              <div class="contact-row__icon">&#x1F310;</div>
+              <span>hittayta.se</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="confidential">Konfidentiellt &middot; HittaYta.se 2026</div>
+    <div class="slide__page">08 / 08</div>
+  </div>
+</body>
+</html>

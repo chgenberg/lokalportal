@@ -3,7 +3,7 @@ import SkapaAnnonsClient from "./SkapaAnnonsClient";
 
 export const metadata = {
   title: "Skapa annons | HittaYta.se",
-  description: "Generera en professionell annonstext med AI. Ladda ner som PDF eller publicera direkt på HittaYta.se.",
+  description: "Generera en professionell annonstext med vår agent. Ladda ner som PDF eller publicera direkt på HittaYta.se.",
 };
 
 export default function SkapaAnnonsPage() {

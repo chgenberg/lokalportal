@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1280">
+  <title>HittaYta.se – Tillväxt & Traction</title>
+  <link rel="stylesheet" href="shared-styles.css">
+  <style>
+    .content-area {
+      position: absolute; top: 80px; left: 48px; right: 48px; bottom: 60px;
+      display: flex; flex-direction: column;
+    }
+    .traction-top {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 32px;
+      margin-top: 28px;
+    }
+    .milestones {
+      display: flex; flex-direction: column; gap: 0;
+    }
+    .milestone {
+      display: flex; gap: 16px; align-items: flex-start;
+      padding: 14px 0; position: relative;
+    }
+    .milestone::before {
+      content: ''; position: absolute; left: 15px; top: 36px;
+      bottom: -14px; width: 2px; background: var(--border);
+    }
+    .milestone:last-child::before { display: none; }
+    .milestone__dot {
+      width: 32px; height: 32px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; font-size: 12px; font-weight: 700;
+      position: relative; z-index: 1;
+    }
+    .milestone__dot--done {
+      background: var(--navy); color: var(--gold);
+    }
+    .milestone__dot--current {
+      background: var(--gold); color: var(--navy);
+      box-shadow: 0 0 0 4px rgba(201,169,110,0.2);
+    }
+    .milestone__dot--future {
+      background: var(--muted); color: var(--gray-400);
+      border: 1px solid var(--border);
+    }
+    .milestone__content { flex: 1; }
+    .milestone__date {
+      font-size: 10px; font-weight: 600; color: var(--gold);
+      letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 2px;
+    }
+    .milestone__title {
+      font-size: 14px; font-weight: 700; color: var(--navy);
+      margin-bottom: 2px;
+    }
+    .milestone__desc {
+      font-size: 11px; color: var(--gray-400); line-height: 1.5;
+    }
+
+    .kpi-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+    }
+    .kpi-card {
+      background: var(--muted); border: 1px solid var(--border);
+      border-radius: 14px; padding: 20px; text-align: center;
+    }
+    .kpi-card--highlight {
+      background: var(--navy); border-color: var(--navy);
+    }
+    .kpi-card__value {
+      font-size: 32px; font-weight: 900; color: var(--navy);
+      letter-spacing: -0.03em; line-height: 1;
+    }
+    .kpi-card--highlight .kpi-card__value { color: var(--gold); }
+    .kpi-card__label {
+      font-size: 10px; font-weight: 500; color: var(--gray-400);
+      margin-top: 6px; text-transform: uppercase; letter-spacing: 0.1em;
+    }
+    .kpi-card--highlight .kpi-card__label { color: rgba(255,255,255,0.4); }
+    .kpi-card__change {
+      font-size: 11px; font-weight: 600; color: #16a34a;
+      margin-top: 4px;
+    }
+    .kpi-card--highlight .kpi-card__change { color: #4ade80; }
+
+    .growth-channels {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+      margin-top: auto;
+    }
+    .channel-card {
+      background: white; border: 1px solid var(--border); border-radius: 14px;
+      padding: 20px; text-align: center;
+    }
+    .channel-card__icon { font-size: 28px; margin-bottom: 10px; }
+    .channel-card__title {
+      font-size: 13px; font-weight: 700; color: var(--navy);
+      margin-bottom: 4px;
+    }
+    .channel-card__desc {
+      font-size: 10px; color: var(--gray-400); line-height: 1.5;
+    }
+    .channel-card__bar {
+      height: 4px; border-radius: 2px; background: var(--muted);
+      margin-top: 12px; overflow: hidden;
+    }
+    .channel-card__bar-fill {
+      height: 100%; border-radius: 2px;
+      background: linear-gradient(90deg, var(--navy), var(--gold));
+    }
+    .channel-card__pct {
+      font-size: 10px; font-weight: 600; color: var(--gold);
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="slide">
+    <div class="slide__header"></div>
+    <div class="corner-accent corner-accent--tr"></div>
+
+    <div class="logo-container">
+      <svg class="logo-icon" viewBox="0 0 40 40" fill="none">
+        <circle cx="20" cy="18" r="16" fill="none" stroke="#2B8FBF" stroke-width="2.5"/>
+        <path d="M20 34 L20 38" stroke="#2B8FBF" stroke-width="2.5" stroke-linecap="round"/>
+        <rect x="13" y="12" width="5" height="10" rx="1" fill="#2B8FBF" opacity="0.7"/>
+        <rect x="22" y="14" width="5" height="8" rx="1" fill="#2B8FBF" opacity="0.5"/>
+      </svg>
+      <span class="logo-text">HittaYta.se</span>
+    </div>
+
+    <div class="content-area">
+      <div>
+        <div class="slide__kicker">Tillv&auml;xt & Traction</div>
+        <h2 class="slide__title">Fr&aring;n MVP till marknad &mdash;<br>milstolpar och tillv&auml;xtstrategi</h2>
+      </div>
+
+      <div class="traction-top">
+        <div class="milestones">
+          <div class="milestone">
+            <div class="milestone__dot milestone__dot--done">&#10003;</div>
+            <div class="milestone__content">
+              <div class="milestone__date">Q4 2024</div>
+              <div class="milestone__title">MVP lanserad</div>
+              <div class="milestone__desc">Grundplattform med s&ouml;kning, kartvy och manuell annonsering.</div>
+            </div>
+          </div>
+          <div class="milestone">
+            <div class="milestone__dot milestone__dot--done">&#10003;</div>
+            <div class="milestone__content">
+              <div class="milestone__date">Q1 2025</div>
+              <div class="milestone__title">Agent-integration</div>
+              <div class="milestone__desc">GPT-4o f&ouml;r automatisk annonstextgenerering. 10x snabbare publicering.</div>
+            </div>
+          </div>
+          <div class="milestone">
+            <div class="milestone__dot milestone__dot--current">&#x25CF;</div>
+            <div class="milestone__content">
+              <div class="milestone__date">Q1 2026 &mdash; NU</div>
+              <div class="milestone__title">Betalning & Skalning</div>
+              <div class="milestone__desc">Stripe-prenumerationer, auto-kontoskapande, omr&aring;desdata, PDF-export.</div>
+            </div>
+          </div>
+          <div class="milestone">
+            <div class="milestone__dot milestone__dot--future">3</div>
+            <div class="milestone__content">
+              <div class="milestone__date">Q3 2026</div>
+              <div class="milestone__title">Premium & Marketing</div>
+              <div class="milestone__desc">Premium-annonser, SEO-satsning, partnerskap med fastighetsbolag.</div>
+            </div>
+          </div>
+          <div class="milestone">
+            <div class="milestone__dot milestone__dot--future">4</div>
+            <div class="milestone__content">
+              <div class="milestone__date">Q1 2027</div>
+              <div class="milestone__title">Enterprise & Expansion</div>
+              <div class="milestone__desc">Enterprise-erbjudande, API, potentiell nordisk expansion.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="kpi-grid">
+          <div class="kpi-card kpi-card--highlight">
+            <div class="kpi-card__value">500+</div>
+            <div class="kpi-card__label">Annons&ouml;rer</div>
+            <div class="kpi-card__change">&uarr; Organisk tillv&auml;xt</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-card__value">50+</div>
+            <div class="kpi-card__label">St&auml;der</div>
+            <div class="kpi-card__change">&uarr; Hela Sverige</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-card__value">&lt;5 min</div>
+            <div class="kpi-card__label">Tid till annons</div>
+            <div class="kpi-card__change">&darr; Fr&aring;n 5 dagar</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-card__value">3x</div>
+            <div class="kpi-card__label">Fler f&ouml;rfr&aring;gningar</div>
+            <div class="kpi-card__change">&uarr; vs branschsnitt</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-card__value">4.8</div>
+            <div class="kpi-card__label">Anv&auml;ndaromd&ouml;me</div>
+            <div class="kpi-card__change">&#x2605; av 5</div>
+          </div>
+          <div class="kpi-card kpi-card--highlight">
+            <div class="kpi-card__value">0 kr</div>
+            <div class="kpi-card__label">CAC hittills</div>
+            <div class="kpi-card__change">100% organisk</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="growth-channels">
+        <div class="channel-card">
+          <div class="channel-card__icon">&#x1F50D;</div>
+          <div class="channel-card__title">SEO & Inneh&aring;ll</div>
+          <div class="channel-card__desc">Lokalsidor rankar p&aring; Google. Varje annons &auml;r en SEO-tillg&aring;ng.</div>
+          <div class="channel-card__bar"><div class="channel-card__bar-fill" style="width:70%;"></div></div>
+          <div class="channel-card__pct">Prim&auml;r kanal</div>
+        </div>
+        <div class="channel-card">
+          <div class="channel-card__icon">&#x1F91D;</div>
+          <div class="channel-card__title">Partnerskap</div>
+          <div class="channel-card__desc">Fastighetsbolag, f&ouml;rvaltare och m&auml;klare som k&auml;lla.</div>
+          <div class="channel-card__bar"><div class="channel-card__bar-fill" style="width:50%;"></div></div>
+          <div class="channel-card__pct">Tillv&auml;xtfas</div>
+        </div>
+        <div class="channel-card">
+          <div class="channel-card__icon">&#x1F4F1;</div>
+          <div class="channel-card__title">Gratis PDF-verktyg</div>
+          <div class="channel-card__desc">PDF-generering som lead magnet. Konvertering till betalande.</div>
+          <div class="channel-card__bar"><div class="channel-card__bar-fill" style="width:60%;"></div></div>
+          <div class="channel-card__pct">Konverteringsmotor</div>
+        </div>
+        <div class="channel-card">
+          <div class="channel-card__icon">&#x1F4E3;</div>
+          <div class="channel-card__title">Word of Mouth</div>
+          <div class="channel-card__desc">N&ouml;jda anv&auml;ndare rekommenderar. Branschn&auml;tverk sprider.</div>
+          <div class="channel-card__bar"><div class="channel-card__bar-fill" style="width:40%;"></div></div>
+          <div class="channel-card__pct">Organisk</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="confidential">Konfidentiellt &middot; HittaYta.se 2026</div>
+    <div class="slide__page">07 / 08</div>
+  </div>
+</body>
+</html>

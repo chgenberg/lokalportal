@@ -1,5 +1,5 @@
 /**
- * Site context for the AI chatbot. Used to ground responses in Hittayta.se principles.
+ * Site context for the chatbot agent. Used to ground responses in Hittayta.se principles.
  */
 export const SITE_CONTEXT = `
 Hittayta.se är Sveriges marknadsplats för kommersiella lokaler. Vi hjälper företag att hitta butiker, kontor, lager, restauranger, verkstäder, showrooms, pop-up lokaler, ateljéer, gym och övriga lokaler till uthyrning eller köp.

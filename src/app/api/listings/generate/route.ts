@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
   } catch (e) {
     console.error("OpenAI generate error:", e);
     return NextResponse.json(
-      { error: "AI-generering misslyckades. Försök igen." },
+      { error: "Generering misslyckades. Försök igen." },
       { status: 502 }
     );
   }

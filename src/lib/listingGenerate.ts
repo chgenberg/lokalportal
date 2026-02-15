@@ -709,7 +709,7 @@ Svara ENDAST med ett giltigt JSON-objekt utan markdown eller annan text. Nycklar
 - "tags": array av strängar, max 10 st. Välj endast bland: Nyrenoverad, Centralt läge, Hög takhöjd, Parkering, Fiber, Klimatanläggning, Lastbrygga, Skyltfönster, Öppen planlösning, Mötesrum, Nära kollektivtrafik, Gångavstånd till restauranger, Tryggt läge, Nära centrum. Välj "Nära kollektivtrafik" om det finns busshållplatser eller tågstation i närheten. Välj "Gångavstånd till restauranger" om det finns restauranger i området. Välj "Tryggt läge" endast om brottsstatistiken är under rikssnittet. Välj "Nära centrum" om lokalen ligger centralt.
 
 REGLER:
-- Skriv som en människa, inte en AI. Professionell men engagerande.
+- Skriv som en människa. Professionell men engagerande.
 - Undvik klichéer: "unik möjlighet", "perfekt för", "missa inte", "i hjärtat av".
 - Var konkret: siffror och fakta framför floskler. Nämn pris och storlek naturligt i beskrivningen.
 - Nämn aldrig "brott" eller "brottslighet" rakt av. Använd ord som "trygg", "säker", "lugn" om siffrorna stödjer det.`;

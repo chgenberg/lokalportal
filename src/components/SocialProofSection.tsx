@@ -2,7 +2,7 @@ import ScrollReveal from "./ScrollReveal";
 
 const testimonials = [
   {
-    quote: "Thomas och hans team hjälpte oss hitta kontor på rekordtid. AI-verktyget skrev annonserna åt oss – sparade flera timmar.",
+    quote: "Thomas och hans team hjälpte oss hitta kontor på rekordtid. Agenten skrev annonserna åt oss – sparade flera timmar.",
     author: "Maria K.",
     role: "Fastighetsförvaltare, Stockholm",
     initials: "MK",

@@ -357,7 +357,7 @@ function DashboardContent() {
           <div className="bg-white rounded-2xl border border-border p-6 hover:border-navy/20 hover:shadow-md transition-all border-dashed">
             <p className="text-2xl font-bold text-navy mb-1">+</p>
             <p className="font-semibold text-navy">Skapa ny annons</p>
-            <p className="text-xs text-gray-500 mt-1">Publicera en lokal med AI</p>
+            <p className="text-xs text-gray-500 mt-1">Publicera en lokal med vår agent</p>
           </div>
         </Link>
 

@@ -27,7 +27,7 @@ export default function AuthLayout({ children, title, subtitle }: AuthLayoutProp
         <div className="absolute inset-0 bg-navy/50" />
         <div className="relative z-10 flex flex-col justify-end p-10 xl:p-14">
           <p className="text-white/80 text-[17px] leading-relaxed max-w-md mb-6 italic">
-            &ldquo;HittaYta hjälpte oss hitta kontor på rekordtid. AI-verktyget skrev annonserna åt oss – sparade flera timmar.&rdquo;
+            &ldquo;HittaYta hjälpte oss hitta kontor på rekordtid. Agenten skrev annonserna åt oss – sparade flera timmar.&rdquo;
           </p>
           <p className="text-white/60 text-[13px] font-medium">Maria K., Fastighetsförvaltare</p>
         </div>
