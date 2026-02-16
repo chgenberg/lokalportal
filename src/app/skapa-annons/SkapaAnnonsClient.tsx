@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 
 import dynamic from "next/dynamic";
 import { categoryLabels, allCategories, typeLabels } from "@/lib/types";
-import type { NearbyData, PriceContext, DemographicsData, WalkabilityData, AreaContext } from "@/lib/types";
+import type { NearbyData, PriceContext, DemographicsData, AreaContext } from "@/lib/types";
 import { toast } from "sonner";
 import { formatPriceInput, parsePriceInput } from "@/lib/formatPrice";
 import ListingDetailContent from "@/components/ListingDetailContent";
@@ -65,7 +65,6 @@ interface GeneratedListing {
   nearby?: NearbyData;
   priceContext?: PriceContext | null;
   demographics?: DemographicsData | null;
-  walkability?: WalkabilityData | null;
   areaContext?: AreaContext | null;
 }
 
@@ -499,7 +498,6 @@ export default function SkapaAnnonsClient() {
         nearby: data.nearby,
         priceContext: data.priceContext ?? null,
         demographics: data.demographics ?? null,
-        walkability: data.walkability ?? null,
         areaContext: data.areaContext ?? null,
       });
       setGenerationVersion(1);
@@ -580,7 +578,6 @@ export default function SkapaAnnonsClient() {
         nearby: data.nearby,
         priceContext: data.priceContext ?? null,
         demographics: data.demographics ?? null,
-        walkability: data.walkability ?? null,
         areaContext: data.areaContext ?? null,
       });
       setGenerationVersion((v) => Math.min(v + 1, MAX_REGENERATIONS));
@@ -620,7 +617,6 @@ export default function SkapaAnnonsClient() {
       nearby: generated.nearby,
       priceContext: generated.priceContext ?? null,
       demographics: generated.demographics ?? null,
-      walkability: generated.walkability ?? null,
       areaContext: generated.areaContext ?? null,
     };
     try {
@@ -1103,7 +1099,6 @@ export default function SkapaAnnonsClient() {
                   demographics: generated.demographics ?? null,
                   nearby: generated.nearby ?? { restaurants: 0, shops: 0, gyms: 0, busStops: { count: 0 }, trainStations: { count: 0 }, parking: 0, schools: 0, healthcare: 0 },
                   priceContext: generated.priceContext ?? null,
-                  walkability: generated.walkability ?? null,
                   areaContext: generated.areaContext ?? null,
                 } : undefined}
                 contactSlot={
@@ -1169,7 +1164,7 @@ export default function SkapaAnnonsClient() {
             </div>
 
             {/* Områdesanalys – visible summary of enrichment data */}
-            {(generated.demographics || generated.nearby || generated.walkability || generated.areaContext) && (
+            {(generated.demographics || generated.nearby || generated.areaContext) && (
               <div className="bg-white rounded-2xl border border-border/60 p-6 sm:p-8 shadow-sm">
                 <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-4">Områdesanalys</p>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
@@ -1259,49 +1254,6 @@ export default function SkapaAnnonsClient() {
                     </div>
                   </>
                 )}
-                {/* Walkability / Bikeability */}
-                {generated.walkability && (generated.walkability.walkScore > 0 || generated.walkability.bikeScore > 0) && (
-                  <>
-                    <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-3 mt-6">Tillgänglighet</p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {generated.walkability.walkScore > 0 && (
-                        <div className="bg-muted/40 rounded-xl p-3">
-                          <div className="flex items-baseline justify-between mb-1.5">
-                            <p className="text-[12px] font-semibold text-navy">Gångvänlighet</p>
-                            <p className={`text-base font-bold ${generated.walkability.walkScore >= 70 ? "text-emerald-600" : generated.walkability.walkScore >= 50 ? "text-amber-600" : "text-red-500"}`}>
-                              {generated.walkability.walkScore}<span className="text-[10px] text-gray-400 font-normal">/100</span>
-                            </p>
-                          </div>
-                          <div className="w-full h-2 bg-border rounded-full overflow-hidden mb-1">
-                            <div
-                              className={`h-full rounded-full ${generated.walkability.walkScore >= 70 ? "bg-emerald-500" : generated.walkability.walkScore >= 50 ? "bg-amber-500" : "bg-red-400"}`}
-                              style={{ width: `${generated.walkability.walkScore}%` }}
-                            />
-                          </div>
-                          <p className="text-[11px] text-gray-500">{generated.walkability.walkLabel}</p>
-                        </div>
-                      )}
-                      {generated.walkability.bikeScore > 0 && (
-                        <div className="bg-muted/40 rounded-xl p-3">
-                          <div className="flex items-baseline justify-between mb-1.5">
-                            <p className="text-[12px] font-semibold text-navy">Cykelvänlighet</p>
-                            <p className={`text-base font-bold ${generated.walkability.bikeScore >= 70 ? "text-emerald-600" : generated.walkability.bikeScore >= 50 ? "text-amber-600" : "text-red-500"}`}>
-                              {generated.walkability.bikeScore}<span className="text-[10px] text-gray-400 font-normal">/100</span>
-                            </p>
-                          </div>
-                          <div className="w-full h-2 bg-border rounded-full overflow-hidden mb-1">
-                            <div
-                              className={`h-full rounded-full ${generated.walkability.bikeScore >= 70 ? "bg-emerald-500" : generated.walkability.bikeScore >= 50 ? "bg-amber-500" : "bg-red-400"}`}
-                              style={{ width: `${generated.walkability.bikeScore}%` }}
-                            />
-                          </div>
-                          <p className="text-[11px] text-gray-500">{generated.walkability.bikeLabel}</p>
-                        </div>
-                      )}
-                    </div>
-                  </>
-                )}
-
                 {/* Area Context from Wikipedia */}
                 {generated.areaContext && (
                   <>

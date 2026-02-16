@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { title, description, city, address, type, category, price, size, tags, imageUrl, imageUrls, videoUrl, floorPlanImageUrl, nearby, priceContext, demographics, walkability, areaContext, lat, lng } = body;
+    const { title, description, city, address, type, category, price, size, tags, imageUrl, imageUrls, videoUrl, floorPlanImageUrl, nearby, priceContext, demographics, areaContext, lat, lng } = body;
 
     if (!title || !description || !city || !address || !type || !category || price == null || price === "" || size == null || size === "") {
       return NextResponse.json({ error: "Alla obligatoriska fält måste fyllas i" }, { status: 400 });
@@ -61,8 +61,8 @@ export async function POST(request: NextRequest) {
     const videoUrlStr = typeof videoUrl === "string" ? videoUrl.trim().slice(0, 2000) || null : null;
     const floorPlanStr = typeof floorPlanImageUrl === "string" ? floorPlanImageUrl.trim().slice(0, 2000) || null : null;
     const areaDataJson =
-      nearby != null || priceContext != null || demographics != null || walkability != null || areaContext != null
-        ? { nearby: nearby ?? undefined, priceContext: priceContext ?? undefined, demographics: demographics ?? undefined, walkability: walkability ?? undefined, areaContext: areaContext ?? undefined }
+      nearby != null || priceContext != null || demographics != null || areaContext != null
+        ? { nearby: nearby ?? undefined, priceContext: priceContext ?? undefined, demographics: demographics ?? undefined, areaContext: areaContext ?? undefined }
         : undefined;
 
     const listing = await prisma.listing.create({

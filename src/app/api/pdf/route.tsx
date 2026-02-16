@@ -15,11 +15,6 @@ interface DemographicsData {
   population: number; city: string; medianIncome?: number;
   workingAgePercent?: number; totalBusinesses?: number; crimeRate?: number;
 }
-interface WalkabilityData {
-  walkScore: number; bikeScore: number;
-  walkLabel: string; bikeLabel: string;
-  cycleways: number; footways: number;
-}
 interface AreaContextData {
   summary: string; title: string; url: string;
 }
@@ -30,7 +25,6 @@ interface PdfBody {
   contact: { name: string; email: string; phone: string };
   nearby?: NearbyData; priceContext?: PriceContext | null;
   demographics?: DemographicsData | null;
-  walkability?: WalkabilityData | null;
   areaContext?: AreaContextData | null;
 }
 
@@ -180,21 +174,6 @@ function Footer() {
 }
 
 /* ── PDF Document ── */
-function WalkScoreBar({ score, label, sublabel, color }: { score: number; label: string; sublabel: string; color: string }) {
-  return (
-    <View style={{ flex: 1, backgroundColor: C.muted, borderRadius: 6, padding: 12, border: `1px solid ${C.border}` }}>
-      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-        <Text style={{ fontSize: 8, fontWeight: "bold", color: C.navy }}>{label}</Text>
-        <Text style={{ fontSize: 14, fontWeight: "bold", color }}>{score}<Text style={{ fontSize: 7, color: C.textLight }}>/100</Text></Text>
-      </View>
-      <View style={{ height: 6, backgroundColor: C.border, borderRadius: 3, overflow: "hidden" }}>
-        <View style={{ width: `${score}%`, height: "100%", backgroundColor: color, borderRadius: 3 }} />
-      </View>
-      <Text style={{ fontSize: 6.5, color: C.textMuted, marginTop: 4 }}>{sublabel}</Text>
-    </View>
-  );
-}
-
 function ListingPdf({ data, logoSrc, imageDataUris }: { data: PdfBody; logoSrc: string; imageDataUris: string[] }) {
   const priceDisplay = formatPrice(data.price, data.type);
   const pricePerSqm = data.size > 0 ? Math.round(data.price / data.size) : 0;
@@ -206,7 +185,6 @@ function ListingPdf({ data, logoSrc, imageDataUris }: { data: PdfBody; logoSrc: 
   const pc = data.priceContext;
   const demo = data.demographics;
   const nearby = data.nearby;
-  const walk = data.walkability;
   const areaCtx = data.areaContext;
   const hasNearby = nearby && (nearby.transit?.length || nearby.restaurants?.length || nearby.parking?.length);
 
@@ -395,31 +373,6 @@ function ListingPdf({ data, logoSrc, imageDataUris }: { data: PdfBody; logoSrc: 
                     <Text style={{ fontSize: 6, color: C.textLight, marginTop: 1 }}>{card.sub}</Text>
                   </View>
                 ))}
-              </View>
-            </View>
-          )}
-
-          {/* ── Walkability / Bikeability ── */}
-          {walk && (walk.walkScore > 0 || walk.bikeScore > 0) && (
-            <View style={{ marginHorizontal: 36, marginTop: 14 }}>
-              <SectionHeading>Tillgänglighet</SectionHeading>
-              <View style={{ flexDirection: "row", gap: 8 }}>
-                {walk.walkScore > 0 && (
-                  <WalkScoreBar
-                    score={walk.walkScore}
-                    label="Gångvänlighet"
-                    sublabel={`${walk.walkLabel} — ${walk.footways} gångvägar`}
-                    color={walk.walkScore >= 70 ? "#10b981" : walk.walkScore >= 50 ? "#f59e0b" : "#ef4444"}
-                  />
-                )}
-                {walk.bikeScore > 0 && (
-                  <WalkScoreBar
-                    score={walk.bikeScore}
-                    label="Cykelvänlighet"
-                    sublabel={`${walk.bikeLabel} — ${walk.cycleways} cykelvägar`}
-                    color={walk.bikeScore >= 70 ? "#10b981" : walk.bikeScore >= 50 ? "#f59e0b" : "#ef4444"}
-                  />
-                )}
               </View>
             </View>
           )}

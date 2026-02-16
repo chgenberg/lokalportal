@@ -96,12 +96,11 @@ export async function POST(req: NextRequest) {
         videoUrl: listingData.videoUrl || null,
         lat: listingData.lat ? Number(listingData.lat) : undefined,
         lng: listingData.lng ? Number(listingData.lng) : undefined,
-        areaData: listingData.nearby || listingData.priceContext || listingData.demographics || listingData.walkability || listingData.areaContext
+        areaData: listingData.nearby || listingData.priceContext || listingData.demographics || listingData.areaContext
           ? {
               nearby: listingData.nearby || undefined,
               priceContext: listingData.priceContext || undefined,
               demographics: listingData.demographics || undefined,
-              walkability: listingData.walkability || undefined,
               areaContext: listingData.areaContext || undefined,
             }
           : undefined,

@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import type { NearbyData, PriceContext, DemographicsData, WalkabilityData, AreaContext } from "@/lib/types";
+import type { NearbyData, PriceContext, DemographicsData, AreaContext } from "@/lib/types";
 import prisma from "@/lib/db";
 
 const FETCH_TIMEOUT_MS = 5000;
@@ -55,7 +55,6 @@ export interface GenerateResult {
   nearby: NearbyData;
   priceContext: PriceContext | null;
   demographics: DemographicsData | null;
-  walkability: WalkabilityData | null;
   areaContext: AreaContext | null;
 }
 
@@ -335,130 +334,6 @@ function nearbyToSummary(nearby: NearbyData): string | null {
   if (nearby.healthcare > 0) parts.push(`${nearby.healthcare} vård/apotek`);
   if (parts.length === 0) return null;
   return `Inom 2,5 km: ${parts.join(", ")}.`;
-}
-
-// ---------------------------------------------------------------------------
-// Walkability / Bikeability score (calculated from Overpass data)
-// ---------------------------------------------------------------------------
-
-function scoreLabel(score: number): string {
-  if (score >= 90) return "Utmärkt";
-  if (score >= 70) return "Mycket bra";
-  if (score >= 50) return "Bra";
-  if (score >= 25) return "Godkänt";
-  return "Bilberoende";
-}
-
-/**
- * Calculate walkability & bikeability scores from OSM infrastructure data.
- * Uses a separate Overpass query for pedestrian/cycling infrastructure within 1 km.
- * Score 0-100 based on density of sidewalks, footways, cycleways, crossings,
- * combined with nearby amenity counts from NearbyData.
- */
-async function fetchWalkabilityData(
-  lat: number,
-  lng: number,
-  nearby: NearbyData
-): Promise<WalkabilityData> {
-  const cacheKey = `walk:${lat.toFixed(3)}:${lng.toFixed(3)}`;
-  const cached = cacheGet<WalkabilityData>(cacheKey);
-  if (cached) return cached;
-
-  const fallback: WalkabilityData = {
-    walkScore: 0,
-    bikeScore: 0,
-    walkLabel: "Bilberoende",
-    bikeLabel: "Bilberoende",
-    cycleways: 0,
-    footways: 0,
-  };
-
-  const r = 1000; // 1 km radius for infrastructure
-  const query = `
-[out:json][timeout:10];
-(
-  way["highway"="cycleway"](around:${r},${lat},${lng});
-  way["cycleway"](around:${r},${lat},${lng});
-  way["bicycle"="designated"](around:${r},${lat},${lng});
-  way["highway"="footway"](around:${r},${lat},${lng});
-  way["highway"="pedestrian"](around:${r},${lat},${lng});
-  way["foot"="designated"](around:${r},${lat},${lng});
-  node["highway"="crossing"](around:${r},${lat},${lng});
-  way["sidewalk"~"both|left|right"](around:${r},${lat},${lng});
-);
-out tags;
-  `.trim();
-
-  try {
-    const res = await fetchWithRetry(() =>
-      fetchWithTimeout(
-        "https://overpass-api.de/api/interpreter",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: `data=${encodeURIComponent(query)}`,
-        },
-        10000
-      )
-    );
-    if (!res.ok) return fallback;
-    const data = await res.json();
-
-    // With "out count", Overpass returns elements array with count info
-    // or we parse the total from the response
-    let cycleways = 0;
-    let footways = 0;
-    let crossings = 0;
-    let sidewalks = 0;
-
-    if (data?.elements && Array.isArray(data.elements)) {
-      for (const el of data.elements as OverpassElement[]) {
-        const tags = el.tags ?? {};
-        if (tags.highway === "cycleway" || tags.cycleway || tags.bicycle === "designated") {
-          cycleways++;
-        } else if (tags.highway === "footway" || tags.highway === "pedestrian" || tags.foot === "designated") {
-          footways++;
-        } else if (tags.highway === "crossing") {
-          crossings++;
-        } else if (tags.sidewalk && /both|left|right/i.test(String(tags.sidewalk))) {
-          sidewalks++;
-        }
-      }
-    }
-
-    // Walk score: based on footways, crossings, sidewalks, and nearby amenities
-    const amenityCount =
-      nearby.restaurants +
-      nearby.shops +
-      nearby.healthcare +
-      nearby.schools +
-      nearby.busStops.count +
-      nearby.trainStations.count;
-
-    // Infrastructure component (max 50 points)
-    const walkInfra = Math.min(50, (footways * 2) + (crossings * 3) + (sidewalks * 2));
-    // Amenity component (max 50 points)
-    const walkAmenity = Math.min(50, amenityCount * 2);
-    const walkScore = Math.min(100, walkInfra + walkAmenity);
-
-    // Bike score: based on cycleways and general infrastructure
-    const bikeInfra = Math.min(60, cycleways * 4);
-    const bikeAmenity = Math.min(40, amenityCount * 1.5);
-    const bikeScore = Math.min(100, Math.round(bikeInfra + bikeAmenity));
-
-    const result: WalkabilityData = {
-      walkScore: Math.round(walkScore),
-      bikeScore,
-      walkLabel: scoreLabel(walkScore),
-      bikeLabel: scoreLabel(bikeScore),
-      cycleways,
-      footways,
-    };
-    cacheSet(cacheKey, result);
-    return result;
-  } catch {
-    return fallback;
-  }
 }
 
 // ---------------------------------------------------------------------------
@@ -856,15 +731,13 @@ export async function fetchAreaData(
   lat: number,
   lng: number,
   address?: string
-): Promise<{ demographics: DemographicsData | null; nearby: NearbyData; walkability: WalkabilityData | null; areaContext: AreaContext | null }> {
+): Promise<{ demographics: DemographicsData | null; nearby: NearbyData; areaContext: AreaContext | null }> {
   const [demographics, nearby, areaContext] = await Promise.all([
     fetchScbDemographics(city),
     lat && lng ? fetchNearbyData(lat, lng) : Promise.resolve(EMPTY_NEARBY),
     fetchAreaContext(city, address || city),
   ]);
-  const nearbyResolved = nearby ?? EMPTY_NEARBY;
-  const walkability = lat && lng ? await fetchWalkabilityData(lat, lng, nearbyResolved) : null;
-  return { demographics, nearby: nearbyResolved, walkability, areaContext };
+  return { demographics, nearby: nearby ?? EMPTY_NEARBY, areaContext };
 }
 
 /** Fetch price context from comparable listings in same city/category/type */
@@ -976,10 +849,6 @@ export async function generateListingContent(
     healthcare: 0,
   };
 
-  // Walkability depends on nearby data, so fetch after
-  const walkability = lat && lng
-    ? await fetchWalkabilityData(lat, lng, nearbyResolved)
-    : null;
 
   const demographicsParts: string[] = [];
   if (demographics) {
@@ -1084,13 +953,6 @@ export async function generateListingContent(
   } else {
     userContentParts.push(
       "Ingen detaljerad platsdata tillgänglig – nämn inte antal butiker/skolor/faciliteter. Fokusera på lokalens egenskaper, läge och pris."
-    );
-  }
-
-  // Add walkability/bikeability data
-  if (walkability && (walkability.walkScore > 0 || walkability.bikeScore > 0)) {
-    userContentParts.push(
-      `Gångvänlighet: ${walkability.walkScore}/100 (${walkability.walkLabel}). Cykelvänlighet: ${walkability.bikeScore}/100 (${walkability.bikeLabel}). ${walkability.cycleways} cykelvägar och ${walkability.footways} gångvägar inom 1 km. Nämn detta i lägesbeskrivningen om poängen är 50+.`
     );
   }
 
@@ -1233,7 +1095,6 @@ export async function generateListingContent(
     nearby: nearbyResolved,
     priceContext: priceContext ?? null,
     demographics: demographics ?? null,
-    walkability: walkability ?? null,
     areaContext: areaContext ?? null,
   };
 }

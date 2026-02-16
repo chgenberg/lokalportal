@@ -4,7 +4,7 @@ import { lazy, Suspense, useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { formatCategories, typeLabels, getListingImages } from "@/lib/types";
-import type { Listing, NearbyData, DemographicsData, PriceContext, WalkabilityData, AreaContext } from "@/lib/types";
+import type { Listing, NearbyData, DemographicsData, PriceContext, AreaContext } from "@/lib/types";
 import PlaceholderImage from "@/components/PlaceholderImage";
 
 const ListingMap = lazy(() => import("@/components/ListingMap"));
@@ -29,7 +29,6 @@ interface ListingDetailContentProps {
     demographics: DemographicsData | null;
     nearby: NearbyData;
     priceContext: PriceContext | null;
-    walkability?: WalkabilityData | null;
     areaContext?: AreaContext | null;
   };
 }
@@ -377,48 +376,6 @@ export default function ListingDetailContent({
                       );
                     })}
                   </div>
-                </div>
-              );
-            })()}
-
-            {/* Gångvänlighet & Cykelvänlighet */}
-            {areaData?.walkability && (areaData.walkability.walkScore > 0 || areaData.walkability.bikeScore > 0) && (() => {
-              const w = areaData.walkability;
-              const scoreColor = (s: number) =>
-                s >= 70 ? "text-emerald-600" : s >= 50 ? "text-amber-600" : "text-red-500";
-              const barColor = (s: number) =>
-                s >= 70 ? "bg-emerald-500" : s >= 50 ? "bg-amber-500" : "bg-red-400";
-              return (
-                <div className="bg-white rounded-2xl border border-border/40 p-6 sm:p-8 shadow-sm">
-                  <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-1">Tillgänglighet</p>
-                  <p className="text-[12px] text-gray-400 mb-5">Gång- och cykelvänlighet inom 1 km</p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    {w.walkScore > 0 && (
-                      <div>
-                        <div className="flex items-baseline justify-between mb-2">
-                          <p className="text-[13px] font-semibold text-navy">Gångvänlighet</p>
-                          <p className={`text-lg font-bold ${scoreColor(w.walkScore)}`}>{w.walkScore}<span className="text-[11px] text-gray-400 font-normal">/100</span></p>
-                        </div>
-                        <div className="w-full h-2.5 bg-muted rounded-full overflow-hidden mb-2">
-                          <div className={`h-full rounded-full transition-all ${barColor(w.walkScore)}`} style={{ width: `${w.walkScore}%` }} />
-                        </div>
-                        <p className="text-[12px] text-gray-500">{w.walkLabel} — {w.footways} gångvägar i närheten</p>
-                      </div>
-                    )}
-                    {w.bikeScore > 0 && (
-                      <div>
-                        <div className="flex items-baseline justify-between mb-2">
-                          <p className="text-[13px] font-semibold text-navy">Cykelvänlighet</p>
-                          <p className={`text-lg font-bold ${scoreColor(w.bikeScore)}`}>{w.bikeScore}<span className="text-[11px] text-gray-400 font-normal">/100</span></p>
-                        </div>
-                        <div className="w-full h-2.5 bg-muted rounded-full overflow-hidden mb-2">
-                          <div className={`h-full rounded-full transition-all ${barColor(w.bikeScore)}`} style={{ width: `${w.bikeScore}%` }} />
-                        </div>
-                        <p className="text-[12px] text-gray-500">{w.bikeLabel} — {w.cycleways} cykelvägar i närheten</p>
-                      </div>
-                    )}
-                  </div>
-                  <p className="text-[11px] text-gray-400 mt-4">Källa: OpenStreetMap</p>
                 </div>
               );
             })()}

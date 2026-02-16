@@ -34,7 +34,6 @@ export async function GET(
       demographics: areaData.demographics,
       nearby: areaData.nearby,
       priceContext,
-      walkability: areaData.walkability,
       areaContext: areaData.areaContext,
     });
   } catch {
