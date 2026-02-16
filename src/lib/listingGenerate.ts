@@ -775,20 +775,21 @@ export async function fetchAreaPriceContext(
   }
 }
 
-const GPT_SYSTEM = `Du är Sveriges bästa kommersiella fastighetsannonsförfattare med 20 års erfarenhet. Din uppgift är att skriva en annons som får läsaren att vilja boka visning idag.
+const GPT_SYSTEM = `Du skriver en annons i första person, som om du är fastighetsägaren/hyresvärden som presenterar sin egen lokal. Texten ska låta personlig, trovärdig och engagerande – som om ägaren själv sitter och beskriver lokalen för en intresserad hyresgäst.
 
 Svara ENDAST med ett giltigt JSON-objekt utan markdown eller annan text. Nycklar:
 - "title": sträng, max 80 tecken. Börja med lokalens starkaste egenskap + plats. Exempel: "Skyltfönster mot Avenyn – 120 m² butik i Göteborg"
 - "description": sträng, 250–450 ord, exakt 5 stycken:
-  1. KROK: En mening som fångar. Lyft det mest unika.
-  2. LOKALEN: Storlek, planlösning, skick, utrustning. Var specifik.
-  3. LÄGET: Använd områdesdata (faciliteter, kommunikationer, demografi) naturligt i löpande text – inte som punktlista.
+  1. KROK: En mening som fångar. Lyft det mest unika med lokalen.
+  2. LOKALEN: Beskriv storlek, planlösning, skick och utrustning. Skriv som att du visar runt i lokalen: "Lokalen har...", "Här finns...", "Vi har nyligen...".
+  3. LÄGET: Beskriv läget med områdesdata (faciliteter, kommunikationer, demografi) naturligt i löpande text – inte som punktlista. Skriv som att du berättar om grannskapet.
   4. OMRÅDET: Väv in ekonomisk data och trygghet – medianinkomst, arbetsför befolkning, antal företag och brottsstatistik – på ett nyanserat och säljande sätt. Om inkomsten eller företagstätheten är hög: lyft köpkraft och affärsklimat. Om brottsligheten är under rikssnittet: nämn trygghet som en fördel.
-  5. AVSLUTNING: Kort CTA. Vem passar lokalen för? Varför nu?
+  5. AVSLUTNING: Kort CTA i jag/vi-form. "Hör av dig så berättar jag mer" eller "Välkommen på visning". Vem passar lokalen för?
 - "tags": array av strängar, max 10 st. Välj endast bland: Nyrenoverad, Centralt läge, Hög takhöjd, Parkering, Fiber, Klimatanläggning, Lastbrygga, Skyltfönster, Öppen planlösning, Mötesrum, Nära kollektivtrafik, Gångavstånd till restauranger, Tryggt läge, Nära centrum. Välj "Nära kollektivtrafik" om det finns busshållplatser eller tågstation i närheten. Välj "Gångavstånd till restauranger" om det finns restauranger i området. Välj "Tryggt läge" endast om brottsstatistiken är under rikssnittet. Välj "Nära centrum" om lokalen ligger centralt.
 
 REGLER:
-- Skriv som en människa. Professionell men engagerande.
+- Skriv i första person (jag/vi) som fastighetsägaren. ALDRIG i tredje person. ALDRIG referera till bilder, foton eller "enligt bilderna".
+- Professionell men personlig ton. Som ett samtal, inte en broschyr.
 - Undvik klichéer: "unik möjlighet", "perfekt för", "missa inte", "i hjärtat av".
 - Var konkret: siffror och fakta framför floskler. Nämn pris och storlek naturligt i beskrivningen.
 - Nämn aldrig "brott" eller "brottslighet" rakt av. Använd ord som "trygg", "säker", "lugn" om siffrorna stödjer det.`;
@@ -970,7 +971,7 @@ export async function generateListingContent(
 
   // Add vision instruction when images are provided
   const visionInstruction = imageUrls.length > 0
-    ? "\n\nBILDER: Användaren har bifogat bilder av lokalen (fasad/utsida, insida, planlösning m.m.). Beskriv det du ser – fasaden, utrustning, rum, planlösning, skick – och väv in det i beskrivningen. Om det finns en planlösningsritning, beskriv rummens placering och storlek utifrån den. Var specifik om vad bilderna visar."
+    ? "\n\nBILDER: Du har fått bilder av lokalen. Använd det du ser i bilderna (fasad, inredning, rum, utrustning, skick, planlösning) för att skriva en mer detaljerad beskrivning. Skriv som att du själv känner lokalen – REFERERA ALDRIG till bilderna i texten. Skriv inte 'som syns på bilden', 'enligt bilderna' eller liknande. Beskriv istället direkt: 'Lokalen har stora fönsterpartier...', 'Köket är utrustat med...' osv."
     : "";
 
   const openai = new OpenAI({ apiKey: openaiApiKey, timeout: 30_000 });
