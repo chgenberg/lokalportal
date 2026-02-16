@@ -109,6 +109,7 @@ export default function SkapaAnnonsClient() {
   const suggestDebounceRef = useRef<NodeJS.Timeout | null>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
+  const [dragOverSlot, setDragOverSlot] = useState<string | null>(null);
 
   // (Auto-publish logic moved to /publicera page)
 
@@ -277,6 +278,32 @@ export default function SkapaAnnonsClient() {
     }
   };
 
+  const handleDrop = (e: React.DragEvent, slot: "outdoor" | "indoor" | "floorPlan" | "extra") => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOverSlot(null);
+    const file = e.dataTransfer.files?.[0];
+    if (!file || !file.type.startsWith("image/")) return;
+    if (file.size > 10 * 1024 * 1024) {
+      setImageError("Bilden får max vara 10 MB.");
+      return;
+    }
+    cropSlotRef.current = slot;
+    setCropFile(file);
+  };
+
+  const handleDragOver = (e: React.DragEvent, slot: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (dragOverSlot !== slot) setDragOverSlot(slot);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOverSlot(null);
+  };
+
   const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = "";
@@ -285,6 +312,38 @@ export default function SkapaAnnonsClient() {
       setImageError("Endast video (MP4, WebM) stöds.");
       return;
     }
+    if (file.size > 50 * 1024 * 1024) {
+      setImageError("Videon får max vara 50 MB.");
+      return;
+    }
+    setImageUploading(true);
+    setImageError("");
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/upload-public", { method: "POST", body: formData });
+      const data = await res.json();
+      if (!res.ok) {
+        setImageError(data.error || "Kunde inte ladda upp videon.");
+        return;
+      }
+      if (data.url) {
+        updateInput({ videoUrl: data.url });
+        toast.success("Video uppladdad");
+      }
+    } catch {
+      setImageError("Kunde inte ladda upp videon.");
+    } finally {
+      setImageUploading(false);
+    }
+  };
+
+  const handleVideoDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOverSlot(null);
+    const file = e.dataTransfer.files?.[0];
+    if (!file || !file.type.startsWith("video/")) return;
     if (file.size > 50 * 1024 * 1024) {
       setImageError("Videon får max vara 50 MB.");
       return;
@@ -826,14 +885,20 @@ export default function SkapaAnnonsClient() {
                 <label className="block text-[11px] font-semibold text-gray-400 tracking-[0.1em] uppercase">Bilder *</label>
                 <p className="text-[13px] text-gray-500">Ladda upp minst en bild av fasaden/utsidan och en bild av insidan. Agenten använder bilderna för att skriva en bättre beskrivning.</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="border-2 border-dashed rounded-xl p-4 min-h-[120px] flex flex-col items-center justify-center gap-2 bg-muted/20 hover:bg-muted/30 transition-colors">
+                  <div
+                    className={`border-2 border-dashed rounded-xl p-4 min-h-[120px] flex flex-col items-center justify-center gap-2 transition-colors cursor-pointer ${dragOverSlot === "outdoor" ? "border-navy bg-navy/5" : "border-border/60 bg-muted/20 hover:bg-muted/30"}`}
+                    onDrop={(e) => handleDrop(e, "outdoor")}
+                    onDragOver={(e) => handleDragOver(e, "outdoor")}
+                    onDragLeave={handleDragLeave}
+                    onClick={() => { if (!input.outdoorImageUrl) { cropSlotRef.current = "outdoor"; imageInputRef.current?.click(); } }}
+                  >
                     <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Bild utsida *</span>
                     {input.outdoorImageUrl ? (
                       <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-muted/50">
                         <img src={input.outdoorImageUrl} alt="Utsida" className="w-full h-full object-cover" />
                         <button
                           type="button"
-                          onClick={() => updateInput({ outdoorImageUrl: "" })}
+                          onClick={(e) => { e.stopPropagation(); updateInput({ outdoorImageUrl: "" }); }}
                           className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 text-white flex items-center justify-center text-sm hover:bg-black/80"
                           aria-label="Ta bort bild"
                         >
@@ -841,24 +906,28 @@ export default function SkapaAnnonsClient() {
                         </button>
                       </div>
                     ) : (
-                      <button
-                        type="button"
-                        onClick={() => { cropSlotRef.current = "outdoor"; imageInputRef.current?.click(); }}
-                        disabled={imageUploading}
-                        className="py-3 px-4 bg-navy text-white text-[13px] font-semibold rounded-xl hover:bg-navy/90 transition-colors disabled:opacity-60"
-                      >
-                        {imageUploading ? "Laddar upp..." : "Ladda upp bild"}
-                      </button>
+                      <div className="flex flex-col items-center gap-2 pointer-events-none">
+                        <svg className="w-8 h-8 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z" />
+                        </svg>
+                        <span className="text-[12px] text-gray-400">Dra & släpp eller klicka</span>
+                      </div>
                     )}
                   </div>
-                  <div className="border-2 border-dashed rounded-xl p-4 min-h-[120px] flex flex-col items-center justify-center gap-2 bg-muted/20 hover:bg-muted/30 transition-colors">
+                  <div
+                    className={`border-2 border-dashed rounded-xl p-4 min-h-[120px] flex flex-col items-center justify-center gap-2 transition-colors cursor-pointer ${dragOverSlot === "indoor" ? "border-navy bg-navy/5" : "border-border/60 bg-muted/20 hover:bg-muted/30"}`}
+                    onDrop={(e) => handleDrop(e, "indoor")}
+                    onDragOver={(e) => handleDragOver(e, "indoor")}
+                    onDragLeave={handleDragLeave}
+                    onClick={() => { if (!input.indoorImageUrl) { cropSlotRef.current = "indoor"; imageInputRef.current?.click(); } }}
+                  >
                     <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Bild insida *</span>
                     {input.indoorImageUrl ? (
                       <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-muted/50">
                         <img src={input.indoorImageUrl} alt="Insida" className="w-full h-full object-cover" />
                         <button
                           type="button"
-                          onClick={() => updateInput({ indoorImageUrl: "" })}
+                          onClick={(e) => { e.stopPropagation(); updateInput({ indoorImageUrl: "" }); }}
                           className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 text-white flex items-center justify-center text-sm hover:bg-black/80"
                           aria-label="Ta bort bild"
                         >
@@ -866,24 +935,28 @@ export default function SkapaAnnonsClient() {
                         </button>
                       </div>
                     ) : (
-                      <button
-                        type="button"
-                        onClick={() => { cropSlotRef.current = "indoor"; imageInputRef.current?.click(); }}
-                        disabled={imageUploading}
-                        className="py-3 px-4 bg-navy text-white text-[13px] font-semibold rounded-xl hover:bg-navy/90 transition-colors disabled:opacity-60"
-                      >
-                        {imageUploading ? "Laddar upp..." : "Ladda upp bild"}
-                      </button>
+                      <div className="flex flex-col items-center gap-2 pointer-events-none">
+                        <svg className="w-8 h-8 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z" />
+                        </svg>
+                        <span className="text-[12px] text-gray-400">Dra & släpp eller klicka</span>
+                      </div>
                     )}
                   </div>
-                  <div className="border-2 border-dashed rounded-xl p-4 min-h-[100px] flex flex-col items-center justify-center gap-2 bg-muted/20 hover:bg-muted/30 transition-colors">
+                  <div
+                    className={`border-2 border-dashed rounded-xl p-4 min-h-[100px] flex flex-col items-center justify-center gap-2 transition-colors cursor-pointer ${dragOverSlot === "floorPlan" ? "border-navy bg-navy/5" : "border-border/60 bg-muted/20 hover:bg-muted/30"}`}
+                    onDrop={(e) => handleDrop(e, "floorPlan")}
+                    onDragOver={(e) => handleDragOver(e, "floorPlan")}
+                    onDragLeave={handleDragLeave}
+                    onClick={() => { if (!input.floorPlanImageUrl) { cropSlotRef.current = "floorPlan"; imageInputRef.current?.click(); } }}
+                  >
                     <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Planlösning (valfritt)</span>
                     {input.floorPlanImageUrl ? (
                       <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-muted/50">
                         <img src={input.floorPlanImageUrl} alt="Planlösning" className="w-full h-full object-cover" />
                         <button
                           type="button"
-                          onClick={() => updateInput({ floorPlanImageUrl: "" })}
+                          onClick={(e) => { e.stopPropagation(); updateInput({ floorPlanImageUrl: "" }); }}
                           className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 text-white flex items-center justify-center text-sm hover:bg-black/80"
                           aria-label="Ta bort bild"
                         >
@@ -891,17 +964,20 @@ export default function SkapaAnnonsClient() {
                         </button>
                       </div>
                     ) : (
-                      <button
-                        type="button"
-                        onClick={() => { cropSlotRef.current = "floorPlan"; imageInputRef.current?.click(); }}
-                        disabled={imageUploading}
-                        className="py-2.5 px-3 bg-muted/80 text-navy text-[13px] font-semibold rounded-xl hover:bg-muted transition-colors disabled:opacity-60"
-                      >
-                        {imageUploading ? "Laddar upp..." : "Ladda upp planlösning"}
-                      </button>
+                      <div className="flex flex-col items-center gap-2 pointer-events-none">
+                        <svg className="w-7 h-7 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+                        </svg>
+                        <span className="text-[12px] text-gray-400">Dra & släpp eller klicka</span>
+                      </div>
                     )}
                   </div>
-                  <div className="border-2 border-dashed rounded-xl p-4 min-h-[100px] flex flex-col items-center justify-center gap-2 bg-muted/20 hover:bg-muted/30 transition-colors">
+                  <div
+                    className={`border-2 border-dashed rounded-xl p-4 min-h-[100px] flex flex-col items-center justify-center gap-2 transition-colors ${dragOverSlot === "extra" ? "border-navy bg-navy/5" : "border-border/60 bg-muted/20 hover:bg-muted/30"}`}
+                    onDrop={(e) => handleDrop(e, "extra")}
+                    onDragOver={(e) => handleDragOver(e, "extra")}
+                    onDragLeave={handleDragLeave}
+                  >
                     <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Fler bilder (valfritt)</span>
                     <div className="flex flex-wrap gap-2">
                       {(input.extraImageUrls || []).map((url, i) => (
@@ -922,14 +998,23 @@ export default function SkapaAnnonsClient() {
                           type="button"
                           onClick={() => { cropSlotRef.current = "extra"; imageInputRef.current?.click(); }}
                           disabled={imageUploading}
-                          className="w-20 h-14 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 hover:border-navy/40 hover:text-navy transition-colors disabled:opacity-60"
+                          className="w-20 h-14 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 hover:border-navy/40 hover:text-navy transition-colors disabled:opacity-60 cursor-pointer"
                         >
                           +
                         </button>
                       )}
                     </div>
+                    {(input.extraImageUrls?.length ?? 0) === 0 && (
+                      <span className="text-[12px] text-gray-400">Dra & släpp eller klicka +</span>
+                    )}
                   </div>
-                  <div className="border-2 border-dashed rounded-xl p-4 min-h-[100px] flex flex-col items-center justify-center gap-2 bg-muted/20 hover:bg-muted/30 transition-colors">
+                  <div
+                    className={`border-2 border-dashed rounded-xl p-4 min-h-[100px] flex flex-col items-center justify-center gap-2 transition-colors cursor-pointer ${dragOverSlot === "video" ? "border-navy bg-navy/5" : "border-border/60 bg-muted/20 hover:bg-muted/30"}`}
+                    onDrop={handleVideoDrop}
+                    onDragOver={(e) => handleDragOver(e, "video")}
+                    onDragLeave={handleDragLeave}
+                    onClick={() => { if (!input.videoUrl) videoInputRef.current?.click(); }}
+                  >
                     <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Video (valfritt)</span>
                     <input
                       ref={videoInputRef}
@@ -940,10 +1025,10 @@ export default function SkapaAnnonsClient() {
                     />
                     {input.videoUrl ? (
                       <div className="relative w-full">
-                        <video src={input.videoUrl} controls className="max-h-32 rounded-lg" />
+                        <video src={input.videoUrl} controls className="max-h-32 rounded-lg" onClick={(e) => e.stopPropagation()} />
                         <button
                           type="button"
-                          onClick={() => updateInput({ videoUrl: "" })}
+                          onClick={(e) => { e.stopPropagation(); updateInput({ videoUrl: "" }); }}
                           className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 text-white flex items-center justify-center text-sm hover:bg-black/80"
                           aria-label="Ta bort video"
                         >
@@ -951,14 +1036,12 @@ export default function SkapaAnnonsClient() {
                         </button>
                       </div>
                     ) : (
-                      <button
-                        type="button"
-                        onClick={() => videoInputRef.current?.click()}
-                        disabled={imageUploading}
-                        className="py-2.5 px-3 bg-muted/80 text-navy text-[13px] font-semibold rounded-xl hover:bg-muted transition-colors disabled:opacity-60"
-                      >
-                        {imageUploading ? "Laddar upp..." : "Ladda upp video (MP4/WebM)"}
-                      </button>
+                      <div className="flex flex-col items-center gap-2 pointer-events-none">
+                        <svg className="w-7 h-7 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" />
+                        </svg>
+                        <span className="text-[12px] text-gray-400">Dra & släpp eller klicka</span>
+                      </div>
                     )}
                   </div>
                 </div>
