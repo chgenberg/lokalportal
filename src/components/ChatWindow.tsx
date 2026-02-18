@@ -74,7 +74,7 @@ function Avatar({
 
 function TypingIndicator() {
   return (
-    <div className="flex items-center gap-1 px-4 py-2.5 bg-white border border-border rounded-2xl rounded-bl-md w-fit">
+    <div className="flex items-center gap-1 px-4 py-2.5 bg-white border border-border/50 rounded-2xl rounded-bl-md w-fit">
       <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:0ms]" />
       <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:150ms]" />
       <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:300ms]" />
@@ -552,7 +552,7 @@ export default function ChatWindow({
                                   ? "rounded-2xl rounded-br-md"
                                   : "rounded-2xl"
                               }`
-                            : `bg-white text-gray-800 border border-border ${
+                            : `bg-white text-gray-800 border border-border/50 ${
                                 isLastInGroup
                                   ? "rounded-2xl rounded-bl-md"
                                   : "rounded-2xl"

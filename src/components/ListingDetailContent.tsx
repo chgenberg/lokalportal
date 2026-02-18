@@ -20,10 +20,12 @@ interface ListingDetailContentProps {
   compact?: boolean;
   /** When provided, rendered inside the contact card below name/email/phone (e.g. contact buttons or preview message). */
   contactSlot: React.ReactNode;
-  /** When true, description can be edited via Redigera toggle. Requires onDescriptionChange. */
+  /** When true, description and title can be edited. Requires onDescriptionChange. */
   editableDescription?: boolean;
   /** Called when user saves edited description. Required if editableDescription. */
   onDescriptionChange?: (description: string) => void;
+  /** Called when user saves edited title. Optional. */
+  onTitleChange?: (title: string) => void;
   /** Optional area analysis data (demographics, nearby amenities, price context). */
   areaData?: {
     demographics: DemographicsData | null;
@@ -40,10 +42,13 @@ export default function ListingDetailContent({
   contactSlot,
   editableDescription = false,
   onDescriptionChange,
+  onTitleChange,
   areaData,
 }: ListingDetailContentProps) {
   const [isEditingDescription, setIsEditingDescription] = useState(false);
   const [editDraft, setEditDraft] = useState(listing.description || "");
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [titleDraft, setTitleDraft] = useState(listing.title || "");
   const images = getListingImages(listing);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [primaryImageError, setPrimaryImageError] = useState(false);
@@ -126,7 +131,50 @@ export default function ListingDetailContent({
                 </span>
               )}
             </div>
-            <h1 className="text-2xl md:text-3xl font-bold text-white drop-shadow-lg tracking-tight">{listing.title}</h1>
+            <div className="flex items-start gap-2">
+              {editableDescription && onTitleChange && isEditingTitle ? (
+                <div className="flex items-center gap-2 w-full">
+                  <input
+                    type="text"
+                    value={titleDraft}
+                    onChange={(e) => setTitleDraft(e.target.value)}
+                    maxLength={200}
+                    autoFocus
+                    className="flex-1 text-2xl md:text-3xl font-bold text-white bg-white/10 backdrop-blur-sm border border-white/30 rounded-lg px-3 py-1 outline-none focus:border-white/60 placeholder-white/40"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => { onTitleChange(titleDraft.trim().slice(0, 200)); setIsEditingTitle(false); }}
+                    className="shrink-0 px-3 py-1.5 text-[12px] font-semibold text-navy bg-white rounded-lg hover:bg-white/90 transition-colors"
+                  >
+                    Spara
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setIsEditingTitle(false); setTitleDraft(listing.title || ""); }}
+                    className="shrink-0 px-3 py-1.5 text-[12px] text-white/70 hover:text-white transition-colors"
+                  >
+                    Avbryt
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <h1 className="text-2xl md:text-3xl font-bold text-white drop-shadow-lg tracking-tight">{listing.title}</h1>
+                  {editableDescription && onTitleChange && (
+                    <button
+                      type="button"
+                      onClick={() => { setTitleDraft(listing.title || ""); setIsEditingTitle(true); }}
+                      className="shrink-0 mt-1 p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
+                      title="Redigera titel"
+                    >
+                      <svg className="w-4 h-4 text-white/70" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                      </svg>
+                    </button>
+                  )}
+                </>
+              )}
+            </div>
           </div>
         </div>
 
@@ -237,32 +285,54 @@ export default function ListingDetailContent({
                         setEditDraft(listing.description || "");
                         setIsEditingDescription(true);
                       }}
-                      className="text-[12px] text-navy/60 hover:text-navy transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-medium text-navy bg-muted/60 border border-border/60 rounded-lg hover:bg-muted hover:border-navy/20 transition-colors"
                     >
-                      Redigera
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                      </svg>
+                      Redigera text
                     </button>
                   )}
                   {editableDescription && onDescriptionChange && isEditingDescription && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        onDescriptionChange(editDraft.trim().slice(0, 5000));
-                        setIsEditingDescription(false);
-                      }}
-                      className="text-[12px] font-medium text-navy hover:underline"
-                    >
-                      Klart
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsEditingDescription(false);
+                          setEditDraft(listing.description || "");
+                        }}
+                        className="px-3 py-1.5 text-[12px] text-gray-500 hover:text-navy transition-colors"
+                      >
+                        Avbryt
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onDescriptionChange(editDraft.trim().slice(0, 5000));
+                          setIsEditingDescription(false);
+                        }}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-semibold text-white bg-navy rounded-lg hover:bg-navy/90 transition-colors"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                        </svg>
+                        Spara
+                      </button>
+                    </div>
                   )}
                 </div>
                 {editableDescription && onDescriptionChange && isEditingDescription ? (
-                  <textarea
-                    value={editDraft}
-                    onChange={(e) => setEditDraft(e.target.value)}
-                    className="w-full min-h-[200px] p-4 text-[15px] text-gray-600 leading-[1.7] border border-border/60 rounded-xl focus:border-navy/30 focus:outline-none resize-y"
-                    placeholder="Skriv beskrivningen här..."
-                    maxLength={5000}
-                  />
+                  <div>
+                    <textarea
+                      value={editDraft}
+                      onChange={(e) => setEditDraft(e.target.value)}
+                      className="w-full min-h-[250px] p-4 text-[15px] text-gray-600 leading-[1.7] border-2 border-navy/20 rounded-xl focus:border-navy/40 focus:outline-none resize-y bg-muted/20"
+                      placeholder="Skriv beskrivningen här..."
+                      maxLength={5000}
+                      autoFocus
+                    />
+                    <p className="text-[11px] text-gray-400 mt-2 text-right">{editDraft.length} / 5 000 tecken</p>
+                  </div>
                 ) : (
                   <div className="text-[15px] text-gray-600 leading-[1.7] max-w-[65ch]">
                     {listing.description ? (

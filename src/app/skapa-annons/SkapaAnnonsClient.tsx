@@ -1095,6 +1095,7 @@ export default function SkapaAnnonsClient() {
                 compact
                 editableDescription
                 onDescriptionChange={(desc) => setGenerated((g) => (g ? { ...g, description: desc } : g))}
+                onTitleChange={(title) => setGenerated((g) => (g ? { ...g, title } : g))}
                 areaData={(generated.nearby || generated.demographics) ? {
                   demographics: generated.demographics ?? null,
                   nearby: generated.nearby ?? { restaurants: 0, shops: 0, gyms: 0, busStops: { count: 0 }, trainStations: { count: 0 }, parking: 0, schools: 0, healthcare: 0 },

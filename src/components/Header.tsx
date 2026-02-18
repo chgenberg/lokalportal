@@ -102,7 +102,7 @@ export default function Header() {
                 <>
                   <Link
                     href="/skapa-annons"
-                    className="px-5 py-2 bg-navy text-white text-[13px] font-semibold rounded-lg transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
+                    className="px-5 py-2 bg-navy text-white text-[13px] font-semibold rounded-full transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
                   >
                     Annonsera
                   </Link>
@@ -132,7 +132,7 @@ export default function Header() {
                     </button>
 
                     {userMenuOpen && (
-                      <div className="absolute right-0 top-full mt-2 w-52 max-w-[calc(100vw-2rem)] bg-white rounded-xl border border-border/60 shadow-xl py-1.5 animate-scale-in">
+                      <div className="absolute right-0 top-full mt-2 w-52 max-w-[calc(100vw-2rem)] bg-white rounded-2xl border border-border/60 shadow-xl py-1.5 animate-scale-in">
                         <div className="px-4 py-2.5 border-b border-border/60">
                           <p className="text-sm font-semibold text-navy">{session.user.name}</p>
                           <p className="text-[11px] text-gray-400 tracking-wide">
@@ -165,12 +165,12 @@ export default function Header() {
                 </>
               ) : (
                 <>
-                  <Link href="/logga-in" className="px-4 py-2 text-[13px] font-medium text-gray-500 hover:text-navy rounded-lg hover:bg-navy/[0.03] transition-all">
+                  <Link href="/logga-in" className="px-4 py-2 text-[13px] font-medium text-gray-500 hover:text-navy rounded-full hover:bg-navy/[0.03] transition-all">
                     Logga in
                   </Link>
                   <Link
                     href="/skapa-annons"
-                    className="px-5 py-2 bg-navy text-white text-[13px] font-semibold rounded-lg transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
+                    className="px-5 py-2 bg-navy text-white text-[13px] font-semibold rounded-full transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
                   >
                     Annonsera
                   </Link>
@@ -204,7 +204,7 @@ export default function Header() {
                       Meddelanden
                       {unreadCount > 0 && <span className="w-5 h-5 bg-navy text-white text-[10px] font-bold rounded-full flex items-center justify-center">{unreadCount}</span>}
                     </Link>
-                    <Link href="/skapa-annons" onClick={() => setMobileOpen(false)} className="block w-full py-2.5 px-4 bg-navy text-white text-sm font-semibold rounded-lg text-center mt-2">
+                    <Link href="/skapa-annons" onClick={() => setMobileOpen(false)} className="block w-full py-2.5 px-4 bg-navy text-white text-sm font-semibold rounded-full text-center mt-2">
                       Annonsera
                     </Link>
                     <button onClick={() => { setMobileOpen(false); signOut({ callbackUrl: "/" }); }} className="block w-full text-left py-2.5 px-4 text-sm font-medium text-gray-400 hover:text-red-500 hover:bg-red-50/50 rounded-lg transition-all mt-1">Logga ut</button>
@@ -212,7 +212,7 @@ export default function Header() {
                 ) : (
                   <>
                     <Link href="/logga-in" onClick={() => setMobileOpen(false)} className="block py-2.5 px-4 text-sm font-medium text-gray-500 hover:text-navy hover:bg-navy/[0.03] rounded-lg transition-all">Logga in</Link>
-                    <Link href="/skapa-annons" onClick={() => setMobileOpen(false)} className="block w-full py-2.5 px-4 bg-navy text-white text-sm font-semibold rounded-lg text-center mt-2">
+                    <Link href="/skapa-annons" onClick={() => setMobileOpen(false)} className="block w-full py-2.5 px-4 bg-navy text-white text-sm font-semibold rounded-full text-center mt-2">
                       Annonsera
                     </Link>
                   </>

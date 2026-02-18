@@ -14,6 +14,7 @@
   --color-foreground: #0a1628;
   --color-muted: #f8fafc;
   --color-muted-dark: #f1f5f9;
+  --color-cream: #FFF8ED;
   --color-border: #e8ecf1;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
@@ -69,6 +70,27 @@ html {
 
 .shimmer {
   animation: shimmer 2s ease-in-out infinite;
+}
+
+/* ── Soft pulse (dashboard accent / unread) ─────── */
+@keyframes pulseSoft {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(10, 22, 40, 0.12); }
+  50% { opacity: 0.95; box-shadow: 0 0 0 8px rgba(10, 22, 40, 0); }
+}
+
+.animate-pulse-soft {
+  animation: pulseSoft 2.5s ease-in-out infinite;
+}
+
+/* ── Dashboard card (soft, interactive) ─────────── */
+.dashboard-card {
+  border-radius: 1rem;
+  border: 1px solid rgba(232, 236, 241, 0.8);
+  background: #fff;
+  transition: all 0.3s ease;
+}
+.dashboard-card:hover {
+  box-shadow: 0 4px 20px rgba(10, 22, 40, 0.06);
 }
 
 /* ── Glass morphism ────────────────────────────── */
@@ -127,8 +149,8 @@ html {
 }
 
 .btn-glow:hover {
-  box-shadow: 0 4px 14px rgba(10, 22, 40, 0.12);
-  transform: translateY(-2px);
+  box-shadow: 0 2px 12px rgba(10, 22, 40, 0.08);
+  transform: translateY(-1px);
 }
 
 /* ── Card hover (minimal) ───────────────────────── */
@@ -137,8 +159,8 @@ html {
 }
 
 .card-glow:hover {
-  box-shadow: 0 4px 14px rgba(10, 22, 40, 0.08);
-  transform: translateY(-4px);
+  box-shadow: 0 2px 12px rgba(10, 22, 40, 0.06);
+  transform: translateY(-2px);
 }
 
 /* Subtle grain overlay for premium sections (hero, CTA) */
@@ -155,6 +177,9 @@ html {
   z-index: 1;
 }
 
+/* Cream (warm testimonial/accent backgrounds) */
+.bg-cream { background-color: var(--color-cream); }
+
 /* Gold accent utilities (premium CTAs, badges) */
 .bg-gold { background-color: var(--color-gold); }
 .bg-gold:hover { background-color: var(--color-gold-dark, #B8955E); }
@@ -167,7 +192,8 @@ html {
   .animate-slide-up,
   .animate-fade-in,
   .animate-slide-down,
-  .animate-scale-in {
+  .animate-scale-in,
+  .animate-pulse-soft {
     animation: none;
   }
   .shimmer {

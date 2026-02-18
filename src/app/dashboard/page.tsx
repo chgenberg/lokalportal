@@ -274,7 +274,12 @@ function DashboardContent() {
   if (loading) {
     return (
       <div className="space-y-6">
-        {[...Array(3)].map((_, i) => <div key={i} className="bg-white rounded-2xl border border-border p-6 animate-pulse"><div className="h-6 bg-muted rounded w-1/3 mb-4" /><div className="h-4 bg-muted rounded w-2/3" /></div>)}
+        {[...Array(3)].map((_, i) => (
+          <div key={i} className="dashboard-card p-6">
+            <div className="h-6 bg-muted/70 rounded-2xl w-1/3 mb-4 animate-pulse" />
+            <div className="h-4 bg-muted/50 rounded-2xl w-2/3 animate-pulse" />
+          </div>
+        ))}
       </div>
     );
   }
@@ -301,8 +306,8 @@ function DashboardContent() {
               <StatCard label="Sparade favoriter" value={String(favorites.length)} />
               <StatCard label="Olästa meddelanden" value={String(unreadCount)} accent={unreadCount > 0} />
               <StatCard label="Aktiva konversationer" value={String(conversations.length)} />
-              <Link href="/annonser" className="block">
-                <div className="bg-white rounded-2xl border border-border p-6 hover:border-navy/20 hover:shadow-md transition-all h-full">
+              <Link href="/annonser" className="block h-full">
+                <div className="dashboard-card p-6 h-full">
                   <p className="text-2xl font-bold text-navy mb-1">&rarr;</p>
                   <p className="font-semibold text-navy">Utforska lokaler</p>
                   <p className="text-xs text-gray-500 mt-1">Sök bland alla annonser</p>
@@ -315,7 +320,7 @@ function DashboardContent() {
         {isLandlord && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {ov?.responseRate != null && (
-              <div className="bg-white rounded-2xl border border-border p-6">
+              <div className="dashboard-card p-6">
                 <h2 className="font-semibold text-navy mb-2">Svarsfrekvens</h2>
                 <p className="text-2xl font-bold text-navy">{ov.responseRate}%</p>
                 <p className="text-xs text-gray-500 mt-1">Andel förfrågningar där du svarat</p>
@@ -323,7 +328,7 @@ function DashboardContent() {
             )}
             {ov?.topListingId && ov?.topListingTitle && (
               <Link href={`/annonser/${ov.topListingId}`} className="block">
-                <div className="bg-white rounded-2xl border border-border p-6 hover:border-navy/20 hover:shadow-md transition-all">
+                <div className="dashboard-card p-6">
                   <h2 className="font-semibold text-navy mb-2">Toppresterande annons</h2>
                   <p className="text-navy font-medium truncate">{ov.topListingTitle}</p>
                   <p className="text-xs text-gray-500 mt-1">Flest förfrågningar – öppna annons</p>
@@ -334,7 +339,7 @@ function DashboardContent() {
         )}
 
         {isLandlord && ov?.recentActivity && ov.recentActivity.length > 0 && (
-          <div className="bg-white rounded-2xl border border-border p-6">
+          <div className="dashboard-card p-6">
             <h2 className="font-semibold text-navy mb-4">Senaste aktivitet</h2>
             <ul className="space-y-3">
               {ov.recentActivity.map((a, i) => (
@@ -354,7 +359,7 @@ function DashboardContent() {
         )}
 
         <Link href="/skapa-annons" className="block">
-          <div className="bg-white rounded-2xl border border-border p-6 hover:border-navy/20 hover:shadow-md transition-all border-dashed">
+          <div className="dashboard-card p-6 border-dashed border-2 border-border/60">
             <p className="text-2xl font-bold text-navy mb-1">+</p>
             <p className="font-semibold text-navy">Skapa ny annons</p>
             <p className="text-xs text-gray-500 mt-1">Publicera en lokal med vår agent</p>
@@ -362,7 +367,7 @@ function DashboardContent() {
         </Link>
 
         {!isLandlord && conversations.length > 0 && (
-          <div className="bg-white rounded-2xl border border-border p-6">
+          <div className="dashboard-card p-6">
             <h2 className="font-semibold text-navy mb-4">Senaste aktivitet</h2>
             <ul className="space-y-3">
               {[...conversations]
@@ -381,7 +386,7 @@ function DashboardContent() {
         )}
 
         {!isLandlord && exploreListings.length > 0 && (
-          <div className="bg-white rounded-2xl border border-border p-6">
+          <div className="dashboard-card p-6">
             <h2 className="font-semibold text-navy mb-4">Utforska</h2>
             <p className="text-sm text-gray-500 mb-4">Senaste annonser – snabblänkar</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -392,14 +397,14 @@ function DashboardContent() {
           </div>
         )}
 
-        <div className="bg-white rounded-2xl border border-border p-6">
+        <div className="dashboard-card p-6">
           <h2 className="font-semibold text-navy mb-4">Snabbåtgärder</h2>
           <div className="flex flex-wrap gap-3">
-            <Link href="/dashboard/meddelanden" className="px-4 py-2.5 bg-muted text-sm font-medium text-navy rounded-xl hover:bg-muted-dark transition-colors">
+            <Link href="/dashboard/meddelanden" className="px-4 py-2.5 bg-muted/60 text-sm font-medium text-navy rounded-full hover:bg-muted transition-colors">
               Meddelanden {unreadCount > 0 && <span className="ml-1 inline-flex w-5 h-5 bg-navy text-white text-xs font-bold rounded-full items-center justify-center">{unreadCount}</span>}
             </Link>
-            <Link href="/annonser" className="px-4 py-2.5 bg-muted text-sm font-medium text-navy rounded-xl hover:bg-muted-dark transition-colors">Alla annonser</Link>
-            <Link href="/karta" className="px-4 py-2.5 bg-muted text-sm font-medium text-navy rounded-xl hover:bg-muted-dark transition-colors">Karta</Link>
+            <Link href="/annonser" className="px-4 py-2.5 bg-muted/60 text-sm font-medium text-navy rounded-full hover:bg-muted transition-colors">Alla annonser</Link>
+            <Link href="/karta" className="px-4 py-2.5 bg-muted/60 text-sm font-medium text-navy rounded-full hover:bg-muted transition-colors">Karta</Link>
           </div>
         </div>
       </div>
@@ -412,9 +417,9 @@ function DashboardContent() {
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold text-navy">Redigera annons</h1>
-            <button type="button" onClick={cancelEdit} className="px-4 py-2.5 text-navy border border-border rounded-xl text-sm font-medium hover:bg-muted transition-colors">Avbryt</button>
+            <button type="button" onClick={cancelEdit} className="px-4 py-2.5 text-navy border border-border/60 rounded-2xl text-sm font-medium hover:bg-muted/60 transition-colors">Avbryt</button>
           </div>
-          <form onSubmit={handleSaveEdit} className="bg-white rounded-2xl border border-border p-6 space-y-5">
+          <form onSubmit={handleSaveEdit} className="dashboard-card p-6 space-y-5">
             {editError && <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">{editError}</div>}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="sm:col-span-2">
@@ -511,22 +516,22 @@ function DashboardContent() {
             <select
               value={listingsSort}
               onChange={(e) => setListingsSort(e.target.value as "date" | "inquiries" | "views" | "favorites")}
-              className="w-full sm:w-48 px-3 py-2 rounded-xl border border-border text-sm text-navy bg-white focus:border-navy outline-none"
+              className="w-full sm:w-48 px-3 py-2 rounded-2xl border border-border/60 text-sm text-navy bg-white focus:border-navy outline-none transition-colors"
             >
               <option value="date">Senast skapade</option>
               <option value="inquiries">Flest förfrågningar</option>
               <option value="views">Flest visningar</option>
               <option value="favorites">Flest sparade</option>
             </select>
-            <Link href="/skapa-annons" className="px-4 py-2.5 bg-navy text-white text-sm font-medium rounded-xl hover:bg-navy-light transition-colors whitespace-nowrap">Ny annons</Link>
+            <Link href="/skapa-annons" className="px-5 py-2.5 bg-navy text-white text-sm font-medium rounded-full hover:bg-navy-light transition-colors whitespace-nowrap">Ny annons</Link>
           </div>
         </div>
         {listings.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-border p-12 text-center">
-            <p className="text-2xl text-gray-200 mb-4">0</p>
+          <div className="dashboard-card p-12 text-center">
+            <p className="text-3xl font-bold text-gray-200 mb-4">0</p>
             <h3 className="font-semibold text-navy mb-2">Inga annonser ännu</h3>
             <p className="text-sm text-gray-500 mb-6">Skapa din första annons för att nå potentiella hyresgäster</p>
-            <Link href="/skapa-annons" className="px-6 py-3 bg-navy text-white text-sm font-medium rounded-xl hover:bg-navy-light transition-colors">Skapa annons</Link>
+            <Link href="/skapa-annons" className="inline-block px-6 py-3 bg-navy text-white text-sm font-medium rounded-full hover:bg-navy-light transition-colors">Skapa annons</Link>
           </div>
         ) : (
           <div className="space-y-4">
@@ -541,7 +546,7 @@ function DashboardContent() {
               const daysSinceInquiry = lastInquiryMs ? (now - lastInquiryMs) / 86400000 : Infinity;
               const statusColor = inquiryCount === 0 ? "bg-gray-300" : daysSinceInquiry <= 7 ? "bg-green-500" : daysSinceInquiry <= 30 ? "bg-amber-400" : "bg-gray-300";
               return (
-                <div key={listing.id} className="bg-white rounded-2xl border border-border p-6 hover:border-navy/20 hover:shadow-sm transition-all">
+                <div key={listing.id} className="dashboard-card p-6">
                   <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
@@ -562,9 +567,9 @@ function DashboardContent() {
                     </div>
                     <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
                       <span className="px-2.5 py-1 text-xs font-medium rounded-full bg-navy/10 text-navy">{typeLabels[listing.type]}</span>
-                      <button type="button" onClick={() => renewListing(listing.id)} disabled={renewingId === listing.id} className="px-3 py-1.5 text-xs font-medium text-gray-600 border border-border rounded-lg hover:bg-muted transition-colors disabled:opacity-50" title="Förnya annons (visas längst upp)">{renewingId === listing.id ? "..." : "Förnya"}</button>
-                      <button type="button" onClick={() => startEdit(listing)} className="px-3 py-1.5 text-xs font-medium text-navy border border-border rounded-lg hover:bg-muted transition-colors">Redigera</button>
-                      <button type="button" onClick={() => setDeleteConfirmId(listing.id)} className="px-3 py-1.5 text-xs text-gray-500 hover:text-red-600 border border-border rounded-lg hover:border-red-200 transition-colors">Ta bort</button>
+                      <button type="button" onClick={() => renewListing(listing.id)} disabled={renewingId === listing.id} className="px-3 py-1.5 text-xs font-medium text-gray-600 border border-border/60 rounded-2xl hover:bg-muted/60 transition-colors disabled:opacity-50" title="Förnya annons (visas längst upp)">{renewingId === listing.id ? "..." : "Förnya"}</button>
+                      <button type="button" onClick={() => startEdit(listing)} className="px-3 py-1.5 text-xs font-medium text-navy border border-border/60 rounded-2xl hover:bg-muted/60 transition-colors">Redigera</button>
+                      <button type="button" onClick={() => setDeleteConfirmId(listing.id)} className="px-3 py-1.5 text-xs text-gray-500 hover:text-red-600 border border-border/60 rounded-2xl hover:border-red-200 transition-colors">Ta bort</button>
                     </div>
                   </div>
                 </div>
@@ -581,29 +586,29 @@ function DashboardContent() {
           aria-modal="true"
           aria-labelledby="delete-modal-title"
         >
-          <div
-            className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h2 id="delete-modal-title" className="font-semibold text-navy mb-2">Är du säker?</h2>
-            <p className="text-sm text-gray-500 mb-6">Annonsen tas bort permanent.</p>
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={() => setDeleteConfirmId(null)}
-                className="flex-1 py-2.5 border border-border rounded-xl text-sm font-medium text-gray-600 hover:bg-muted transition-colors"
-              >
-                Avbryt
-              </button>
-              <button
-                type="button"
-                onClick={() => deleteListing(deleteConfirmId)}
-                className="flex-1 py-2.5 bg-red-600 text-white rounded-xl text-sm font-semibold hover:bg-red-700 transition-colors"
-              >
-                Ta bort
-              </button>
-            </div>
+<div
+          className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-xl border border-border/40"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <h2 id="delete-modal-title" className="font-semibold text-navy mb-2">Är du säker?</h2>
+          <p className="text-sm text-gray-500 mb-6">Annonsen tas bort permanent.</p>
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={() => setDeleteConfirmId(null)}
+              className="flex-1 py-2.5 border border-border/60 rounded-2xl text-sm font-medium text-gray-600 hover:bg-muted/60 transition-colors"
+            >
+              Avbryt
+            </button>
+            <button
+              type="button"
+              onClick={() => deleteListing(deleteConfirmId)}
+              className="flex-1 py-2.5 bg-red-600 text-white rounded-2xl text-sm font-semibold hover:bg-red-700 transition-colors"
+            >
+              Ta bort
+            </button>
           </div>
+        </div>
         </div>
       )}
       </>
@@ -615,11 +620,11 @@ function DashboardContent() {
       <div className="space-y-6">
         <h1 className="text-2xl font-bold text-navy">Sparade favoriter</h1>
         {favorites.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-border p-12 text-center">
-            <p className="text-2xl text-gray-200 mb-4">0</p>
+          <div className="dashboard-card p-12 text-center">
+            <p className="text-3xl font-bold text-gray-200 mb-4">0</p>
             <h3 className="font-semibold text-navy mb-2">Inga favoriter</h3>
             <p className="text-sm text-gray-500 mb-6">Spara lokaler du är intresserad av</p>
-            <Link href="/annonser" className="px-6 py-3 bg-navy text-white text-sm font-medium rounded-xl hover:bg-navy-light transition-colors">Utforska lokaler</Link>
+            <Link href="/annonser" className="inline-block px-6 py-3 bg-navy text-white text-sm font-medium rounded-full hover:bg-navy-light transition-colors">Utforska lokaler</Link>
           </div>
         ) : (
           <div className="space-y-4">
@@ -627,7 +632,7 @@ function DashboardContent() {
               const favListing = listing as Listing & { savedAt?: string };
               const hasImage = listing.imageUrl && listing.imageUrl.trim() !== "";
               return (
-                <div key={listing.id} className="bg-white rounded-2xl border border-border p-0 overflow-hidden hover:border-navy/20 hover:shadow-sm transition-all">
+                <div key={listing.id} className="dashboard-card p-0 overflow-hidden">
                   <div className="flex flex-col sm:flex-row">
                     <Link href={`/annonser/${listing.id}`} className="sm:w-40 shrink-0 relative h-32 sm:h-auto sm:min-h-[120px] block">
                       {hasImage ? (
@@ -656,11 +661,11 @@ function DashboardContent() {
                           type="button"
                           onClick={() => startContactFromFavorite(listing.id)}
                           disabled={contactListingId === listing.id}
-                          className="px-4 py-2 bg-navy text-white text-sm font-medium rounded-xl hover:bg-navy-light transition-colors disabled:opacity-50"
+                          className="px-4 py-2 bg-navy text-white text-sm font-medium rounded-full hover:bg-navy-light transition-colors disabled:opacity-50"
                         >
                           {contactListingId === listing.id ? "Vänta..." : "Kontakta hyresvärd"}
                         </button>
-                        <button onClick={() => removeFavorite(listing.id)} className="px-3 py-2 text-xs text-gray-500 hover:text-navy border border-border rounded-xl hover:border-navy/20 transition-colors" aria-label="Ta bort favorit">Ta bort</button>
+                        <button onClick={() => removeFavorite(listing.id)} className="px-3 py-2 text-xs text-gray-500 hover:text-navy border border-border/60 rounded-2xl hover:border-navy/20 transition-colors" aria-label="Ta bort favorit">Ta bort</button>
                       </div>
                     </div>
                   </div>
@@ -724,7 +729,7 @@ function DashboardContent() {
     return (
       <div className="space-y-6">
         <h1 className="text-2xl font-bold text-navy">Inställningar</h1>
-        <div className="bg-white rounded-2xl border border-border p-6">
+        <div className="dashboard-card p-6">
           <h2 className="font-semibold text-navy mb-4">Kontoinformation</h2>
           <p className="text-xs text-gray-500 mb-4">Namn och telefon används som standardkontakt när du skapar nya annonser.</p>
           {profile && (
@@ -782,7 +787,7 @@ function DashboardContent() {
             <p className="text-sm font-medium text-navy mt-0.5">{session?.user?.role === "agent" ? "Mäklare" : isLandlord ? "Hyresvärd / säljare" : "Hyresgäst / köpare"}</p>
           </div>
         </div>
-        <button onClick={() => signOut({ callbackUrl: "/" })} className="px-6 py-3 bg-navy/5 text-navy text-sm font-medium rounded-xl hover:bg-navy/10 transition-colors">Logga ut</button>
+        <button onClick={() => signOut({ callbackUrl: "/" })} className="px-6 py-3 bg-navy/5 text-navy text-sm font-medium rounded-full hover:bg-navy/10 transition-colors">Logga ut</button>
       </div>
     );
   }
@@ -997,16 +1002,16 @@ function StatisticsTab({
     return (
       <div className="space-y-6">
         <h1 className="text-2xl font-bold text-navy">Statistik</h1>
-        <div className="bg-white rounded-2xl border border-border p-12 text-center">
+        <div className="dashboard-card p-12 text-center">
           {statsError ? (
             <>
               <p className="text-red-500 mb-4">{statsError}</p>
-              <button onClick={fetchStats} className="px-5 py-2.5 bg-navy text-white text-sm font-medium rounded-xl hover:bg-navy-light transition-colors">Försök igen</button>
+              <button onClick={fetchStats} className="px-5 py-2.5 bg-navy text-white text-sm font-medium rounded-full hover:bg-navy-light transition-colors">Försök igen</button>
             </>
           ) : (
             <>
               <p className="text-gray-500 mb-4">Ingen statistik tillgänglig ännu.</p>
-              <button onClick={fetchStats} className="px-5 py-2.5 bg-navy text-white text-sm font-medium rounded-xl hover:bg-navy-light transition-colors">Ladda statistik</button>
+              <button onClick={fetchStats} className="px-5 py-2.5 bg-navy text-white text-sm font-medium rounded-full hover:bg-navy-light transition-colors">Ladda statistik</button>
             </>
           )}
         </div>
@@ -1019,9 +1024,9 @@ function StatisticsTab({
       <div className="space-y-6">
         <h1 className="text-2xl font-bold text-navy">Statistik</h1>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[...Array(4)].map((_, i) => <div key={i} className="bg-white rounded-2xl border border-border p-5 animate-pulse"><div className="h-4 bg-muted rounded w-2/3 mb-3" /><div className="h-8 bg-muted rounded w-1/2" /></div>)}
+          {[...Array(4)].map((_, i) => <div key={i} className="dashboard-card p-5"><div className="h-4 bg-muted/70 rounded-2xl w-2/3 mb-3 animate-pulse" /><div className="h-8 bg-muted/50 rounded-2xl w-1/2 animate-pulse" /></div>)}
         </div>
-        <div className="bg-white rounded-2xl border border-border p-6 animate-pulse"><div className="h-48 bg-muted rounded" /></div>
+        <div className="dashboard-card p-6"><div className="h-48 bg-muted/50 rounded-2xl animate-pulse" /></div>
       </div>
     );
   }
@@ -1061,7 +1066,7 @@ function StatisticsTab({
           <h1 className="text-2xl font-bold text-navy mb-1">Statistik</h1>
           <p className="text-sm text-gray-500">Översikt över dina annonsers prestanda de senaste 30 dagarna</p>
         </div>
-        <button onClick={fetchStats} disabled={statsLoading} className="px-4 py-2 text-xs font-medium text-gray-500 border border-border rounded-xl hover:bg-muted transition-colors disabled:opacity-50">
+        <button onClick={fetchStats} disabled={statsLoading} className="px-4 py-2 text-xs font-medium text-gray-500 border border-border/60 rounded-2xl hover:bg-muted/60 transition-colors disabled:opacity-50">
           {statsLoading ? "Uppdaterar..." : "Uppdatera"}
         </button>
       </div>
@@ -1073,7 +1078,7 @@ function StatisticsTab({
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {kpis.map((kpi) => (
-          <div key={kpi.label} className="bg-white rounded-2xl border border-border p-5 hover:shadow-md transition-shadow group">
+          <div key={kpi.label} className="dashboard-card p-5 group">
             <div className="flex items-center justify-between mb-3">
               <p className="text-[11px] font-semibold text-gray-400 tracking-[0.1em] uppercase">{kpi.label}</p>
               {wc.thisWeek.views > 0 || wc.lastWeek.views > 0 ? <TrendArrow current={kpi.thisWeek} previous={kpi.lastWeek} /> : null}
@@ -1092,16 +1097,16 @@ function StatisticsTab({
 
       {/* Main Chart */}
       {daily.length > 0 && (
-        <div className="bg-white rounded-2xl border border-border p-6">
+        <div className="dashboard-card p-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
             <h2 className="font-semibold text-navy">Utveckling (30 dagar)</h2>
-            <div className="flex gap-1 bg-muted rounded-xl p-1">
+            <div className="flex gap-1 bg-muted/60 rounded-2xl p-1">
               {(["views", "inquiries", "favorites"] as const).map((m) => (
                 <button
                   key={m}
                   type="button"
                   onClick={() => setChartMetric(m)}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
+                  className={`px-3 py-1.5 text-xs font-medium rounded-xl transition-all ${
                     chartMetric === m
                       ? "bg-navy text-white shadow-sm"
                       : "text-gray-500 hover:text-navy"
@@ -1151,7 +1156,7 @@ function StatisticsTab({
       {/* Two-column: Per-listing bars + Category donut */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Per-listing performance */}
-        <div className="lg:col-span-2 bg-white rounded-2xl border border-border p-6">
+        <div className="lg:col-span-2 dashboard-card p-6">
           <h2 className="font-semibold text-navy mb-4">Prestanda per annons</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
@@ -1180,7 +1185,7 @@ function StatisticsTab({
         </div>
 
         {/* Category distribution */}
-        <div className="bg-white rounded-2xl border border-border p-6">
+        <div className="dashboard-card p-6">
           <h2 className="font-semibold text-navy mb-4">Kategorier</h2>
           <div className="flex justify-center mb-4">
             <DonutChart data={catData} />
@@ -1199,7 +1204,7 @@ function StatisticsTab({
 
       {/* Per-listing sparklines table */}
       {(ts?.perListingDaily ?? []).length > 0 && (
-        <div className="bg-white rounded-2xl border border-border p-6">
+        <div className="dashboard-card p-6">
           <h2 className="font-semibold text-navy mb-4">Visningstrender per annons</h2>
           <p className="sm:hidden text-xs text-gray-400 mb-2">Svep för att se mer</p>
           <div className="overflow-x-auto">
@@ -1242,7 +1247,7 @@ function StatisticsTab({
 
       {/* Top performer highlight */}
       {ov?.topListingId && ov?.topListingTitle && (
-        <div className="bg-gradient-to-r from-navy to-navy-light rounded-2xl p-6 text-white">
+        <div className="bg-gradient-to-r from-navy to-navy-light rounded-3xl p-6 text-white">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <p className="text-[11px] font-semibold text-white/50 uppercase tracking-wider mb-1">Toppresterande annons</p>
@@ -1251,7 +1256,7 @@ function StatisticsTab({
             </div>
             <Link
               href={`/annonser/${ov!.topListingId}`}
-              className="px-5 py-2.5 bg-white/20 text-white text-sm font-medium rounded-xl hover:bg-white/30 transition-colors backdrop-blur-sm whitespace-nowrap"
+              className="px-5 py-2.5 bg-white/20 text-white text-sm font-medium rounded-full hover:bg-white/30 transition-colors backdrop-blur-sm whitespace-nowrap"
             >
               Visa annons
             </Link>
@@ -1264,16 +1269,16 @@ function StatisticsTab({
 
 function StatCard({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
-    <div className="bg-white rounded-2xl border border-border p-6 hover:shadow-sm transition-shadow">
-      <p className={`text-2xl font-bold ${accent ? "text-navy" : "text-navy"}`}>{value}</p>
-      <p className="text-xs text-gray-500 mt-1">{label}</p>
+    <div className={`dashboard-card p-6 ${accent ? "animate-pulse-soft" : ""}`}>
+      <p className="text-2xl font-bold text-navy tracking-tight">{value}</p>
+      <p className="text-xs text-gray-500 mt-1.5">{label}</p>
     </div>
   );
 }
 
 export default function DashboardPage() {
   return (
-    <Suspense fallback={<div className="space-y-6">{[...Array(3)].map((_, i) => <div key={i} className="bg-white rounded-2xl border border-border p-6 animate-pulse"><div className="h-6 bg-muted rounded w-1/3 mb-4" /><div className="h-4 bg-muted rounded w-2/3" /></div>)}</div>}>
+    <Suspense fallback={<div className="space-y-6">{[...Array(3)].map((_, i) => <div key={i} className="dashboard-card p-6"><div className="h-6 bg-muted/70 rounded-2xl w-1/3 mb-4 animate-pulse" /><div className="h-4 bg-muted/50 rounded-2xl w-2/3 animate-pulse" /></div>)}</div>}>
       <DashboardContent />
     </Suspense>
   );

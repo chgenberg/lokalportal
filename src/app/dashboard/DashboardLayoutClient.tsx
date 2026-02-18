@@ -135,7 +135,7 @@ export default function DashboardLayoutClient({ children }: { children: React.Re
       {session?.user && (
         <div className="px-4 pt-5 pb-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-navy/10 flex items-center justify-center text-navy text-sm font-bold shrink-0">
+            <div className="w-11 h-11 rounded-full bg-navy/8 flex items-center justify-center text-navy text-sm font-bold shrink-0">
               {initials}
             </div>
             <div className="min-w-0">
@@ -161,9 +161,9 @@ export default function DashboardLayoutClient({ children }: { children: React.Re
                 key={item.label}
                 href={item.href}
                 onClick={() => setMobileOpen(false)}
-                className={`group flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-150 ${
+                className={`group flex items-center gap-3 px-3 py-2.5 rounded-2xl text-[13px] font-medium transition-all duration-200 ${
                   active
-                    ? "bg-navy text-white shadow-sm shadow-navy/20"
+                    ? "bg-navy text-white shadow-sm"
                     : "text-gray-500 hover:text-navy hover:bg-navy/[0.04]"
                 }`}
               >
@@ -185,7 +185,7 @@ export default function DashboardLayoutClient({ children }: { children: React.Re
       <div className="px-3 py-3">
         <button
           onClick={() => signOut({ callbackUrl: "/" })}
-          className="group flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-[13px] font-medium text-gray-400 hover:text-red-500 hover:bg-red-50/60 transition-all duration-150"
+          className="group flex items-center gap-3 w-full px-3 py-2.5 rounded-2xl text-[13px] font-medium text-gray-400 hover:text-red-500 hover:bg-red-50/50 transition-all duration-200"
         >
           <IconLogout className="w-[18px] h-[18px] shrink-0 text-gray-300 group-hover:text-red-400 transition-colors duration-150" />
           Logga ut
@@ -195,12 +195,12 @@ export default function DashboardLayoutClient({ children }: { children: React.Re
   );
 
   return (
-    <div className="min-h-screen bg-muted/40">
+    <div className="min-h-screen bg-muted/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
         {/* Mobile top bar */}
-        <div className="lg:hidden flex items-center justify-between mb-5 bg-white rounded-2xl border border-border/60 px-4 py-3">
+        <div className="lg:hidden flex items-center justify-between mb-5 bg-white rounded-3xl border border-border/40 shadow-sm px-4 py-3.5">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-navy/10 flex items-center justify-center text-navy text-xs font-bold">
+            <div className="w-9 h-9 rounded-full bg-navy/8 flex items-center justify-center text-navy text-xs font-bold">
               {initials}
             </div>
             <p className="text-sm font-semibold text-navy">{session?.user?.name}</p>
@@ -208,7 +208,7 @@ export default function DashboardLayoutClient({ children }: { children: React.Re
           <button
             type="button"
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="flex items-center justify-center w-11 h-11 -mr-1 rounded-xl text-gray-500 hover:text-navy hover:bg-muted transition-colors"
+            className="flex items-center justify-center w-11 h-11 -mr-1 rounded-2xl text-gray-500 hover:text-navy hover:bg-navy/[0.04] transition-all duration-200"
             aria-label={mobileOpen ? "Stäng meny" : "Öppna meny"}
           >
             {mobileOpen ? <IconX className="w-5 h-5" /> : <IconMenu className="w-5 h-5" />}
@@ -217,7 +217,7 @@ export default function DashboardLayoutClient({ children }: { children: React.Re
 
         {/* Mobile nav drawer */}
         {mobileOpen && (
-          <div className="lg:hidden mb-5 bg-white rounded-2xl border border-border/60 overflow-hidden animate-slide-down">
+          <div className="lg:hidden mb-5 bg-white rounded-3xl border border-border/40 shadow-lg overflow-hidden animate-slide-down">
             {sidebar}
           </div>
         )}
@@ -225,7 +225,7 @@ export default function DashboardLayoutClient({ children }: { children: React.Re
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Desktop sidebar */}
           <aside className="hidden lg:block w-60 shrink-0">
-            <div className="bg-white rounded-2xl border border-border/60 sticky top-24 overflow-hidden flex flex-col">
+            <div className="bg-white rounded-3xl border border-border/40 shadow-sm sticky top-24 overflow-hidden flex flex-col">
               {sidebar}
             </div>
           </aside>

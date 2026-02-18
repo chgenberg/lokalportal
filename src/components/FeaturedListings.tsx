@@ -39,7 +39,7 @@ export default function FeaturedListings() {
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="bg-white rounded-2xl border border-border/40 overflow-hidden">
+              <div key={i} className="bg-white rounded-3xl border border-border/40 overflow-hidden">
                 <div className="h-52 bg-gradient-to-br from-muted to-muted/70 shimmer" />
                 <div className="p-5 space-y-3">
                   <div className="h-4 bg-muted/80 rounded-lg w-3/4 shimmer" />
@@ -54,7 +54,7 @@ export default function FeaturedListings() {
             ))}
           </div>
         ) : error ? (
-          <div role="alert" className="py-16 px-6 bg-white rounded-2xl border border-border/40 text-center">
+          <div role="alert" className="py-16 px-6 bg-white rounded-3xl border border-border/40 text-center">
             <p className="text-gray-400 mb-4 text-sm">{error}</p>
             <button type="button" onClick={() => window.location.reload()} className="text-[13px] font-semibold text-navy hover:underline">Ladda om sidan</button>
           </div>

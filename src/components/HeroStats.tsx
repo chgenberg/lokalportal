@@ -2,7 +2,10 @@
 
 import { useEffect, useState, useRef } from "react";
 
-interface Stats { totalListings: number; totalCities: number; }
+interface Stats {
+  totalListings: number;
+  totalCities: number;
+}
 
 function useCountUp(end: number, duration = 1500, startOnView = true) {
   const [count, setCount] = useState(0);
@@ -45,10 +48,12 @@ function CountUpStat({ value, label }: { value: number; label: string }) {
   const { count, ref } = useCountUp(value);
 
   return (
-    <div ref={ref} className="flex items-center">
-      <div className="text-center px-4 sm:px-8 md:px-12">
-        <div className="text-xl sm:text-2xl font-bold text-white tracking-tight tabular-nums">{count}+</div>
-        <div className="text-[11px] font-medium text-white/80 mt-1 tracking-[0.15em] uppercase">{label}</div>
+    <div ref={ref} className="text-center px-6 sm:px-10 md:px-14">
+      <div className="text-3xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight tabular-nums">
+        {count}+
+      </div>
+      <div className="text-[12px] font-medium text-white/70 mt-1.5 tracking-[0.12em] uppercase">
+        {label}
       </div>
     </div>
   );
@@ -56,10 +61,12 @@ function CountUpStat({ value, label }: { value: number; label: string }) {
 
 function StaticStat({ value, label }: { value: string; label: string }) {
   return (
-    <div className="flex items-center">
-      <div className="text-center px-4 sm:px-8 md:px-12">
-        <div className="text-xl sm:text-2xl font-bold text-white tracking-tight">{value}</div>
-        <div className="text-[11px] font-medium text-white/80 mt-1 tracking-[0.15em] uppercase">{label}</div>
+    <div className="text-center px-6 sm:px-10 md:px-14">
+      <div className="text-3xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight">
+        {value}
+      </div>
+      <div className="text-[12px] font-medium text-white/70 mt-1.5 tracking-[0.12em] uppercase">
+        {label}
       </div>
     </div>
   );
@@ -74,7 +81,10 @@ export default function HeroStats() {
         const res = await fetch("/api/stats");
         if (res.ok) {
           const data = await res.json();
-          setStats({ totalListings: data.totalListings ?? 0, totalCities: data.totalCities ?? 0 });
+          setStats({
+            totalListings: data.totalListings ?? 0,
+            totalCities: data.totalCities ?? 0,
+          });
         }
       } catch { /* silent */ }
     };
@@ -84,12 +94,14 @@ export default function HeroStats() {
   if (!stats) return null;
 
   return (
-    <div className="mt-10 sm:mt-16 flex items-center justify-center flex-wrap gap-y-4">
-      <CountUpStat value={stats.totalListings} label="Lokaler" />
-      <div className="h-8 w-px bg-white/20 mx-2 md:mx-4 shrink-0" aria-hidden />
-      <CountUpStat value={stats.totalCities} label="Städer" />
-      <div className="h-8 w-px bg-white/20 mx-2 md:mx-4 shrink-0" aria-hidden />
-      <StaticStat value="500+" label="Annonsörer" />
+    <div className="max-w-5xl mx-auto rounded-3xl px-6 py-10 sm:py-14">
+      <div className="flex flex-wrap items-center justify-center gap-y-6">
+        <CountUpStat value={stats.totalListings} label="Lokaler" />
+        <div className="hidden sm:block h-12 w-px bg-white/20 shrink-0" aria-hidden />
+        <CountUpStat value={stats.totalCities} label="Städer" />
+        <div className="hidden sm:block h-12 w-px bg-white/20 shrink-0" aria-hidden />
+        <StaticStat value="500+" label="Annonsörer" />
+      </div>
     </div>
   );
 }

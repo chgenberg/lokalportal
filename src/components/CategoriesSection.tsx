@@ -19,16 +19,16 @@ const UNSPLASH_BY_CATEGORY: Record<string, string> = {
 };
 
 const categoryConfig = [
-  { key: "butik", label: "Butik", description: "Butikslokaler i attraktiva lägen med bra exponering mot gata." },
-  { key: "kontor", label: "Kontor", description: "Moderna kontorslokaler med flexibla planlösningar." },
-  { key: "lager", label: "Lager", description: "Lagerlokaler med bra logistikläge och lastmöjligheter." },
-  { key: "restaurang", label: "Restaurang/Café", description: "Restaurang- och cafélokaler med köksutrustning och serveringstillstånd." },
-  { key: "verkstad", label: "Verkstad/Industri", description: "Verkstads- och industrilokaler med hög takhöjd och bra tillgänglighet." },
-  { key: "showroom", label: "Showroom", description: "Showroomlokaler för produktvisning och kundmöten." },
-  { key: "popup", label: "Pop-up", description: "Korttidslokaler för pop-up butiker, event och tillfälliga projekt." },
-  { key: "atelje", label: "Ateljé/Studio", description: "Kreativa lokaler för ateljéer, studios och konstnärlig verksamhet." },
-  { key: "gym", label: "Gym/Träningslokal", description: "Lokaler anpassade för gym, yoga och andra träningsverksamheter." },
-  { key: "ovrigt", label: "Övrigt", description: "Andra typer av kommersiella lokaler och unika utrymmen." },
+  { key: "butik", label: "Butik" },
+  { key: "kontor", label: "Kontor" },
+  { key: "lager", label: "Lager" },
+  { key: "restaurang", label: "Restaurang/Café" },
+  { key: "verkstad", label: "Verkstad/Industri" },
+  { key: "showroom", label: "Showroom" },
+  { key: "popup", label: "Pop-up" },
+  { key: "atelje", label: "Ateljé/Studio" },
+  { key: "gym", label: "Gym/Träningslokal" },
+  { key: "ovrigt", label: "Övrigt" },
 ];
 
 export default function CategoriesSection() {
@@ -48,42 +48,44 @@ export default function CategoriesSection() {
   }, []);
 
   return (
-    <section className="py-14 sm:py-20 md:py-24 bg-white relative">
+    <section className="py-14 sm:py-20 md:py-24 bg-muted/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <ScrollReveal>
-          <div className="text-center mb-10 sm:mb-16">
-            <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-gray-400 mb-3">Kategorier</p>
+          <div className="mb-8 sm:mb-12">
+            <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-gray-400 mb-2">Kategorier</p>
             <h2 className="text-2xl sm:text-3xl font-bold text-navy tracking-tight">Utforska lokaler</h2>
           </div>
         </ScrollReveal>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4">
-          {categoryConfig.map((cat, i) => (
-            <ScrollReveal key={cat.key} delay={i * 80}>
+        <div className="overflow-x-auto pb-4 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:mx-0 lg:px-0 scrollbar-thin">
+          <div className="flex gap-4 sm:gap-5 min-w-max">
+            {categoryConfig.map((cat) => (
               <Link
+                key={cat.key}
                 href={`/annonser?category=${cat.key}`}
-                className="group relative block py-6 sm:py-10 px-4 sm:px-6 rounded-2xl border border-border/60 text-center overflow-hidden transition-all duration-500 hover:border-navy/15 hover:shadow-md hover:-translate-y-1 min-h-[180px] sm:min-h-[200px] flex flex-col justify-center"
+                className="group flex-shrink-0 w-[180px] sm:w-[200px]"
               >
-                <Image
-                  src={UNSPLASH_BY_CATEGORY[cat.key] ?? UNSPLASH_BY_CATEGORY.ovrigt}
-                  alt=""
-                  fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-105"
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 20vw"
-                />
-                <div className="absolute inset-0 bg-navy/70 group-hover:bg-navy/60 transition-colors duration-300" />
-                <div className="relative z-10">
-                  <h3 className="text-lg font-bold text-white mb-2 tracking-tight group-hover:text-white/95 transition-colors drop-shadow-sm">
-                    {cat.label}
-                  </h3>
-                  <p className="text-[12px] text-white/80 mb-4 leading-relaxed max-w-[200px] mx-auto">{cat.description}</p>
-                  <span className="inline-block text-[11px] font-semibold text-white/70 group-hover:text-white transition-colors tracking-[0.15em] uppercase">
-                    {byCategory[cat.key] ?? 0} annonser &rarr;
-                  </span>
+                <div className="bg-white rounded-3xl border border-border/50 overflow-hidden shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5">
+                  <div className="relative aspect-[4/3] rounded-t-3xl overflow-hidden">
+                    <Image
+                      src={UNSPLASH_BY_CATEGORY[cat.key] ?? UNSPLASH_BY_CATEGORY.ovrigt}
+                      alt=""
+                      fill
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      sizes="200px"
+                    />
+                  </div>
+                  <div className="p-4 text-center">
+                    <h3 className="text-[15px] font-bold text-navy mb-1 tracking-tight">{cat.label}</h3>
+                    <p className="text-[11px] text-gray-400 mb-3">{byCategory[cat.key] ?? 0} annonser</p>
+                    <span className="inline-block px-4 py-2 rounded-full bg-navy text-white text-[12px] font-semibold transition-colors group-hover:bg-navy-light">
+                      Visa mer
+                    </span>
+                  </div>
                 </div>
               </Link>
-            </ScrollReveal>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </section>

@@ -45,7 +45,7 @@ export default function ConversationList({
   if (conversations.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 px-6">
-        <div className="w-14 h-14 rounded-full bg-navy/5 flex items-center justify-center mb-3">
+        <div className="w-14 h-14 rounded-2xl bg-navy/5 flex items-center justify-center mb-3">
           <svg
             className="w-6 h-6 text-navy/25"
             fill="none"
@@ -86,15 +86,15 @@ export default function ConversationList({
             <button
               key={conv.id}
               onClick={() => onSelect(conv.id)}
-              className={`w-full text-left px-3 py-3 flex items-center gap-3 transition-colors relative ${
+              className={`w-full text-left px-3 py-3 mx-2 mb-1.5 rounded-2xl flex items-center gap-3 transition-all duration-200 relative ${
                 isSelected
-                  ? "bg-navy/[0.06]"
-                  : "hover:bg-muted"
+                  ? "bg-navy/[0.06] shadow-sm"
+                  : "hover:bg-muted/60"
               }`}
             >
               {/* Active indicator */}
               {isSelected && (
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-8 bg-navy rounded-r-full" />
+                <div className="absolute left-2 top-1/2 -translate-y-1/2 w-1 h-6 bg-navy rounded-full" />
               )}
 
               {/* Avatar */}

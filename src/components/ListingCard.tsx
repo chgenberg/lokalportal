@@ -27,7 +27,7 @@ export default function ListingCard({ listing, favorited: initialFavorited }: Li
       className="block group"
       aria-label={`${listing.title}, ${listing.address}, ${listing.city}, ${listing.size} m²`}
     >
-      <div className="bg-white rounded-2xl border border-border/60 overflow-hidden transition-all duration-300 hover:shadow-md hover:-translate-y-1 group">
+      <div className="bg-white rounded-3xl border border-border/60 overflow-hidden transition-all duration-300 hover:shadow-md hover:-translate-y-1 group">
         {/* Image area */}
         <div className="relative h-52 overflow-hidden">
           {hasImage ? (
@@ -64,7 +64,7 @@ export default function ListingCard({ listing, favorited: initialFavorited }: Li
 
           {/* Price overlay on hover */}
           <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-1 group-hover:translate-y-0">
-            <span className="px-3 py-1.5 text-sm font-bold text-white bg-navy/90 rounded-lg backdrop-blur-sm">
+            <span className="px-3 py-1.5 text-sm font-bold text-white bg-navy/90 rounded-xl backdrop-blur-sm">
               {formatPriceDisplay(listing.price, listing.type)}
             </span>
           </div>

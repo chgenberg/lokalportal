@@ -62,7 +62,7 @@ function MeddelandenContent() {
         <h1 className="text-2xl font-bold text-navy">Meddelanden</h1>
       </div>
 
-      <div className="bg-white rounded-2xl border border-border overflow-hidden shadow-sm">
+      <div className="bg-white rounded-3xl border border-border/40 overflow-hidden shadow-sm">
         <div
           className="flex flex-col md:flex-row"
           style={{ height: "calc(100vh - 220px)", minHeight: "400px" }}
@@ -76,11 +76,11 @@ function MeddelandenContent() {
             {loading ? (
               <div className="p-4 space-y-2">
                 {[...Array(5)].map((_, i) => (
-                  <div key={i} className="flex items-center gap-3 p-3">
-                    <div className="w-12 h-12 bg-muted rounded-full animate-pulse" />
+                  <div key={i} className="flex items-center gap-3 p-3 mx-2 mb-1.5 rounded-2xl">
+                    <div className="w-12 h-12 bg-muted/70 rounded-2xl animate-pulse" />
                     <div className="flex-1 space-y-2">
-                      <div className="h-3 bg-muted rounded-full animate-pulse w-2/3" />
-                      <div className="h-2.5 bg-muted rounded-full animate-pulse w-full" />
+                      <div className="h-3 bg-muted/60 rounded-2xl animate-pulse w-2/3" />
+                      <div className="h-2.5 bg-muted/50 rounded-2xl animate-pulse w-full" />
                     </div>
                   </div>
                 ))}
@@ -107,7 +107,7 @@ function MeddelandenContent() {
                   <button
                     type="button"
                     onClick={() => setSelectedId(undefined)}
-                    className="flex items-center gap-1.5 text-navy font-medium text-sm hover:bg-navy/[0.04] rounded-lg px-3 py-2.5 -ml-2 transition-colors min-h-[44px]"
+                    className="flex items-center gap-1.5 text-navy font-medium text-sm hover:bg-navy/[0.04] rounded-2xl px-3 py-2.5 -ml-2 transition-colors min-h-[44px]"
                     aria-label="Tillbaka till konversationer"
                   >
                     <svg
@@ -137,7 +137,7 @@ function MeddelandenContent() {
             ) : (
               <div className="flex-1 flex items-center justify-center bg-muted/20">
                 <div className="text-center px-4">
-                  <div className="w-16 h-16 rounded-full bg-navy/5 flex items-center justify-center mx-auto mb-4">
+                  <div className="w-16 h-16 rounded-3xl bg-navy/5 flex items-center justify-center mx-auto mb-4">
                     <svg
                       className="w-7 h-7 text-navy/20"
                       fill="none"
@@ -172,7 +172,7 @@ export default function MeddelandenPage() {
   return (
     <Suspense
       fallback={
-        <div className="bg-white rounded-2xl border border-border p-12 text-center">
+        <div className="bg-white rounded-3xl border border-border/40 p-12 text-center">
           <div className="w-6 h-6 border-2 border-navy/20 border-t-navy rounded-full animate-spin mx-auto" />
         </div>
       }
