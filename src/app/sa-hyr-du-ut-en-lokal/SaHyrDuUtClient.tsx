@@ -10,7 +10,7 @@ const LANDLORD_STEPS = [
     label: "Steg 1",
     title: "Publicera din lokal",
     description:
-      "Din lokal visas för tusentals sökande genom våra externa samarbeten för att säkerställa maximal exponering. Skapa en professionell annons med hjälp av vår AI-agent på bara några minuter.",
+      "Din lokal visas för tusentals sökande genom våra externa samarbeten för att säkerställa maximal exponering. Skapa en professionell annons med hjälp av vår agent på bara några minuter.",
     image:
       "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80",
     imageAlt: "Modernt kontor med stora fönster",
@@ -97,9 +97,9 @@ const FEATURES = [
       "Nordens största annonsplats för uthyrning av kommersiella lokaler. För hyresgivare och hyressökande.",
   },
   {
-    title: "AI-genererade annonser",
+    title: "Agent-baserade annonser",
     description:
-      "Skapa professionella annonser på minuter med hjälp av vår AI-agent. Beskriv din lokal och få en färdig annons direkt.",
+      "Skapa professionella annonser på minuter med hjälp av vår agent. Beskriv din lokal och få en färdig annons direkt.",
   },
   {
     title: "Garanterad trygghet",
