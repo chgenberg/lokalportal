@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import SaHyrDuUtClient from "./SaHyrDuUtClient";
 
 export const metadata: Metadata = {

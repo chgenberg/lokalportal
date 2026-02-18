@@ -34,23 +34,23 @@ export default function Home() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
       />
-      <section className="bg-white py-14 sm:py-20 md:py-24">
+      <section className="bg-white py-10 sm:py-16 md:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-2 gap-10 lg:gap-16 items-center">
-            <div>
+          <div className="grid md:grid-cols-2 gap-8 md:gap-10 lg:gap-16 items-center">
+            <div className="order-2 md:order-1">
               <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-gray-400 mb-3">
                 Sveriges marknadsplats för kommersiella lokaler
               </p>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-navy leading-[1.1] tracking-tight mb-4">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-navy leading-[1.1] tracking-tight mb-3 sm:mb-4">
                 Hitta rätt lokal snabbare
               </h1>
-              <p className="text-base text-gray-600 max-w-lg leading-relaxed mb-8">
+              <p className="text-sm sm:text-base text-gray-600 max-w-lg leading-relaxed mb-6 sm:mb-8">
                 Sök bland butiker, kontor, lager och unika ytor.
                 Verifierade annonsörer. Trygga affärer.
               </p>
               <HeroSearch />
             </div>
-            <div className="relative aspect-[4/3] rounded-3xl overflow-hidden shadow-lg">
+            <div className="order-1 md:order-2 relative aspect-[4/3] rounded-2xl sm:rounded-3xl overflow-hidden shadow-lg">
               <Image
                 src={HERO_IMAGE}
                 alt="Moderna kontorsytor och kommersiella lokaler"

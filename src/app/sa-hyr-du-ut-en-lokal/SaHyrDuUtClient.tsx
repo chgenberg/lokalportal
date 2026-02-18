@@ -4,149 +4,258 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
-const STEPS = [
+const LANDLORD_STEPS = [
   {
     id: 1,
-    title: "Planera din uthyrning",
-    teaser:
-      "För att få ut det mesta av din lokal behöver du ha koll på förutsättningarna. Tänk igenom vem som passar som hyresgäst, vilket pris som är rimligt och vad konkurrensen ser ut i området.",
-    full: `Innan du sätter upp en annons är det smart att göra en snabb analys. Vilken typ av verksamhet passar lokalen bäst – butik, kontor, restaurang? Vad finns det för efterfrågan i trakten? Vad tar andra liknande lokaler i närheten?
-
-Ta reda på lokens starka sidor: läge, kommunikationer, parkering, takhöjd. Dessa faktorer avgör både intresset och priset. En väl genomtänkt planering ger dig ett tryggare utgångsläge när intressenter börjar höra av sig.`,
+    label: "Steg 1",
+    title: "Publicera din lokal",
+    description:
+      "Din lokal visas för tusentals sökande genom våra externa samarbeten för att säkerställa maximal exponering. Skapa en professionell annons med hjälp av vår AI-agent på bara några minuter.",
+    image:
+      "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80",
+    imageAlt: "Modernt kontor med stora fönster",
   },
   {
     id: 2,
-    title: "Marknadsför din lokal",
-    teaser:
-      "Annonsen är ofta det första intrycket en intressent får av din lokal. Satsa på saker som verkligen säljer – bra bilder, tydlig beskrivning och en rubrik som fångar uppmärksamheten.",
-    full: `En bra annons innehåller professionella bilder som visar hela lokalen: fasad, insida, eventuellt kök eller gemensamma utrymmen. Om du har en planlösning – inkludera den. Många hyresgäster vill förstå flödet och storleken på rummen.
-
-Beskrivningen ska vara konkret: storlek i kvm, takhöjd, vilka tillbehör som ingår (hisar, lastbrygga, fiber). Undvik floskler – siffror och fakta överträffar alltid vaga formuleringar. På Hittayta.se kan du generera en professionell annons med hjälp av vår agent om du vill spara tid.`,
+    label: "Steg 2",
+    title: "Hitta den perfekta hyresgästen",
+    description:
+      "Mottag kontaktförfrågningar eller kontakta matchande hyresgäster i appen. Vi verifierar dem och kan hjälpa dig välja den bästa hyresgästen för dig.",
+    image:
+      "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=800&q=80",
+    imageAlt: "Affärsmöte mellan hyresvärd och hyresgäst",
   },
   {
     id: 3,
-    title: "Välj rätt hyresgäst",
-    teaser:
-      "Alla intressenter är inte lika passande. Fundera över vilken typ av verksamhet som är stabil, långsiktig och passar lokalen – och vilka som kanske kräver mer av dig som hyresvärd.",
-    full: `Ta reda på vad sökanden ska använda lokalen till. Matchar det lokalen och eventuella bestämmelser (t.ex. för restaurang)? Har företaget verksamhet sedan tidigare, eller är det ett nytt projekt? Referenser och årsredovisning kan ge en indikation på stabilitet.
-
-Tänk också praktiskt: hur ofta behöver du ha kontakt med hyresgästen? Vissa verksamheter kräver mer dialog – andra är mer självgående. Välj en hyresgäst som känns trygg både affärsmässigt och i det dagliga samarbetet.`,
+    label: "Steg 3",
+    title: "Förhandla och skriv kontrakt",
+    description:
+      "Förhandla villkoren direkt på plattformen. Vi guidar dig genom processen och ser till att avtalet skyddar båda parter – från hyra och löptid till ansvarsfördelning.",
+    image:
+      "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=800&q=80",
+    imageAlt: "Kontraktsskrivning och förhandling",
   },
   {
     id: 4,
-    title: "Förhandling och kontrakt",
-    teaser:
-      "När ni hittat varandra är det dags att formalisera uthyrningen. Ett tydligt avtal skyddar båda parter och minskar risken för missförstånd längre fram.",
-    full: `Ha alltid ett skriftligt hyresavtal. Det ska täcka hyra, löptid, uppsägningstid, vad som ingår (värme, el, städning m.m.) och ansvarsfördelning vid skador eller underhåll.
+    label: "Steg 4",
+    title: "Tillträde och överlämning",
+    description:
+      "När allt är klart genomför ni en gemensam besiktning och överlämning. Dokumentera skick, lämna nycklar och ge hyresgästen allt de behöver för en smidig start.",
+    image:
+      "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80",
+    imageAlt: "Nyckelöverlämning vid tillträde",
+  },
+];
 
-Förhandla öppet kring priset – många hyresgäster uppskattar transparens. Om ni kommer överens om avtal i flera år kan det vara motiverat med en indexering eller fast hyra. Beroende på lokalens storlek och värde kan det vara värt att låta en jurist eller mäklare granska avtalet innan ni skriver på.`,
+const TENANT_STEPS = [
+  {
+    id: 1,
+    label: "Steg 1",
+    title: "Sök och hitta rätt lokal",
+    description:
+      "Bläddra bland hundratals lokaler filtrerade på stad, typ och storlek. Använd vår karta för att hitta det perfekta läget för din verksamhet.",
+    image:
+      "https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=800&q=80",
+    imageAlt: "Person söker lokal på dator",
   },
   {
-    id: 5,
-    title: "Tillträde",
-    teaser:
-      "När allt är klubbat är det dags för tillträde. En genomtänkt överlämning gör att den nya hyresgästen kan komma igång smidigt och att du undviker problem i efterhand.",
-    full: `Gå igenom lokalen tillsammans vid tillträde. Notera skick på väggar, golv och fönster – dokumentera med bilder om ni vill undvika dispyter vid flytt. Skriv upp vad som ingår och i vilket skick det överlämnas.
+    id: 2,
+    label: "Steg 2",
+    title: "Kontakta hyresvärden",
+    description:
+      "Skicka en intresseanmälan direkt via plattformen. Beskriv din verksamhet och dina behov så att hyresvärden kan bedöma om ni matchar.",
+    image:
+      "https://images.unsplash.com/photo-1553877522-43269d4ea984?w=800&q=80",
+    imageAlt: "Kommunikation via plattformen",
+  },
+  {
+    id: 3,
+    label: "Steg 3",
+    title: "Besök och utvärdera",
+    description:
+      "Boka en visning och se lokalen på plats. Kontrollera att den uppfyller dina krav gällande yta, läge, tillgänglighet och teknisk standard.",
+    image:
+      "https://images.unsplash.com/photo-1604328698692-f76ea9498e76?w=800&q=80",
+    imageAlt: "Visning av lokal",
+  },
+  {
+    id: 4,
+    label: "Steg 4",
+    title: "Flytta in och kom igång",
+    description:
+      "När kontraktet är påskrivet är det dags att flytta in. En smidig överlämning gör att du kan fokusera på det viktigaste – din verksamhet.",
+    image:
+      "https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=800&q=80",
+    imageAlt: "Inflyttning i ny lokal",
+  },
+];
 
-Ge hyresgästen tydlig info om elmätning, soprum, nycklar och eventuella regler för fastigheten. Ha en kontaktperson eller rutin för frågor de första veckorna. Ju smidigare starten är, desto enklare blir samarbetet framåt.`,
+const FEATURES = [
+  {
+    title: "Annonsering av lokaler",
+    description:
+      "Nordens största annonsplats för uthyrning av kommersiella lokaler. För hyresgivare och hyressökande.",
+  },
+  {
+    title: "AI-genererade annonser",
+    description:
+      "Skapa professionella annonser på minuter med hjälp av vår AI-agent. Beskriv din lokal och få en färdig annons direkt.",
+  },
+  {
+    title: "Garanterad trygghet",
+    description:
+      "Garanterad hyra, förförhandlad kontakt och ett team av experter för en modern och trygg hyresupplevelse.",
   },
 ];
 
 export default function SaHyrDuUtClient() {
-  const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [activeTab, setActiveTab] = useState<"landlord" | "tenant">("landlord");
+  const steps = activeTab === "landlord" ? LANDLORD_STEPS : TENANT_STEPS;
 
   return (
     <div className="min-h-screen bg-white">
       {/* Hero */}
-      <div className="relative bg-navy overflow-hidden min-h-[280px]">
-        <Image
-          src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1920&q=80"
-          alt=""
-          fill
-          className="object-cover"
-          sizes="100vw"
-          priority
-        />
-        <div className="absolute inset-0 bg-navy/80" />
-        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
-          <Link
-            href="/"
-            className="inline-block text-[12px] text-white/50 hover:text-white/80 mb-6 transition-colors tracking-wide"
-          >
-            &larr; Tillbaka till startsidan
-          </Link>
-          <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-white/50 mb-2">Guide</p>
-          <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight mb-4">
-            Så hyr du ut en lokal
+      <section className="pt-10 sm:pt-16 md:pt-24 pb-8 sm:pb-12 md:pb-16 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto text-center">
+          <p className="text-[10px] sm:text-xs font-semibold tracking-[0.2em] uppercase text-navy/40 mb-3 sm:mb-4">
+            Så fungerar det
+          </p>
+          <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-navy tracking-tight mb-3 sm:mb-5">
+            HYR MED HITTAYTA
           </h1>
-          <p className="text-white/80 text-lg max-w-2xl">
-            Fem steg från planering till tillträde. En praktisk guide för dig som ska hyra ut en kommersiell lokal.
+          <p className="text-gray-500 text-sm sm:text-lg md:text-xl max-w-xl mx-auto">
+            Hantera din uthyrning på rätt sätt – tryggt och enkelt.
           </p>
         </div>
-      </div>
+      </section>
 
-      {/* Steps */}
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="space-y-8">
-          {STEPS.map((step) => {
-            const isExpanded = expandedId === step.id;
-            return (
-              <article
-                key={step.id}
-                className="bg-white rounded-2xl border border-border/60 overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+      {/* Feature cards row */}
+      <section className="pb-10 sm:pb-16 md:pb-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6">
+          {FEATURES.map((f) => (
+            <div
+              key={f.title}
+              className="bg-muted/40 rounded-xl sm:rounded-2xl p-5 sm:p-8"
+            >
+              <h3 className="text-sm sm:text-base font-semibold text-navy mb-1 sm:mb-2">
+                {f.title}
+              </h3>
+              <p className="text-xs sm:text-sm text-gray-500 leading-relaxed">
+                {f.description}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* "Så fungerar det" steps section */}
+      <section className="pb-14 sm:pb-20 md:pb-28 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-5xl mx-auto">
+          {/* Section heading */}
+          <div className="text-center mb-8 sm:mb-10">
+            <h2 className="text-xl sm:text-3xl md:text-4xl font-bold text-navy tracking-tight mb-2 sm:mb-3">
+              Så fungerar det
+            </h2>
+            <p className="text-gray-500 text-sm sm:text-base md:text-lg max-w-lg mx-auto mb-5 sm:mb-8">
+              Tryggt och enkelt att hyra ut eller hitta en lokal
+            </p>
+
+            {/* Tab toggle */}
+            <div className="inline-flex items-center bg-muted/60 rounded-full p-1">
+              <button
+                type="button"
+                onClick={() => setActiveTab("landlord")}
+                className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-medium transition-all ${
+                  activeTab === "landlord"
+                    ? "bg-navy text-white shadow-sm"
+                    : "text-gray-500 hover:text-navy"
+                }`}
               >
-                <div className="p-6 sm:p-8">
-                  <span className="inline-block text-[11px] font-bold text-navy/50 tracking-widest mb-3">
-                    STEG {step.id}
-                  </span>
-                  <h2 className="text-xl sm:text-2xl font-bold text-navy tracking-tight mb-4">
-                    {step.title}
-                  </h2>
-                  <p className="text-[15px] text-gray-600 leading-relaxed mb-4">
-                    {step.teaser}
-                  </p>
-                  {isExpanded && (
-                    <div className="mt-6 pt-6 border-t border-border/40">
-                      <p className="text-[15px] text-gray-600 leading-relaxed whitespace-pre-line">
-                        {step.full}
-                      </p>
-                    </div>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => setExpandedId(isExpanded ? null : step.id)}
-                    className="text-[13px] font-semibold text-navy hover:underline focus:outline-none focus:ring-2 focus:ring-navy/20 focus:ring-offset-2 rounded px-1 py-0.5"
-                  >
-                    {isExpanded ? "Visa mindre" : "Läs hela texten"}
-                  </button>
-                </div>
-              </article>
-            );
-          })}
-        </div>
+                Hyr ut
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("tenant")}
+                className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-medium transition-all ${
+                  activeTab === "tenant"
+                    ? "bg-navy text-white shadow-sm"
+                    : "text-gray-500 hover:text-navy"
+                }`}
+              >
+                Hitta lokal
+              </button>
+            </div>
+          </div>
 
-        {/* CTA */}
-        <div className="mt-16 p-8 bg-navy rounded-2xl text-center">
-          <h3 className="text-xl font-bold text-white mb-2">Redo att annonsera?</h3>
-          <p className="text-white/70 text-[15px] mb-6 max-w-lg mx-auto">
-            Skapa en annons på Hittayta.se och når tusentals sökande. Kom igång på några minuter.
+          {/* Step cards */}
+          <div className="space-y-10 sm:space-y-16 md:space-y-24">
+            {steps.map((step, idx) => {
+              const imageLeft = idx % 2 === 0;
+              return (
+                <div
+                  key={`${activeTab}-${step.id}`}
+                  className={`flex flex-col ${
+                    imageLeft ? "md:flex-row" : "md:flex-row-reverse"
+                  } items-center gap-5 sm:gap-8 md:gap-12 lg:gap-16`}
+                >
+                  {/* Image */}
+                  <div className="w-full md:w-1/2 flex-shrink-0">
+                    <div className="relative aspect-[4/3] rounded-2xl sm:rounded-3xl overflow-hidden bg-muted/40">
+                      <Image
+                        src={step.image}
+                        alt={step.imageAlt}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Text */}
+                  <div className="w-full md:w-1/2">
+                    <p className="text-[10px] sm:text-xs font-semibold tracking-[0.15em] uppercase text-navy/40 mb-1.5 sm:mb-2">
+                      {step.label}
+                    </p>
+                    <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-navy tracking-tight mb-2 sm:mb-4">
+                      {step.title}
+                    </h3>
+                    <p className="text-gray-500 text-sm sm:text-base md:text-lg leading-relaxed">
+                      {step.description}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="pb-14 sm:pb-20 md:pb-28 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-3xl mx-auto text-center bg-navy rounded-2xl sm:rounded-3xl p-6 sm:p-10 md:p-14">
+          <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-2 sm:mb-3">
+            Redo att komma igång?
+          </h3>
+          <p className="text-white/60 text-sm sm:text-base md:text-lg mb-5 sm:mb-8 max-w-lg mx-auto">
+            Skapa en annons på Hittayta.se och nå tusentals sökande. Kom igång
+            på några minuter.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
             <Link
               href="/skapa-annons"
-              className="inline-flex items-center justify-center px-6 py-3 bg-gold text-navy font-semibold rounded-xl hover:bg-gold-light transition-colors"
+              className="inline-flex items-center justify-center px-6 sm:px-7 py-3 sm:py-3.5 bg-gold text-navy text-sm sm:text-base font-semibold rounded-full hover:brightness-105 transition-all"
             >
               Skapa annons
             </Link>
             <Link
-              href="/sa-hyr-du-ut-en-lokal"
-              className="inline-flex items-center justify-center px-6 py-3 bg-white/10 text-white font-medium rounded-xl hover:bg-white/20 transition-colors"
+              href="/annonser"
+              className="inline-flex items-center justify-center px-6 sm:px-7 py-3 sm:py-3.5 bg-white/10 text-white text-sm sm:text-base font-medium rounded-full hover:bg-white/20 transition-colors"
             >
-              Läs mer
+              Utforska lokaler
             </Link>
           </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 }

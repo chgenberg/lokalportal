@@ -13,7 +13,7 @@ export default function CTASection() {
           <ScrollReveal>
             <Link
               href="/annonser"
-              className="group block relative rounded-3xl overflow-hidden min-h-[320px] sm:min-h-[360px] shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5"
+              className="group block relative rounded-2xl sm:rounded-3xl overflow-hidden min-h-[260px] sm:min-h-[360px] shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5"
             >
               <Image
                 src={CTA_LOCAL_IMG}
@@ -23,14 +23,14 @@ export default function CTASection() {
                 sizes="(max-width: 768px) 100vw, 50vw"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-navy/80 via-navy/30 to-transparent" />
-              <div className="absolute inset-0 flex flex-col justify-end p-6 sm:p-8">
-                <h2 className="text-xl sm:text-2xl font-bold text-white mb-2 tracking-tight">
+              <div className="absolute inset-0 flex flex-col justify-end p-5 sm:p-8">
+                <h2 className="text-lg sm:text-2xl font-bold text-white mb-1.5 sm:mb-2 tracking-tight">
                   Hitta rätt lokal snabbare
                 </h2>
-                <p className="text-sm text-white/80 mb-6 max-w-sm">
+                <p className="text-xs sm:text-sm text-white/80 mb-4 sm:mb-6 max-w-sm">
                   Sök bland butiker, kontor, lager och unika ytor. Verifierade annonsörer.
                 </p>
-                <span className="inline-flex items-center gap-2 w-fit px-5 py-2.5 bg-white text-navy text-sm font-semibold rounded-full transition-all group-hover:bg-white/95">
+                <span className="inline-flex items-center gap-2 w-fit px-4 sm:px-5 py-2 sm:py-2.5 bg-white text-navy text-xs sm:text-sm font-semibold rounded-full transition-all group-hover:bg-white/95">
                   Sök lokaler
                 </span>
               </div>
@@ -40,7 +40,7 @@ export default function CTASection() {
           <ScrollReveal delay={100}>
             <Link
               href="/skapa-annons"
-              className="group block relative rounded-3xl overflow-hidden min-h-[320px] sm:min-h-[360px] shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5"
+              className="group block relative rounded-2xl sm:rounded-3xl overflow-hidden min-h-[260px] sm:min-h-[360px] shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5"
             >
               <Image
                 src={CTA_OWNER_IMG}
@@ -50,14 +50,14 @@ export default function CTASection() {
                 sizes="(max-width: 768px) 100vw, 50vw"
               />
               <div className="absolute inset-0 bg-navy/75" />
-              <div className="absolute inset-0 flex flex-col justify-end p-6 sm:p-8">
-                <h2 className="text-xl sm:text-2xl font-bold text-white mb-2 tracking-tight">
+              <div className="absolute inset-0 flex flex-col justify-end p-5 sm:p-8">
+                <h2 className="text-lg sm:text-2xl font-bold text-white mb-1.5 sm:mb-2 tracking-tight">
                   Skapa en professionell annons på minuter
                 </h2>
-                <p className="text-sm text-white/80 mb-6 max-w-sm">
+                <p className="text-xs sm:text-sm text-white/80 mb-4 sm:mb-6 max-w-sm">
                   Ange grunduppgifter – vår agent genererar en säljande annonstext. Ingen registrering krävs.
                 </p>
-                <span className="inline-flex items-center gap-2 w-fit px-5 py-2.5 bg-gold text-navy text-sm font-semibold rounded-full transition-all group-hover:brightness-105">
+                <span className="inline-flex items-center gap-2 w-fit px-4 sm:px-5 py-2 sm:py-2.5 bg-gold text-navy text-xs sm:text-sm font-semibold rounded-full transition-all group-hover:brightness-105">
                   Skapa annons
                 </span>
               </div>

@@ -23,7 +23,7 @@
 body {
   background: var(--color-background);
   color: var(--color-foreground);
-  font-family: var(--font-sans), "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: var(--font-sans), "DM Sans", -apple-system, BlinkMacSystemFont, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;

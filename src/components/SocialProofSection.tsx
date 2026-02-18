@@ -47,15 +47,15 @@ export default function SocialProofSection() {
           </div>
         </ScrollReveal>
 
-        <div className="relative rounded-3xl py-10 sm:py-14 px-6 sm:px-12">
-          <div className="flex items-center justify-center gap-4 sm:gap-8">
+        <div className="relative rounded-2xl sm:rounded-3xl py-6 sm:py-14 px-2 sm:px-12">
+          <div className="flex items-center justify-center gap-2 sm:gap-8">
             <button
               type="button"
               onClick={() => setIndex((i) => (i === 0 ? testimonials.length - 1 : i - 1))}
-              className="shrink-0 w-10 h-10 rounded-full border border-border/60 flex items-center justify-center text-navy/60 hover:text-navy hover:border-navy/20 hover:bg-white/50 transition-colors"
+              className="shrink-0 w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-border/60 flex items-center justify-center text-navy/60 hover:text-navy hover:border-navy/20 hover:bg-white/50 transition-colors"
               aria-label="Föregående utlåtande"
             >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
               </svg>
             </button>
@@ -63,24 +63,24 @@ export default function SocialProofSection() {
             <blockquote className="flex-1 text-center min-w-0">
               <StarRating />
               <p
-                className="text-xl sm:text-2xl md:text-3xl font-serif text-navy/90 leading-relaxed"
+                className="text-base sm:text-xl md:text-2xl lg:text-3xl font-serif text-navy/90 leading-relaxed"
                 style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}
               >
                 &ldquo;{t.quote}&rdquo;
               </p>
-              <footer className="mt-6">
-                <p className="text-[15px] font-semibold text-navy">{t.author}</p>
-                <p className="text-[13px] text-gray-500">{t.role}</p>
+              <footer className="mt-4 sm:mt-6">
+                <p className="text-sm sm:text-[15px] font-semibold text-navy">{t.author}</p>
+                <p className="text-xs sm:text-[13px] text-gray-500">{t.role}</p>
               </footer>
             </blockquote>
 
             <button
               type="button"
               onClick={() => setIndex((i) => (i === testimonials.length - 1 ? 0 : i + 1))}
-              className="shrink-0 w-10 h-10 rounded-full border border-border/60 flex items-center justify-center text-navy/60 hover:text-navy hover:border-navy/20 hover:bg-white/50 transition-colors"
+              className="shrink-0 w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-border/60 flex items-center justify-center text-navy/60 hover:text-navy hover:border-navy/20 hover:bg-white/50 transition-colors"
               aria-label="Nästa utlåtande"
             >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
               </svg>
             </button>

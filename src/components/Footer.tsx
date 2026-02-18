@@ -5,48 +5,48 @@ import NewsletterSignup from "./NewsletterSignup";
 export default function Footer() {
   return (
     <footer className="bg-navy text-white relative">
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-10 sm:gap-14">
-          <div className="col-span-2 md:col-span-1">
-            <div className="mb-5">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-20">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 sm:gap-10 md:gap-14">
+          <div className="sm:col-span-2 md:col-span-1">
+            <div className="mb-4 sm:mb-5">
               <Image
                 src="/HYlogo.png"
                 alt="Hittayta.se"
                 width={140}
                 height={40}
-                className="h-9 w-auto object-contain brightness-0 invert opacity-80"
+                className="h-8 sm:h-9 w-auto object-contain brightness-0 invert opacity-80"
               />
             </div>
-            <p className="text-[13px] text-white/40 leading-relaxed mb-6">
+            <p className="text-xs sm:text-[13px] text-white/40 leading-relaxed mb-5 sm:mb-6">
               Sveriges marknadsplats för kommersiella lokaler.
             </p>
             <NewsletterSignup />
           </div>
 
           <div>
-            <h4 className="text-[11px] font-semibold uppercase tracking-[0.15em] mb-5 text-white/30">Navigation</h4>
-            <ul className="space-y-3">
-              <li><Link href="/annonser" className="text-[13px] text-white/50 hover:text-white transition-colors">Alla annonser</Link></li>
-              <li><Link href="/kategorier" className="text-[13px] text-white/50 hover:text-white transition-colors">Kategorier</Link></li>
-              <li><Link href="/skapa-annons" className="text-[13px] text-white/50 hover:text-white transition-colors">Skapa annons</Link></li>
-              <li><Link href="/sa-hyr-du-ut-en-lokal" className="text-[13px] text-white/50 hover:text-white transition-colors">Så hyr du ut en lokal</Link></li>
-              <li><Link href="/karta" className="text-[13px] text-white/50 hover:text-white transition-colors">Karta</Link></li>
+            <h4 className="text-[11px] font-semibold uppercase tracking-[0.15em] mb-4 sm:mb-5 text-white/30">Navigation</h4>
+            <ul className="space-y-2.5 sm:space-y-3">
+              <li><Link href="/annonser" className="text-xs sm:text-[13px] text-white/50 hover:text-white transition-colors py-0.5 inline-block">Alla annonser</Link></li>
+              <li><Link href="/kategorier" className="text-xs sm:text-[13px] text-white/50 hover:text-white transition-colors py-0.5 inline-block">Kategorier</Link></li>
+              <li><Link href="/skapa-annons" className="text-xs sm:text-[13px] text-white/50 hover:text-white transition-colors py-0.5 inline-block">Skapa annons</Link></li>
+              <li><Link href="/sa-hyr-du-ut-en-lokal" className="text-xs sm:text-[13px] text-white/50 hover:text-white transition-colors py-0.5 inline-block">Så fungerar det</Link></li>
+              <li><Link href="/karta" className="text-xs sm:text-[13px] text-white/50 hover:text-white transition-colors py-0.5 inline-block">Karta</Link></li>
             </ul>
           </div>
 
           <div>
-            <h4 className="text-[11px] font-semibold uppercase tracking-[0.15em] mb-5 text-white/30">Företaget</h4>
-            <ul className="space-y-3">
-              <li><Link href="/om-oss" className="text-[13px] text-white/50 hover:text-white transition-colors">Om oss</Link></li>
-              <li><Link href="/kontakt" className="text-[13px] text-white/50 hover:text-white transition-colors">Kontakta oss</Link></li>
+            <h4 className="text-[11px] font-semibold uppercase tracking-[0.15em] mb-4 sm:mb-5 text-white/30">Företaget</h4>
+            <ul className="space-y-2.5 sm:space-y-3">
+              <li><Link href="/om-oss" className="text-xs sm:text-[13px] text-white/50 hover:text-white transition-colors py-0.5 inline-block">Om oss</Link></li>
+              <li><Link href="/kontakt" className="text-xs sm:text-[13px] text-white/50 hover:text-white transition-colors py-0.5 inline-block">Kontakta oss</Link></li>
             </ul>
           </div>
 
           <div>
-            <h4 className="text-[11px] font-semibold uppercase tracking-[0.15em] mb-5 text-white/30">Kontakt</h4>
-            <ul className="space-y-3">
-              <li><a href="mailto:info@hittayta.se" className="text-[13px] text-white/50 hover:text-white transition-colors duration-200">info@hittayta.se</a></li>
-              <li className="text-[13px] text-white/50">Stockholm, Sverige</li>
+            <h4 className="text-[11px] font-semibold uppercase tracking-[0.15em] mb-4 sm:mb-5 text-white/30">Kontakt</h4>
+            <ul className="space-y-2.5 sm:space-y-3">
+              <li><a href="mailto:info@hittayta.se" className="text-xs sm:text-[13px] text-white/50 hover:text-white transition-colors duration-200 py-0.5 inline-block">info@hittayta.se</a></li>
+              <li className="text-xs sm:text-[13px] text-white/50">Stockholm, Sverige</li>
             </ul>
             <div className="flex gap-3 mt-4">
               <a href="https://www.linkedin.com/company/hittayta" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-colors" aria-label="LinkedIn">
@@ -59,16 +59,16 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-white/[0.08] mt-16 pt-10 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-[12px] text-white/30">
+        <div className="border-t border-white/[0.08] mt-10 sm:mt-16 pt-6 sm:pt-10 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
+          <p className="text-[11px] sm:text-[12px] text-white/30">
             &copy; {new Date().getFullYear()} Hittayta.se
           </p>
-          <div className="flex items-center flex-wrap gap-x-6 gap-y-2">
-            <Link href="/om-oss" className="text-[12px] text-white/30 hover:text-white/60 transition-colors duration-200">Om oss</Link>
-            <Link href="/integritetspolicy" className="text-[12px] text-white/30 hover:text-white/60 transition-colors duration-200">Integritetspolicy</Link>
-            <Link href="/cookies" className="text-[12px] text-white/30 hover:text-white/60 transition-colors duration-200">Cookies</Link>
-            <Link href="/villkor" className="text-[12px] text-white/30 hover:text-white/60 transition-colors duration-200">Villkor</Link>
-            <Link href="/kontakt" className="text-[12px] text-white/30 hover:text-white/60 transition-colors duration-200">Kontakt</Link>
+          <div className="flex items-center flex-wrap justify-center gap-x-4 sm:gap-x-6 gap-y-1.5">
+            <Link href="/om-oss" className="text-[11px] sm:text-[12px] text-white/30 hover:text-white/60 transition-colors duration-200 py-0.5">Om oss</Link>
+            <Link href="/integritetspolicy" className="text-[11px] sm:text-[12px] text-white/30 hover:text-white/60 transition-colors duration-200 py-0.5">Integritetspolicy</Link>
+            <Link href="/cookies" className="text-[11px] sm:text-[12px] text-white/30 hover:text-white/60 transition-colors duration-200 py-0.5">Cookies</Link>
+            <Link href="/villkor" className="text-[11px] sm:text-[12px] text-white/30 hover:text-white/60 transition-colors duration-200 py-0.5">Villkor</Link>
+            <Link href="/kontakt" className="text-[11px] sm:text-[12px] text-white/30 hover:text-white/60 transition-colors duration-200 py-0.5">Kontakt</Link>
           </div>
         </div>
       </div>

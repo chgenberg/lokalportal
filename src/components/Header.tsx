@@ -22,6 +22,13 @@ export default function Header() {
   }, []);
 
   useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = "hidden";
+      return () => { document.body.style.overflow = ""; };
+    }
+  }, [mobileOpen]);
+
+  useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
         setUserMenuOpen(false);
@@ -55,11 +62,13 @@ export default function Header() {
     ? [
         { href: "/annonser", label: "Alla annonser" },
         { href: "/karta", label: "Karta" },
+        { href: "/sa-hyr-du-ut-en-lokal", label: "Så fungerar det" },
         { href: "/dashboard", label: "Dashboard" },
       ]
     : [
         { href: "/annonser", label: "Alla annonser" },
         { href: "/karta", label: "Karta" },
+        { href: "/sa-hyr-du-ut-en-lokal", label: "Så fungerar det" },
         { href: "/kategorier", label: "Kategorier" },
       ];
 
@@ -189,30 +198,30 @@ export default function Header() {
         </div>
 
         {mobileOpen && (
-          <div className="md:hidden glass border-t border-border/60 animate-slide-down shadow-lg">
-            <div className="px-4 py-4 space-y-0.5">
+          <div className="md:hidden glass border-t border-border/60 animate-slide-down shadow-lg max-h-[calc(100vh-3.5rem)] overflow-y-auto">
+            <div className="px-4 py-3 space-y-0.5">
               {navLinks.map((link) => (
-                <Link key={link.href} href={link.href} onClick={() => setMobileOpen(false)} className="block py-2.5 px-4 text-sm font-medium text-gray-500 hover:text-navy hover:bg-navy/[0.03] rounded-lg transition-all">
+                <Link key={link.href} href={link.href} onClick={() => setMobileOpen(false)} className="flex items-center py-3 px-4 text-[15px] font-medium text-gray-600 hover:text-navy active:bg-navy/[0.04] rounded-xl transition-all">
                   {link.label}
                 </Link>
               ))}
-              <div className="border-t border-border/60 pt-3 mt-3">
+              <div className="border-t border-border/60 pt-3 mt-2">
                 {session?.user ? (
                   <>
-                    <Link href="/dashboard" onClick={() => setMobileOpen(false)} className="block py-2.5 px-4 text-sm font-medium text-gray-500 hover:text-navy hover:bg-navy/[0.03] rounded-lg transition-all">Dashboard</Link>
-                    <Link href="/dashboard/meddelanden" onClick={() => setMobileOpen(false)} className="flex items-center justify-between py-2.5 px-4 text-sm font-medium text-gray-500 hover:text-navy hover:bg-navy/[0.03] rounded-lg transition-all">
+                    <Link href="/dashboard" onClick={() => setMobileOpen(false)} className="flex items-center py-3 px-4 text-[15px] font-medium text-gray-600 hover:text-navy active:bg-navy/[0.04] rounded-xl transition-all">Dashboard</Link>
+                    <Link href="/dashboard/meddelanden" onClick={() => setMobileOpen(false)} className="flex items-center justify-between py-3 px-4 text-[15px] font-medium text-gray-600 hover:text-navy active:bg-navy/[0.04] rounded-xl transition-all">
                       Meddelanden
                       {unreadCount > 0 && <span className="w-5 h-5 bg-navy text-white text-[10px] font-bold rounded-full flex items-center justify-center">{unreadCount}</span>}
                     </Link>
-                    <Link href="/skapa-annons" onClick={() => setMobileOpen(false)} className="block w-full py-2.5 px-4 bg-navy text-white text-sm font-semibold rounded-full text-center mt-2">
+                    <Link href="/skapa-annons" onClick={() => setMobileOpen(false)} className="block w-full py-3 px-4 bg-navy text-white text-[15px] font-semibold rounded-full text-center mt-3">
                       Annonsera
                     </Link>
-                    <button onClick={() => { setMobileOpen(false); signOut({ callbackUrl: "/" }); }} className="block w-full text-left py-2.5 px-4 text-sm font-medium text-gray-400 hover:text-red-500 hover:bg-red-50/50 rounded-lg transition-all mt-1">Logga ut</button>
+                    <button onClick={() => { setMobileOpen(false); signOut({ callbackUrl: "/" }); }} className="block w-full text-left py-3 px-4 text-[15px] font-medium text-gray-400 hover:text-red-500 active:bg-red-50/50 rounded-xl transition-all mt-1">Logga ut</button>
                   </>
                 ) : (
                   <>
-                    <Link href="/logga-in" onClick={() => setMobileOpen(false)} className="block py-2.5 px-4 text-sm font-medium text-gray-500 hover:text-navy hover:bg-navy/[0.03] rounded-lg transition-all">Logga in</Link>
-                    <Link href="/skapa-annons" onClick={() => setMobileOpen(false)} className="block w-full py-2.5 px-4 bg-navy text-white text-sm font-semibold rounded-full text-center mt-2">
+                    <Link href="/logga-in" onClick={() => setMobileOpen(false)} className="flex items-center py-3 px-4 text-[15px] font-medium text-gray-600 hover:text-navy active:bg-navy/[0.04] rounded-xl transition-all">Logga in</Link>
+                    <Link href="/skapa-annons" onClick={() => setMobileOpen(false)} className="block w-full py-3 px-4 bg-navy text-white text-[15px] font-semibold rounded-full text-center mt-3">
                       Annonsera
                     </Link>
                   </>

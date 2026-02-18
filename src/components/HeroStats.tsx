@@ -48,11 +48,11 @@ function CountUpStat({ value, label }: { value: number; label: string }) {
   const { count, ref } = useCountUp(value);
 
   return (
-    <div ref={ref} className="text-center px-6 sm:px-10 md:px-14">
-      <div className="text-3xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight tabular-nums">
+    <div ref={ref} className="text-center px-2 sm:px-10 md:px-14">
+      <div className="text-2xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight tabular-nums">
         {count}+
       </div>
-      <div className="text-[12px] font-medium text-white/70 mt-1.5 tracking-[0.12em] uppercase">
+      <div className="text-[10px] sm:text-[12px] font-medium text-white/70 mt-1 sm:mt-1.5 tracking-[0.12em] uppercase">
         {label}
       </div>
     </div>
@@ -61,11 +61,11 @@ function CountUpStat({ value, label }: { value: number; label: string }) {
 
 function StaticStat({ value, label }: { value: string; label: string }) {
   return (
-    <div className="text-center px-6 sm:px-10 md:px-14">
-      <div className="text-3xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight">
+    <div className="text-center px-2 sm:px-10 md:px-14">
+      <div className="text-2xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight">
         {value}
       </div>
-      <div className="text-[12px] font-medium text-white/70 mt-1.5 tracking-[0.12em] uppercase">
+      <div className="text-[10px] sm:text-[12px] font-medium text-white/70 mt-1 sm:mt-1.5 tracking-[0.12em] uppercase">
         {label}
       </div>
     </div>
@@ -94,8 +94,8 @@ export default function HeroStats() {
   if (!stats) return null;
 
   return (
-    <div className="max-w-5xl mx-auto rounded-3xl px-6 py-10 sm:py-14">
-      <div className="flex flex-wrap items-center justify-center gap-y-6">
+    <div className="max-w-5xl mx-auto rounded-3xl px-4 sm:px-6 py-8 sm:py-14">
+      <div className="grid grid-cols-3 gap-4 sm:flex sm:flex-wrap sm:items-center sm:justify-center sm:gap-y-6">
         <CountUpStat value={stats.totalListings} label="Lokaler" />
         <div className="hidden sm:block h-12 w-px bg-white/20 shrink-0" aria-hidden />
         <CountUpStat value={stats.totalCities} label="Städer" />
