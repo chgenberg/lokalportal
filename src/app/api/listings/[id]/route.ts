@@ -84,7 +84,9 @@ export async function PUT(
   try {
     const listing = await prisma.listing.findUnique({ where: { id } });
     if (!listing) return NextResponse.json({ error: "Annonsen hittades inte" }, { status: 404 });
-    if (listing.ownerId !== session.user.id) {
+    const isOwner = listing.ownerId === session.user.id;
+    const isAgent = listing.agentId === session.user.id;
+    if (!isOwner && !isAgent) {
       return NextResponse.json({ error: "Du kan bara redigera egna annonser" }, { status: 403 });
     }
 
@@ -167,7 +169,7 @@ export async function PATCH(
 
     const listing = await prisma.listing.findUnique({ where: { id } });
     if (!listing) return NextResponse.json({ error: "Annonsen hittades inte" }, { status: 404 });
-    if (listing.ownerId !== session.user.id) {
+    if (listing.ownerId !== session.user.id && listing.agentId !== session.user.id) {
       return NextResponse.json({ error: "Du kan bara förnya egna annonser" }, { status: 403 });
     }
 
@@ -201,7 +203,7 @@ export async function DELETE(
   try {
     const listing = await prisma.listing.findUnique({ where: { id } });
     if (!listing) return NextResponse.json({ error: "Annonsen hittades inte" }, { status: 404 });
-    if (listing.ownerId !== session.user.id) {
+    if (listing.ownerId !== session.user.id && listing.agentId !== session.user.id) {
       return NextResponse.json({ error: "Du kan bara ta bort egna annonser" }, { status: 403 });
     }
 

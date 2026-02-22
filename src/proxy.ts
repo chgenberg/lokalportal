@@ -24,12 +24,31 @@ export async function proxy(request: NextRequest) {
       loginUrl.searchParams.set("callback", pathname);
       return NextResponse.redirect(loginUrl);
     }
+    // Redirect agents to their dedicated dashboard
+    if (token.role === "agent") {
+      const newPath = pathname.replace(/^\/dashboard/, "/maklare");
+      const url = new URL(newPath + request.nextUrl.search, request.url);
+      return NextResponse.redirect(url);
+    }
+  }
+
+  // Protect mäklare routes
+  if (pathname.startsWith("/maklare")) {
+    if (!token) {
+      const loginUrl = new URL("/logga-in", request.url);
+      loginUrl.searchParams.set("callback", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+    if (token.role !== "agent") {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
   }
 
   // Redirect authenticated users away from auth pages
   if (pathname === "/logga-in" || pathname === "/registrera") {
     if (token) {
-      return NextResponse.redirect(new URL("/dashboard", request.url));
+      const dest = token.role === "agent" ? "/maklare" : "/dashboard";
+      return NextResponse.redirect(new URL(dest, request.url));
     }
   }
 
@@ -37,5 +56,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/logga-in", "/registrera"],
+  matcher: ["/dashboard/:path*", "/maklare/:path*", "/logga-in", "/registrera"],
 };

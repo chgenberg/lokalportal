@@ -27,12 +27,19 @@ export async function GET(request: NextRequest) {
 
   const mine = searchParams.get("mine") === "true";
   let ownerId: string | undefined;
+  let mineUserId: string | undefined;
+  let isAgentMine = false;
   if (mine) {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
       return NextResponse.json({ error: "Ej inloggad" }, { status: 401 });
     }
-    ownerId = session.user.id;
+    if (session.user.role === "agent") {
+      mineUserId = session.user.id;
+      isAgentMine = true;
+    } else {
+      ownerId = session.user.id;
+    }
   }
 
   const rawType = searchParams.get("type");
@@ -74,6 +81,9 @@ export async function GET(request: NextRequest) {
     const where: Prisma.ListingWhereInput = {};
 
     if (ownerId) where.ownerId = ownerId;
+    if (isAgentMine && mineUserId) {
+      where.OR = [{ ownerId: mineUserId }, { agentId: mineUserId }];
+    }
     if (city) where.city = { equals: city, mode: "insensitive" };
     if (type) where.type = type;
     if (category) {
@@ -96,11 +106,17 @@ export async function GET(request: NextRequest) {
       if (sizeMax != null) where.size.lte = sizeMax;
     }
     if (search) {
-      where.OR = [
-        { title: { contains: search, mode: "insensitive" } },
-        { city: { contains: search, mode: "insensitive" } },
-        { description: { contains: search, mode: "insensitive" } },
+      const searchFilter = [
+        { title: { contains: search, mode: "insensitive" as const } },
+        { city: { contains: search, mode: "insensitive" as const } },
+        { description: { contains: search, mode: "insensitive" as const } },
       ];
+      if (where.OR) {
+        where.AND = [{ OR: where.OR }, { OR: searchFilter }];
+        delete where.OR;
+      } else {
+        where.OR = searchFilter;
+      }
     }
     if (tags && tags.length > 0) {
       where.tags = { hasEvery: tags };

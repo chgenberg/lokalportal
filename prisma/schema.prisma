@@ -20,10 +20,13 @@ model User {
   createdAt        DateTime @default(now())
 
   listings              Listing[]
+  agentListings         Listing[]      @relation("AgentListings")
   favorites             Favorite[]
   landlordConversations Conversation[] @relation("LandlordConversations")
   tenantConversations   Conversation[] @relation("TenantConversations")
   messages              Message[]
+  agentClients          AgentClient[]  @relation("AgentClients")
+  clientOfAgents        AgentClient[]  @relation("ClientOfAgent")
 
   @@map("users")
 }
@@ -63,6 +66,9 @@ model Listing {
   ownerId String?
   owner   User?   @relation(fields: [ownerId], references: [id], onDelete: SetNull)
 
+  agentId String?
+  agent   User?   @relation("AgentListings", fields: [agentId], references: [id], onDelete: SetNull)
+
   conversations Conversation[]
   favorites     Favorite[]
 
@@ -80,6 +86,7 @@ model Listing {
   @@index([city, type, price])
   @@index([ownerId, createdAt])
   @@index([stripeStatus])
+  @@index([agentId])
   @@map("listings")
 }
 
@@ -148,4 +155,19 @@ model Lead {
 
   @@index([email])
   @@map("leads")
+}
+
+model AgentClient {
+  id        String   @id @default(uuid())
+  agentId   String
+  agent     User     @relation("AgentClients", fields: [agentId], references: [id], onDelete: Cascade)
+  clientId  String
+  client    User     @relation("ClientOfAgent", fields: [clientId], references: [id], onDelete: Cascade)
+  note      String?
+  createdAt DateTime @default(now())
+
+  @@unique([agentId, clientId])
+  @@index([agentId])
+  @@index([clientId])
+  @@map("agent_clients")
 }

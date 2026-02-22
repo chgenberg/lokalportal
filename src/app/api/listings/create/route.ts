@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { title, description, city, address, type, category, price, size, tags, imageUrl, imageUrls, videoUrl, floorPlanImageUrl, nearby, priceContext, demographics, areaContext, lat, lng } = body;
+    const { title, description, city, address, type, category, price, size, tags, imageUrl, imageUrls, videoUrl, floorPlanImageUrl, nearby, priceContext, demographics, areaContext, lat, lng, clientId } = body;
 
     if (!title || !description || !city || !address || !type || !category || price == null || price === "" || size == null || size === "") {
       return NextResponse.json({ error: "Alla obligatoriska fält måste fyllas i" }, { status: 400 });
@@ -51,7 +51,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Ogiltig storlek (m²)." }, { status: 400 });
     }
 
-    const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+    // If agent creates on behalf of a client, verify the relationship
+    let effectiveOwnerId = session.user.id;
+    let agentId: string | undefined;
+    if (clientId && typeof clientId === "string" && session.user.role === "agent") {
+      const link = await prisma.agentClient.findUnique({
+        where: { agentId_clientId: { agentId: session.user.id, clientId } },
+      });
+      if (!link) {
+        return NextResponse.json({ error: "Du har inte behörighet att skapa annonser åt denna klient" }, { status: 403 });
+      }
+      effectiveOwnerId = clientId;
+      agentId = session.user.id;
+    } else if (session.user.role === "agent") {
+      agentId = session.user.id;
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: effectiveOwnerId } });
 
     const urls = Array.isArray(imageUrls) ? imageUrls.slice(0, 10).filter((u): u is string => typeof u === "string").map((u) => u.trim().slice(0, 2000)).filter(Boolean) : [];
     const imageUrlStr = urls.length > 0 ? urls[0]! : (typeof imageUrl === "string" ? imageUrl.trim().slice(0, 2000) : "");
@@ -90,7 +106,8 @@ export async function POST(request: NextRequest) {
         floorPlanImageUrl: floorPlanStr,
         ...(areaDataJson && { areaData: areaDataJson }),
         tags: Array.isArray(tags) ? tags.slice(0, 20).filter((t: unknown) => typeof t === "string").map((t: string) => t.trim().slice(0, 50)) : [],
-        ownerId: session.user.id,
+        ownerId: effectiveOwnerId,
+        ...(agentId && { agentId }),
         contactName: user?.name || session.user.name || "",
         contactEmail: user?.email || session.user.email || "",
         contactPhone: user?.phone || "",
