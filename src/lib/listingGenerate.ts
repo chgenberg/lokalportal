@@ -1048,19 +1048,23 @@ export async function generateListingContent(
       const msg = err1 instanceof Error ? err1.message : String(err1);
       console.warn("[generate] gpt-5.2 failed:", msg);
 
-      // Strategy 2: gpt-4o Chat Completions fallback
+      // Strategy 2: gpt-5-mini Responses API fallback
       try {
-        
-        const completion = await openai.chat.completions.create({
-          model: "gpt-4o",
-          messages: [
-            { role: "system", content: GPT_SYSTEM },
-            { role: "user", content: userContent + (hasLocalhostImages ? visionInstruction : "") },
-          ],
-          response_format: { type: "json_object" },
-          max_tokens: 1500,
+        const fallbackResponse = await openai.responses.create({
+          model: "gpt-5-mini",
+          instructions: GPT_SYSTEM,
+          input: userContent + (hasLocalhostImages ? visionInstruction : ""),
+          text: {
+            format: {
+              type: "json_schema",
+              name: "listing",
+              strict: true,
+              schema: JSON_SCHEMA,
+            },
+          },
+          max_output_tokens: 1500,
         });
-        raw = completion.choices[0]?.message?.content?.trim();
+        raw = fallbackResponse.output_text?.trim();
         
       } catch (err2: unknown) {
         const msg2 = err2 instanceof Error ? err2.message : String(err2);

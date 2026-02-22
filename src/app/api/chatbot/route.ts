@@ -49,18 +49,19 @@ export async function POST(req: NextRequest) {
       ? `\nAnvändaren befinner sig på sidan: ${pagePath}. Du kan anpassa svaret lätt efter sidans tema om det är relevant.`
       : "";
 
-    const openaiMessages: Array<{ role: "system" | "user" | "assistant"; content: string }> = [
-      { role: "system", content: SYSTEM_PROMPT + contextNote },
-      ...history.slice(-8).map((m) => ({ role: m.role as "user" | "assistant", content: m.content })),
-    ];
+    const inputMessages = history.slice(-8).map((m) => ({
+      role: m.role as "user" | "assistant",
+      content: m.content,
+    }));
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: openaiMessages,
-      max_tokens: 500,
+    const response = await openai.responses.create({
+      model: "gpt-5-mini",
+      instructions: SYSTEM_PROMPT + contextNote,
+      input: inputMessages,
+      max_output_tokens: 500,
     });
 
-    const reply = completion.choices[0]?.message?.content?.trim() || "Jag kunde inte generera ett svar. Försök igen eller klicka på 'Jag vill bli kontaktad'.";
+    const reply = response.output_text?.trim() || "Jag kunde inte generera ett svar. Försök igen eller klicka på 'Jag vill bli kontaktad'.";
 
     return NextResponse.json({ reply });
   } catch (err) {
