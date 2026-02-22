@@ -427,7 +427,8 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    console.log(`PDF: resolved ${imageDataUris.length}/${resolvedUrls.length} images`);
+    // Resolved images logged only in dev
+    if (process.env.NODE_ENV !== "production") console.log(`PDF: resolved ${imageDataUris.length}/${resolvedUrls.length} images`);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const buffer = await renderToBuffer(ListingPdf({ data, logoSrc, imageDataUris }) as any);

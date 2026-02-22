@@ -1001,7 +1001,7 @@ export async function generateListingContent(
         const url = u.startsWith("http") ? u : `${baseUrl}${u.startsWith("/") ? "" : "/"}${u}`;
         content.push({ type: "input_image", image_url: url, detail: "auto" });
       }
-      console.log("[generate] Using gpt-5.2 Responses API with", content.length - 1, "images");
+      
       const response = await openai.responses.create({
         model: "gpt-5.2",
         instructions: GPT_SYSTEM,
@@ -1017,7 +1017,7 @@ export async function generateListingContent(
         max_output_tokens: 1500,
       });
       raw = response.output_text?.trim();
-      if (raw) console.log("[generate] gpt-5.2 Vision succeeded");
+      
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       console.warn("[generate] gpt-5.2 Vision failed:", msg);
@@ -1027,7 +1027,7 @@ export async function generateListingContent(
   // Strategy 1: gpt-5.2 Responses API (text-only)
   if (!raw) {
     try {
-      console.log("[generate] Trying gpt-5.2 Responses API (text)...");
+      
       const response = await openai.responses.create({
         model: "gpt-5.2",
         instructions: GPT_SYSTEM,
@@ -1043,14 +1043,14 @@ export async function generateListingContent(
         max_output_tokens: 1500,
       });
       raw = response.output_text?.trim();
-      if (raw) console.log("[generate] gpt-5.2 succeeded");
+      
     } catch (err1: unknown) {
       const msg = err1 instanceof Error ? err1.message : String(err1);
       console.warn("[generate] gpt-5.2 failed:", msg);
 
       // Strategy 2: gpt-4o Chat Completions fallback
       try {
-        console.log("[generate] Fallback: gpt-4o Chat Completions...");
+        
         const completion = await openai.chat.completions.create({
           model: "gpt-4o",
           messages: [
@@ -1061,7 +1061,7 @@ export async function generateListingContent(
           max_tokens: 1500,
         });
         raw = completion.choices[0]?.message?.content?.trim();
-        if (raw) console.log("[generate] gpt-4o fallback succeeded");
+        
       } catch (err2: unknown) {
         const msg2 = err2 instanceof Error ? err2.message : String(err2);
         console.error("[generate] All strategies failed. Last error:", msg2);
