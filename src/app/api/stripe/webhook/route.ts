@@ -9,6 +9,22 @@ function getPeriodEnd(sub: Stripe.Subscription): Date | null {
   return end ? new Date(end * 1000) : null;
 }
 
+const processedEvents = new Map<string, number>();
+const MAX_PROCESSED = 5000;
+const EVENT_TTL_MS = 24 * 60 * 60 * 1000;
+
+function isEventProcessed(eventId: string): boolean {
+  const ts = processedEvents.get(eventId);
+  if (ts && Date.now() - ts < EVENT_TTL_MS) return true;
+  if (processedEvents.size > MAX_PROCESSED) {
+    const now = Date.now();
+    for (const [k, v] of processedEvents) {
+      if (now - v > EVENT_TTL_MS) processedEvents.delete(k);
+    }
+  }
+  return false;
+}
+
 export async function POST(req: NextRequest) {
   if (!stripe) {
     return NextResponse.json({ error: "Stripe not configured" }, { status: 503 });
@@ -28,6 +44,11 @@ export async function POST(req: NextRequest) {
     console.error("Webhook signature verification failed:", err);
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
+
+  if (isEventProcessed(event.id)) {
+    return NextResponse.json({ received: true, duplicate: true });
+  }
+  processedEvents.set(event.id, Date.now());
 
   try {
     switch (event.type) {

@@ -49,7 +49,8 @@ export async function GET(request: NextRequest) {
       display_name: first.display_name || q,
       city: city || undefined,
     });
-  } catch {
+  } catch (err) {
+    console.error("Geocode error:", err);
     return NextResponse.json({ error: "Kunde inte geokoda" }, { status: 502 });
   }
 }

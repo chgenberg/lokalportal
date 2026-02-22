@@ -58,7 +58,8 @@ export async function GET(request: NextRequest) {
       city: city || undefined,
       address: data.address,
     });
-  } catch {
+  } catch (err) {
+    console.error("Reverse geocode error:", err);
     return NextResponse.json({ error: "Kunde inte hämta adress" }, { status: 502 });
   }
 }

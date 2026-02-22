@@ -6,6 +6,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SessionProvider from "@/components/SessionProvider";
 import AISupportChat from "@/components/AISupportChat";
+import CookieConsent from "@/components/CookieConsent";
 
 const dmSans = DM_Sans({
   variable: "--font-geist-sans",
@@ -80,6 +81,7 @@ export default function RootLayout({
           <main id="main-content" className="min-h-screen pt-16 w-full min-w-0 overflow-x-hidden">{children}</main>
           <Footer />
           <AISupportChat />
+          <CookieConsent />
           <Toaster richColors position="top-center" />
         </SessionProvider>
       </body>

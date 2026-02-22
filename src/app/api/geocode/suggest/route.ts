@@ -109,7 +109,8 @@ export async function GET(request: NextRequest) {
     });
 
     return NextResponse.json({ suggestions });
-  } catch {
+  } catch (err) {
+    console.error("Geocode suggest error:", err);
     return NextResponse.json({ suggestions: [] });
   }
 }

@@ -10,6 +10,16 @@ const nextConfig: NextConfig = {
         hostname: "images.unsplash.com",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "*.storageapi.dev",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "storage.railway.app",
+        pathname: "/**",
+      },
     ],
   },
   async headers() {

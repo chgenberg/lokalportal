@@ -43,8 +43,11 @@ export async function POST(request: NextRequest) {
     if (nameStr.length === 0) {
       return NextResponse.json({ error: "Namn krävs" }, { status: 400 });
     }
-    if (passwordStr.length < 6) {
-      return NextResponse.json({ error: "Lösenordet måste vara minst 6 tecken" }, { status: 400 });
+    if (passwordStr.length < 8) {
+      return NextResponse.json({ error: "Lösenordet måste vara minst 8 tecken" }, { status: 400 });
+    }
+    if (!/[A-Z]/.test(passwordStr) || !/[a-z]/.test(passwordStr) || !/[0-9]/.test(passwordStr)) {
+      return NextResponse.json({ error: "Lösenordet måste innehålla stora och små bokstäver samt minst en siffra" }, { status: 400 });
     }
 
     const existing = await prisma.user.findUnique({
@@ -67,7 +70,8 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json({ message: "Konto skapat", userId: user.id }, { status: 201 });
-  } catch {
+  } catch (err) {
+    console.error("Register error:", err);
     return NextResponse.json({ error: "Kunde inte skapa konto" }, { status: 500 });
   }
 }

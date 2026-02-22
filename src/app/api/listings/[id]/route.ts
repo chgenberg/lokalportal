@@ -54,7 +54,8 @@ export async function GET(
         phone: listing.contactPhone,
       },
     });
-  } catch {
+  } catch (err) {
+    console.error("Listing GET error:", err);
     return NextResponse.json({ error: "Kunde inte hämta annonsen" }, { status: 500 });
   }
 }
@@ -131,7 +132,8 @@ export async function PUT(
       createdAt: updated.createdAt.toISOString(),
       contact: { name: updated.contactName, email: updated.contactEmail, phone: updated.contactPhone },
     });
-  } catch {
+  } catch (err) {
+    console.error("Listing PUT error:", err);
     return NextResponse.json({ error: "Kunde inte uppdatera annonsen" }, { status: 500 });
   }
 }
@@ -169,7 +171,8 @@ export async function PATCH(
       createdAt: updated.createdAt.toISOString(),
       contact: { name: updated.contactName, email: updated.contactEmail, phone: updated.contactPhone },
     });
-  } catch {
+  } catch (err) {
+    console.error("Listing PATCH error:", err);
     return NextResponse.json({ error: "Kunde inte förnya annonsen" }, { status: 500 });
   }
 }
@@ -195,7 +198,8 @@ export async function DELETE(
 
     await prisma.listing.delete({ where: { id } });
     return NextResponse.json({ success: true });
-  } catch {
+  } catch (err) {
+    console.error("Listing DELETE error:", err);
     return NextResponse.json({ error: "Kunde inte ta bort annonsen" }, { status: 500 });
   }
 }

@@ -80,7 +80,8 @@ export async function POST(
   let body: { text?: string; fileUrl?: string; fileName?: string; fileSize?: number; fileMimeType?: string };
   try {
     body = await request.json();
-  } catch {
+  } catch (err) {
+    console.error("Message JSON parse error:", err);
     return NextResponse.json({ error: "Ogiltig JSON" }, { status: 400 });
   }
 

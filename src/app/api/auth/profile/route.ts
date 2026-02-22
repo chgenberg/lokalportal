@@ -26,7 +26,8 @@ export async function GET() {
       logoUrl: user.logoUrl ?? "",
       companyName: user.companyName ?? "",
     });
-  } catch {
+  } catch (err) {
+    console.error("Profile GET error:", err);
     return NextResponse.json({ error: "Kunde inte hämta profil" }, { status: 500 });
   }
 }
@@ -69,7 +70,8 @@ export async function PUT(request: NextRequest) {
       logoUrl: updated.logoUrl ?? "",
       companyName: updated.companyName ?? "",
     });
-  } catch {
+  } catch (err) {
+    console.error("Profile PUT error:", err);
     return NextResponse.json({ error: "Kunde inte uppdatera profil" }, { status: 500 });
   }
 }

@@ -54,7 +54,8 @@ async function imageToBase64(url: string): Promise<string | null> {
     const buf = Buffer.from(await res.arrayBuffer());
     if (buf.length < 100) return null;
     return `data:${ct};base64,${buf.toString("base64")}`;
-  } catch {
+  } catch (err) {
+    console.error("PDF image load error:", err);
     return null;
   }
 }
@@ -407,7 +408,9 @@ export async function POST(req: NextRequest) {
     try {
       const buf = fs.readFileSync(logoPath);
       logoSrc = `data:image/png;base64,${buf.toString("base64")}`;
-    } catch { /* no logo */ }
+    } catch (err) {
+      console.error("PDF logo load error:", err);
+    }
 
     // Resolve image URLs
     const origin = req.nextUrl.origin;

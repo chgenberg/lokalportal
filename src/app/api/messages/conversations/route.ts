@@ -101,7 +101,8 @@ export async function POST(request: NextRequest) {
   let body: { listingId?: string };
   try {
     body = await request.json();
-  } catch {
+  } catch (err) {
+    console.error("Conversation JSON parse error:", err);
     return NextResponse.json({ error: "Ogiltig JSON" }, { status: 400 });
   }
 

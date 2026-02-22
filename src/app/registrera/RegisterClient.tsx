@@ -115,7 +115,7 @@ export default function RegisterClient() {
             <div>
               <label className="block text-[12px] font-semibold text-gray-400 mb-1.5 tracking-wide uppercase">Lösenord</label>
               <div className="relative">
-                <input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} className="w-full px-4 py-3 bg-muted/50 rounded-xl text-sm border border-border/60 focus:border-navy/30 focus:bg-white outline-none transition-all pr-14" placeholder="Minst 6 tecken" />
+                <input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8} className="w-full px-4 py-3 bg-muted/50 rounded-xl text-sm border border-border/60 focus:border-navy/30 focus:bg-white outline-none transition-all pr-14" placeholder="Minst 8 tecken (stora/små bokstäver + siffra)" />
                 <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-semibold text-gray-300 hover:text-gray-500 transition-colors tracking-wide uppercase">
                   {showPassword ? "Dölj" : "Visa"}
                 </button>

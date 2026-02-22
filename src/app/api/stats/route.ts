@@ -23,7 +23,8 @@ export async function GET() {
       totalCities: cities.length,
       byCategory: { butik, kontor, lager, restaurang, verkstad, showroom, popup, atelje, gym, ovrigt },
     });
-  } catch {
+  } catch (err) {
+    console.error("Stats error:", err);
     return NextResponse.json({ error: "Kunde inte hämta statistik" }, { status: 500 });
   }
 }

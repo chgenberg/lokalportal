@@ -94,7 +94,8 @@ export async function POST(request: NextRequest) {
       createdAt: listing.createdAt.toISOString(),
       contact: { name: listing.contactName, email: listing.contactEmail, phone: listing.contactPhone },
     }, { status: 201 });
-  } catch {
+  } catch (err) {
+    console.error("Listing create error:", err);
     return NextResponse.json({ error: "Kunde inte skapa annons" }, { status: 500 });
   }
 }

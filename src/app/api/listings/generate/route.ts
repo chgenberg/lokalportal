@@ -22,7 +22,8 @@ export async function POST(request: NextRequest) {
   let body: unknown;
   try {
     body = await request.json();
-  } catch {
+  } catch (err) {
+    console.error("Generate JSON parse error:", err);
     return NextResponse.json({ error: "Ogiltig JSON" }, { status: 400 });
   }
 

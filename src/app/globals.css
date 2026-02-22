@@ -72,6 +72,13 @@ html {
   animation: shimmer 2s ease-in-out infinite;
 }
 
+/* ── Slide-up (cookie banner) ─────── */
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.animate-slide-up { animation: slideUp 0.4s ease-out; }
+
 /* ── Soft pulse (dashboard accent / unread) ─────── */
 @keyframes pulseSoft {
   0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(10, 22, 40, 0.12); }

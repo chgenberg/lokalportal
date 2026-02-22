@@ -74,6 +74,12 @@ model Listing {
   @@index([price])
   @@index([size])
   @@index([createdAt])
+  @@index([city, type])
+  @@index([city, category])
+  @@index([type, category])
+  @@index([city, type, price])
+  @@index([ownerId, createdAt])
+  @@index([stripeStatus])
   @@map("listings")
 }
 

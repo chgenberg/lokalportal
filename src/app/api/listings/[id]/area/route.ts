@@ -36,7 +36,8 @@ export async function GET(
       priceContext,
       areaContext: areaData.areaContext,
     });
-  } catch {
+  } catch (err) {
+    console.error("Area data error:", err);
     return NextResponse.json({ error: "Kunde inte hämta områdesdata" }, { status: 500 });
   }
 }

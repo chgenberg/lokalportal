@@ -37,7 +37,8 @@ export async function GET(
         "Cache-Control": "public, max-age=31536000, immutable",
       },
     });
-  } catch {
+  } catch (err) {
+    console.error("Upload file GET error:", err);
     return new NextResponse(null, { status: 404 });
   }
 }
