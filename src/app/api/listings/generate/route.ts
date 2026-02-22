@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { checkRateLimit } from "@/lib/rateLimit";
 import {
   VALID_TYPES,
   VALID_CATEGORIES,
@@ -13,6 +14,14 @@ export const maxDuration = 30;
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user) return NextResponse.json({ error: "Ej inloggad" }, { status: 401 });
+
+  const { limited, retryAfter } = checkRateLimit(`listing-generate:${session.user.id}`, 10, 15 * 60 * 1000);
+  if (limited) {
+    return NextResponse.json(
+      { error: "För många förfrågningar. Försök igen senare." },
+      { status: 429, headers: retryAfter ? { "Retry-After": String(retryAfter) } : undefined }
+    );
+  }
   if (session.user.role !== "landlord" && session.user.role !== "agent")
     return NextResponse.json({ error: "Endast hyresvärdar och mäklare kan använda generering" }, { status: 403 });
 

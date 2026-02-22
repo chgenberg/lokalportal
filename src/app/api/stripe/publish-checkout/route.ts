@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import bcrypt from "bcryptjs";
 import { authOptions } from "@/lib/auth";
+import { checkRateLimit, getClientKey } from "@/lib/rateLimit";
 import prisma from "@/lib/db";
 import { stripe, LISTING_PRICE_SEK } from "@/lib/stripe";
 
@@ -11,6 +12,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Stripe är inte konfigurerat" }, { status: 503 });
     }
 
+    const key = `publish-checkout:${getClientKey(req)}`;
+    const { limited, retryAfter } = checkRateLimit(key, 5, 15 * 60 * 1000);
+    if (limited) {
+      return NextResponse.json(
+        { error: "För många förfrågningar. Försök igen senare." },
+        { status: 429, headers: retryAfter ? { "Retry-After": String(retryAfter) } : undefined }
+      );
+    }
+
     const body = await req.json();
     const { listing: listingData, user: userData } = body;
 
@@ -18,9 +28,37 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Uppgifter saknas" }, { status: 400 });
     }
 
-    const email = String(userData.email).trim().toLowerCase();
-    const name = String(userData.name).trim();
-    const phone = userData.phone ? String(userData.phone).trim() : "";
+    const email = String(userData.email).trim().toLowerCase().slice(0, 254);
+    const name = String(userData.name).trim().slice(0, 200);
+    const phone = userData.phone ? String(userData.phone).trim().slice(0, 50) : "";
+
+    const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!EMAIL_REGEX.test(email)) {
+      return NextResponse.json({ error: "Ogiltig e-postadress" }, { status: 400 });
+    }
+    if (name.length === 0) {
+      return NextResponse.json({ error: "Namn krävs" }, { status: 400 });
+    }
+
+    const VALID_TYPES = ["sale", "rent"];
+    const VALID_CATEGORIES = ["butik", "kontor", "lager", "restaurang", "verkstad", "showroom", "popup", "atelje", "gym", "ovrigt"];
+    if (!listingData.title || !listingData.address || !listingData.city) {
+      return NextResponse.json({ error: "Titel, adress och stad krävs för annonsen" }, { status: 400 });
+    }
+    if (listingData.type && !VALID_TYPES.includes(listingData.type)) {
+      return NextResponse.json({ error: "Ogiltig annonstyp" }, { status: 400 });
+    }
+    if (listingData.category && !VALID_CATEGORIES.includes(listingData.category)) {
+      return NextResponse.json({ error: "Ogiltig kategori" }, { status: 400 });
+    }
+    const price = Number(listingData.price);
+    const size = Number(listingData.size);
+    if (Number.isNaN(price) || price < 0 || price > 999_999_999) {
+      return NextResponse.json({ error: "Ogiltigt pris" }, { status: 400 });
+    }
+    if (Number.isNaN(size) || size < 0 || size > 100_000) {
+      return NextResponse.json({ error: "Ogiltig storlek" }, { status: 400 });
+    }
 
     // 1. Determine user: existing session, existing account, or create new
     let userId: string;
@@ -74,23 +112,20 @@ export async function POST(req: NextRequest) {
     }
 
     // 3. Create the listing
-    const imgs = listingData.imageUrls?.length
-      ? listingData.imageUrls
-      : listingData.imageUrl
-        ? [listingData.imageUrl]
-        : [];
+    const rawImgs = Array.isArray(listingData.imageUrls) ? listingData.imageUrls : listingData.imageUrl ? [listingData.imageUrl] : [];
+    const imgs = rawImgs.slice(0, 10).filter((u: unknown): u is string => typeof u === "string").map((u: string) => u.trim().slice(0, 2000)).filter(Boolean);
 
     const newListing = await prisma.listing.create({
       data: {
-        title: String(listingData.title || "Kommersiell lokal").trim(),
-        description: String(listingData.description || "").trim(),
-        city: String(listingData.city || "").trim(),
-        address: String(listingData.address || "").trim(),
-        type: listingData.type || "rent",
-        category: listingData.category || "office",
-        price: Number(listingData.price) || 0,
-        size: Number(listingData.size) || 0,
-        tags: listingData.tags || [],
+        title: String(listingData.title).trim().slice(0, 200),
+        description: String(listingData.description || "").trim().slice(0, 5000),
+        city: String(listingData.city).trim().slice(0, 100),
+        address: String(listingData.address).trim().slice(0, 300),
+        type: VALID_TYPES.includes(listingData.type) ? listingData.type : "rent",
+        category: VALID_CATEGORIES.includes(listingData.category) ? listingData.category : "ovrigt",
+        price: Math.floor(price),
+        size: Math.floor(size),
+        tags: Array.isArray(listingData.tags) ? listingData.tags.slice(0, 20).filter((t: unknown) => typeof t === "string").map((t: string) => t.trim().slice(0, 50)) : [],
         imageUrl: imgs[0] || "",
         imageUrls: imgs.length > 0 ? imgs : [],
         videoUrl: listingData.videoUrl || null,

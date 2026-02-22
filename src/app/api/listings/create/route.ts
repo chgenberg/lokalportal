@@ -1,11 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { checkRateLimit } from "@/lib/rateLimit";
 import prisma from "@/lib/db";
 
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user) return NextResponse.json({ error: "Ej inloggad" }, { status: 401 });
+
+  const { limited, retryAfter } = checkRateLimit(`listing-create:${session.user.id}`, 10, 15 * 60 * 1000);
+  if (limited) {
+    return NextResponse.json(
+      { error: "För många förfrågningar. Försök igen senare." },
+      { status: 429, headers: retryAfter ? { "Retry-After": String(retryAfter) } : undefined }
+    );
+  }
 
   const VALID_TYPES = ["sale", "rent"] as const;
   const VALID_CATEGORIES = ["butik", "kontor", "lager", "restaurang", "verkstad", "showroom", "popup", "atelje", "gym", "ovrigt"] as const;

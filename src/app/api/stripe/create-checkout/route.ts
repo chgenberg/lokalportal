@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { checkRateLimit } from "@/lib/rateLimit";
 import prisma from "@/lib/db";
 import { stripe, LISTING_PRICE_SEK } from "@/lib/stripe";
 
@@ -15,9 +16,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Ej inloggad" }, { status: 401 });
     }
 
+    const { limited, retryAfter } = checkRateLimit(`stripe-checkout:${session.user.id}`, 10, 15 * 60 * 1000);
+    if (limited) {
+      return NextResponse.json(
+        { error: "För många förfrågningar. Försök igen senare." },
+        { status: 429, headers: retryAfter ? { "Retry-After": String(retryAfter) } : undefined }
+      );
+    }
+
     const { listingId } = await req.json();
-    if (!listingId) {
-      return NextResponse.json({ error: "listingId krävs" }, { status: 400 });
+    if (!listingId || typeof listingId !== "string" || !/^[a-zA-Z0-9_-]{1,50}$/.test(listingId)) {
+      return NextResponse.json({ error: "listingId krävs och måste vara giltigt" }, { status: 400 });
     }
 
     // Verify listing belongs to user

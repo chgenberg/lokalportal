@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { checkRateLimit } from "@/lib/rateLimit";
 import prisma from "@/lib/db";
 
 const ID_REGEX = /^[a-zA-Z0-9_-]{1,50}$/;
@@ -66,6 +67,14 @@ export async function PUT(
 ) {
   const session = await getServerSession(authOptions);
   if (!session?.user) return NextResponse.json({ error: "Ej inloggad" }, { status: 401 });
+
+  const { limited, retryAfter } = checkRateLimit(`listing-update:${session.user.id}`, 20, 15 * 60 * 1000);
+  if (limited) {
+    return NextResponse.json(
+      { error: "För många förfrågningar. Försök igen senare." },
+      { status: 429, headers: retryAfter ? { "Retry-After": String(retryAfter) } : undefined }
+    );
+  }
 
   const { id } = await params;
   if (!id || !ID_REGEX.test(id)) {
