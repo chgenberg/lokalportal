@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import AuthLayout from "@/components/AuthLayout";
 
-type LoginAs = "landlord" | "tenant";
+type LoginAs = "landlord" | "tenant" | "agent";
 
 function LoginContent() {
   const router = useRouter();
@@ -51,7 +51,7 @@ function LoginContent() {
           <div>
             <p className="text-[12px] font-semibold text-gray-400 mb-3 tracking-wide uppercase">Vad vill du göra idag?</p>
             <p className="text-[11px] text-gray-400 mb-3">Välj vad du vill prioritera – du får tillgång till allt med samma konto.</p>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-3">
               <button
                 type="button"
                 onClick={() => setLoginAs("landlord")}
@@ -76,12 +76,26 @@ function LoginContent() {
                 <span className="block text-[13px] font-semibold text-navy">Hyresgäst / köpare</span>
                 <span className="block text-[11px] text-gray-500 mt-0.5">Sök och kontakta lokaler</span>
               </button>
+              <button
+                type="button"
+                onClick={() => setLoginAs("agent")}
+                className={`p-4 rounded-xl border-2 text-left transition-all ${
+                  loginAs === "agent"
+                    ? "border-navy bg-navy/[0.04] shadow-sm"
+                    : "border-border/60 hover:border-navy/30 bg-white"
+                }`}
+              >
+                <span className="block text-[13px] font-semibold text-navy">Mäklare</span>
+                <span className="block text-[11px] text-gray-500 mt-0.5">Hantera klienter & portfölj</span>
+              </button>
             </div>
             {loginAs && (
               <p className="text-[11px] text-gray-400 mt-2">
                 {loginAs === "landlord"
                   ? "Du kommer till din annons- och statistikdashboard efter inloggning."
-                  : "Du kommer till dina sparade annonser och meddelanden efter inloggning."}
+                  : loginAs === "agent"
+                    ? "Du kommer till din mäklardashboard med klienter och portfölj."
+                    : "Du kommer till dina sparade annonser och meddelanden efter inloggning."}
               </p>
             )}
           </div>
