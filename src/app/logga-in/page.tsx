@@ -51,7 +51,7 @@ function LoginContent() {
           <div>
             <p className="text-[12px] font-semibold text-gray-400 mb-3 tracking-wide uppercase">Vad vill du göra idag?</p>
             <p className="text-[11px] text-gray-400 mb-3">Välj vad du vill prioritera – du får tillgång till allt med samma konto.</p>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <button
                 type="button"
                 onClick={() => setLoginAs("landlord")}

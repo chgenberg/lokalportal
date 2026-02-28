@@ -375,7 +375,7 @@ function AnnonserContent() {
           {/* Map (desktop, right side) */}
           {showMap && (
             <div className="hidden lg:block lg:w-1/2 flex-shrink-0">
-              <div className="sticky top-20 h-[calc(100vh-6rem)] rounded-2xl overflow-hidden border border-gray-100">
+              <div className="sticky top-20 h-[calc(100dvh-6rem)] rounded-2xl overflow-hidden border border-gray-100">
                 <Suspense fallback={<div className="h-full bg-gray-50 flex items-center justify-center"><span className="text-gray-400 text-sm">Laddar karta...</span></div>}>
                   <ListingMap listings={listings} />
                 </Suspense>

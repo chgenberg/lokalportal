@@ -190,7 +190,7 @@ export default function ListingDetailContent({
               <button
                 type="button"
                 onClick={() => setLightboxIndex(null)}
-                className="absolute top-4 right-4 w-10 h-10 text-white/80 hover:text-white text-2xl"
+                className="absolute top-4 right-4 w-11 h-11 flex items-center justify-center rounded-full bg-black/20 text-white/80 hover:text-white text-2xl"
                 aria-label="Stäng"
               >
                 &times;
@@ -215,7 +215,7 @@ export default function ListingDetailContent({
                   </button>
                 </>
               )}
-              <div className="relative max-w-5xl max-h-[90vh] mx-4" onClick={(e) => e.stopPropagation()}>
+              <div className="relative max-w-[95vw] sm:max-w-5xl max-h-[90vh] mx-4" onClick={(e) => e.stopPropagation()}>
                 <Image src={images[lightboxIndex]!} alt={listing.title} width={1200} height={675} className="object-contain max-h-[90vh] w-auto" unoptimized />
               </div>
             </div>
@@ -226,16 +226,16 @@ export default function ListingDetailContent({
           <div className="lg:col-span-2 space-y-6">
             <div className="bg-white rounded-2xl border border-border/40 shadow-sm overflow-hidden">
               {/* Nyckeltal */}
-              <div className="grid grid-cols-4 gap-0 border-b border-border/40">
-                <div className="text-center py-4 px-2">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-0 border-b border-border/40">
+                <div className="text-center py-4 px-2 border-b sm:border-b-0 border-border/40">
                   <p className="text-[10px] font-semibold text-gray-400 tracking-[0.12em] uppercase mb-0.5">Pris</p>
                   <p className="text-sm font-bold text-navy tracking-tight whitespace-nowrap">{formatPrice(listing.price, listing.type)}</p>
                 </div>
-                <div className="text-center py-4 px-2 border-l border-border/40">
+                <div className="text-center py-4 px-2 border-l border-b sm:border-b-0 border-border/40">
                   <p className="text-[10px] font-semibold text-gray-400 tracking-[0.12em] uppercase mb-0.5">Storlek</p>
                   <p className="text-sm font-bold text-navy tracking-tight whitespace-nowrap">{listing.size} m²</p>
                 </div>
-                <div className="text-center py-4 px-2 border-l border-border/40">
+                <div className="text-center py-4 px-2 sm:border-l border-border/40">
                   <p className="text-[10px] font-semibold text-gray-400 tracking-[0.12em] uppercase mb-0.5">Kr/m²</p>
                   <p className="text-sm font-bold text-navy tracking-tight whitespace-nowrap">
                     {listing.size > 0

@@ -428,7 +428,7 @@ function DashboardContent() {
                 {editForm.imageUrl ? (
                   <div className="relative inline-block">
                     <img src={editForm.imageUrl} alt="Förhandsgranskning" className="h-40 w-auto rounded-xl border border-border object-cover" />
-                    <button type="button" onClick={() => setEditForm((p) => (p ? { ...p, imageUrl: "" } : p))} className="absolute top-2 right-2 w-8 h-8 rounded-full bg-navy text-white flex items-center justify-center text-sm hover:bg-navy-light transition-colors" aria-label="Ta bort bild">×</button>
+                    <button type="button" onClick={() => setEditForm((p) => (p ? { ...p, imageUrl: "" } : p))} className="absolute top-2 right-2 w-10 h-10 rounded-full bg-navy text-white flex items-center justify-center text-sm hover:bg-navy-light transition-colors" aria-label="Ta bort bild">×</button>
                   </div>
                 ) : (
                   <button type="button" onClick={() => editImageInputRef.current?.click()} disabled={imageUploading} className="w-full py-8 border-2 border-dashed border-border rounded-xl text-sm text-gray-500 hover:border-navy transition-colors disabled:opacity-50">Lägg till bild</button>
@@ -547,7 +547,7 @@ function DashboardContent() {
               const statusColor = inquiryCount === 0 ? "bg-gray-300" : daysSinceInquiry <= 7 ? "bg-green-500" : daysSinceInquiry <= 30 ? "bg-amber-400" : "bg-gray-300";
               return (
                 <div key={listing.id} className="dashboard-card p-6">
-                  <div className="flex items-start justify-between gap-4">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className={`w-2 h-2 rounded-full shrink-0 ${statusColor}`} title={inquiryCount === 0 ? "Inga förfrågningar" : daysSinceInquiry <= 7 ? "Aktivitet senaste 7 dagarna" : daysSinceInquiry <= 30 ? "Aktivitet senaste 30 dagarna" : "Ingen nyligen aktivitet"} />
@@ -565,11 +565,11 @@ function DashboardContent() {
                         {lastInquiryAt && <span>Senaste {formatRelativeTime(lastInquiryAt)}</span>}
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
+                    <div className="flex items-center gap-2 shrink-0 flex-wrap sm:justify-end">
                       <span className="px-2.5 py-1 text-xs font-medium rounded-full bg-navy/10 text-navy">{typeLabels[listing.type]}</span>
-                      <button type="button" onClick={() => renewListing(listing.id)} disabled={renewingId === listing.id} className="px-3 py-1.5 text-xs font-medium text-gray-600 border border-border/60 rounded-2xl hover:bg-muted/60 transition-colors disabled:opacity-50" title="Förnya annons (visas längst upp)">{renewingId === listing.id ? "..." : "Förnya"}</button>
-                      <button type="button" onClick={() => startEdit(listing)} className="px-3 py-1.5 text-xs font-medium text-navy border border-border/60 rounded-2xl hover:bg-muted/60 transition-colors">Redigera</button>
-                      <button type="button" onClick={() => setDeleteConfirmId(listing.id)} className="px-3 py-1.5 text-xs text-gray-500 hover:text-red-600 border border-border/60 rounded-2xl hover:border-red-200 transition-colors">Ta bort</button>
+                      <button type="button" onClick={() => renewListing(listing.id)} disabled={renewingId === listing.id} className="px-3.5 py-2 text-xs font-medium text-gray-600 border border-border/60 rounded-2xl hover:bg-muted/60 transition-colors disabled:opacity-50" title="Förnya annons (visas längst upp)">{renewingId === listing.id ? "..." : "Förnya"}</button>
+                      <button type="button" onClick={() => startEdit(listing)} className="px-3.5 py-2 text-xs font-medium text-navy border border-border/60 rounded-2xl hover:bg-muted/60 transition-colors">Redigera</button>
+                      <button type="button" onClick={() => setDeleteConfirmId(listing.id)} className="px-3.5 py-2 text-xs text-gray-500 hover:text-red-600 border border-border/60 rounded-2xl hover:border-red-200 transition-colors">Ta bort</button>
                     </div>
                   </div>
                 </div>

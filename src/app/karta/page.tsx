@@ -50,8 +50,8 @@ export default function KartaPage() {
         </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row min-h-0" style={{ height: "calc(100vh - 180px)" }}>
-        <div className="lg:w-80 xl:w-96 overflow-y-auto border-r border-border bg-white shrink-0 max-h-[45vh] lg:max-h-none">
+      <div className="flex flex-col lg:flex-row min-h-0 h-[calc(100dvh-180px)]">
+        <div className="lg:w-80 xl:w-96 overflow-y-auto border-r border-border bg-white shrink-0 max-h-[40vh] lg:max-h-none">
           <div className="p-4">
             <p className="text-xs font-medium text-gray-500 mb-3">{listings.length} lokaler</p>
             {error && (

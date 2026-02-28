@@ -201,7 +201,7 @@ export default function Header() {
           <div className="md:hidden glass border-t border-border/60 animate-slide-down shadow-lg max-h-[calc(100vh-3.5rem)] overflow-y-auto">
             <div className="px-4 py-3 space-y-0.5">
               {navLinks.map((link) => (
-                <Link key={link.href} href={link.href} onClick={() => setMobileOpen(false)} className="flex items-center py-3 px-4 text-[15px] font-medium text-gray-600 hover:text-navy active:bg-navy/[0.04] rounded-xl transition-all">
+                <Link key={link.href} href={link.href} onClick={() => setMobileOpen(false)} className="flex items-center py-3.5 px-4 text-[15px] font-medium text-gray-600 hover:text-navy active:bg-navy/[0.04] rounded-xl transition-all">
                   {link.label}
                 </Link>
               ))}

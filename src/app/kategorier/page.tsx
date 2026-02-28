@@ -86,13 +86,13 @@ export default function KategorierPage() {
     <div className="min-h-screen bg-white">
       <div className="bg-muted border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <h1 className="text-3xl font-bold text-navy mb-2">Kategorier</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-navy mb-2">Kategorier</h1>
           <p className="text-gray-500">Utforska våra lokalkategorier och hitta det som passar ditt behov</p>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
           {categoryConfig.map((cat) => (
             <Link
               key={cat.id}
@@ -100,7 +100,7 @@ export default function KategorierPage() {
               className="group relative bg-white rounded-2xl border border-border overflow-hidden hover:shadow-xl hover:border-navy/20 transition-all duration-300 hover:-translate-y-1"
             >
               <div className="h-2 bg-navy" />
-              <div className="p-8">
+              <div className="p-5 sm:p-6 md:p-8">
                 <div className="flex items-start gap-5">
                   <div className="w-16 h-16 rounded-2xl bg-navy flex items-center justify-center shrink-0 group-hover:bg-navy-light transition-colors duration-300">
                     <span className="text-xl font-bold text-white">{cat.label.charAt(0)}</span>

@@ -757,7 +757,7 @@ export default function SkapaAnnonsClient() {
                   <div className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 border-2 border-navy/20 border-t-navy rounded-full animate-spin" />
                 )}
                 {suggestionsOpen && suggestions.length > 0 && (
-                  <ul id="skapa-address-suggestions" role="listbox" className="absolute z-10 left-0 right-0 mt-1 py-1 bg-white border border-border/60 rounded-xl shadow-lg max-h-[50vh] sm:max-h-56 overflow-y-auto">
+                  <ul id="skapa-address-suggestions" role="listbox" className="absolute z-10 left-0 right-0 mt-1 py-1 bg-white border border-border/60 rounded-xl shadow-lg max-h-[40vh] sm:max-h-56 overflow-y-auto">
                     {suggestions.map((item, i) => (
                         <li
                           key={`${item.display_name}-${i}`}

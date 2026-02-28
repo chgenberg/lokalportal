@@ -161,7 +161,7 @@ export default function DashboardLayoutClient({ children }: { children: React.Re
                 key={item.label}
                 href={item.href}
                 onClick={() => setMobileOpen(false)}
-                className={`group flex items-center gap-3 px-3 py-2.5 rounded-2xl text-[13px] font-medium transition-all duration-200 ${
+                className={`group flex items-center gap-3 px-3 py-3 rounded-2xl text-[13px] font-medium transition-all duration-200 ${
                   active
                     ? "bg-navy text-white shadow-sm"
                     : "text-gray-500 hover:text-navy hover:bg-navy/[0.04]"
@@ -185,7 +185,7 @@ export default function DashboardLayoutClient({ children }: { children: React.Re
       <div className="px-3 py-3">
         <button
           onClick={() => signOut({ callbackUrl: "/" })}
-          className="group flex items-center gap-3 w-full px-3 py-2.5 rounded-2xl text-[13px] font-medium text-gray-400 hover:text-red-500 hover:bg-red-50/50 transition-all duration-200"
+          className="group flex items-center gap-3 w-full px-3 py-3 rounded-2xl text-[13px] font-medium text-gray-400 hover:text-red-500 hover:bg-red-50/50 transition-all duration-200"
         >
           <IconLogout className="w-[18px] h-[18px] shrink-0 text-gray-300 group-hover:text-red-400 transition-colors duration-150" />
           Logga ut

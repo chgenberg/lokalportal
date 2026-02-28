@@ -6,7 +6,7 @@ const features = [
     description: "Alla annonsörer verifieras med BankID för att säkerställa trygghet och kvalitet.",
     bgClass: "bg-[#FFF8ED]",
     icon: (
-      <span className="text-4xl" role="img" aria-hidden>🛡️</span>
+      <svg className="w-10 h-10 text-navy/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
     ),
   },
   {
@@ -14,7 +14,7 @@ const features = [
     description: "Lägg upp din annons på under 5 minuter. Nå tusentals potentiella hyresgäster direkt.",
     bgClass: "bg-[#E8F4FD]",
     icon: (
-      <span className="text-4xl" role="img" aria-hidden>⚡</span>
+      <svg className="w-10 h-10 text-navy/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>
     ),
   },
   {
@@ -22,7 +22,7 @@ const features = [
     description: "Vårt team finns tillgängligt för att hjälpa dig genom hela processen.",
     bgClass: "bg-[#F0F9F0]",
     icon: (
-      <span className="text-4xl" role="img" aria-hidden>💬</span>
+      <svg className="w-10 h-10 text-navy/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" /></svg>
     ),
   },
 ];
@@ -47,7 +47,7 @@ export default function FeaturesSection() {
               >
                 <div className="flex justify-center mb-4">{feature.icon}</div>
                 <h3 className="text-lg font-bold text-navy mb-2 tracking-tight">{feature.title}</h3>
-                <p className="text-[13px] text-gray-600 leading-relaxed max-w-[260px] mx-auto">
+                <p className="text-[13px] text-gray-600 leading-relaxed max-w-xs mx-auto">
                   {feature.description}
                 </p>
               </div>

@@ -115,7 +115,7 @@ export default function GeneratingProgressBar({ done, onComplete }: GeneratingPr
       {/* Fun fact */}
       <div className="bg-navy/[0.03] rounded-xl p-5 min-h-[72px] flex items-center">
         <div className="flex gap-3 items-start">
-          <span className="text-gold text-[16px] mt-0.5 shrink-0">💡</span>
+          <svg className="w-4 h-4 text-gold mt-0.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18h6M10 22h4M12 2v1M4.22 4.22l.71.71M1 12h1M4.22 19.78l.71-.71M12 17a5 5 0 100-10 5 5 0 000 10z" /></svg>
           <p
             className={`text-[13px] leading-relaxed text-gray-500 transition-opacity duration-400 ${
               factFading ? "opacity-0" : "opacity-100"

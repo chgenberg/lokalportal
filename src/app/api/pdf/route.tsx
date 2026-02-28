@@ -330,9 +330,9 @@ function ListingPdf({ data, logoSrc, imageDataUris }: { data: PdfBody; logoSrc: 
               <SectionHeading>Lägesanalys</SectionHeading>
               <View style={{ flexDirection: "row", gap: 8 }}>
                 {[
-                  { icon: "🚌", label: "Kollektivtrafik", items: nearby!.transit },
-                  { icon: "🍽", label: "Restauranger", items: nearby!.restaurants },
-                  { icon: "🅿️", label: "Parkering", items: nearby!.parking },
+                  { icon: "T", label: "Kollektivtrafik", items: nearby!.transit },
+                  { icon: "R", label: "Restauranger", items: nearby!.restaurants },
+                  { icon: "P", label: "Parkering", items: nearby!.parking },
                 ].filter(g => g.items && g.items.length > 0).map((g, i) => {
                   const score = Math.min(g.items!.length, 5);
                   return (

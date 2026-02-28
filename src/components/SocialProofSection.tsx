@@ -52,7 +52,7 @@ export default function SocialProofSection() {
             <button
               type="button"
               onClick={() => setIndex((i) => (i === 0 ? testimonials.length - 1 : i - 1))}
-              className="shrink-0 w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-border/60 flex items-center justify-center text-navy/60 hover:text-navy hover:border-navy/20 hover:bg-white/50 transition-colors"
+              className="shrink-0 w-11 h-11 sm:w-10 sm:h-10 rounded-full border border-border/60 flex items-center justify-center text-navy/60 hover:text-navy hover:border-navy/20 hover:bg-white/50 transition-colors"
               aria-label="Föregående utlåtande"
             >
               <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -77,7 +77,7 @@ export default function SocialProofSection() {
             <button
               type="button"
               onClick={() => setIndex((i) => (i === testimonials.length - 1 ? 0 : i + 1))}
-              className="shrink-0 w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-border/60 flex items-center justify-center text-navy/60 hover:text-navy hover:border-navy/20 hover:bg-white/50 transition-colors"
+              className="shrink-0 w-11 h-11 sm:w-10 sm:h-10 rounded-full border border-border/60 flex items-center justify-center text-navy/60 hover:text-navy hover:border-navy/20 hover:bg-white/50 transition-colors"
               aria-label="Nästa utlåtande"
             >
               <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -92,7 +92,7 @@ export default function SocialProofSection() {
                 key={i}
                 type="button"
                 onClick={() => setIndex(i)}
-                className={`w-2 h-2 rounded-full transition-colors ${i === index ? "bg-navy" : "bg-navy/20 hover:bg-navy/40"}`}
+                className={`w-2.5 h-2.5 rounded-full transition-colors ${i === index ? "bg-navy" : "bg-navy/20 hover:bg-navy/40"}`}
                 aria-label={`Utlåtande ${i + 1}`}
               />
             ))}
