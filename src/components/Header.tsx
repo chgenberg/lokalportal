@@ -162,7 +162,7 @@ export default function Header() {
                         </Link>
                         <div className="border-t border-border/60 mt-1 pt-1">
                           <button
-                            onClick={() => { setUserMenuOpen(false); signOut({ callbackUrl: "/" }); }}
+                            onClick={() => { setUserMenuOpen(false); signOut({ callbackUrl: window.location.origin + "/logga-in" }); }}
                             className="block w-full text-left px-4 py-2.5 text-[13px] text-gray-400 hover:text-red-500 hover:bg-red-50/50 transition-all"
                           >
                             Logga ut
@@ -216,7 +216,7 @@ export default function Header() {
                     <Link href="/skapa-annons" onClick={() => setMobileOpen(false)} className="block w-full py-3 px-4 bg-navy text-white text-[15px] font-semibold rounded-full text-center mt-3">
                       Annonsera
                     </Link>
-                    <button onClick={() => { setMobileOpen(false); signOut({ callbackUrl: "/" }); }} className="block w-full text-left py-3 px-4 text-[15px] font-medium text-gray-400 hover:text-red-500 active:bg-red-50/50 rounded-xl transition-all mt-1">Logga ut</button>
+                    <button onClick={() => { setMobileOpen(false); signOut({ callbackUrl: window.location.origin + "/logga-in" }); }} className="block w-full text-left py-3 px-4 text-[15px] font-medium text-gray-400 hover:text-red-500 active:bg-red-50/50 rounded-xl transition-all mt-1">Logga ut</button>
                   </>
                 ) : (
                   <>

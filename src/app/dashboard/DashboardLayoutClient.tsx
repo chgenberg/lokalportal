@@ -184,7 +184,7 @@ export default function DashboardLayoutClient({ children }: { children: React.Re
       {/* Logout */}
       <div className="px-3 py-3">
         <button
-          onClick={() => signOut({ callbackUrl: "/" })}
+          onClick={() => signOut({ callbackUrl: window.location.origin + "/logga-in" })}
           className="group flex items-center gap-3 w-full px-3 py-3 rounded-2xl text-[13px] font-medium text-gray-400 hover:text-red-500 hover:bg-red-50/50 transition-all duration-200"
         >
           <IconLogout className="w-[18px] h-[18px] shrink-0 text-gray-300 group-hover:text-red-400 transition-colors duration-150" />

@@ -661,7 +661,7 @@ export default function MaklareDashboardClient() {
           </div>
         </div>
 
-        <button onClick={() => signOut({ callbackUrl: "/" })} className="px-6 py-3 bg-navy/5 text-navy text-sm font-medium rounded-full hover:bg-navy/10 transition-colors">Logga ut</button>
+        <button onClick={() => signOut({ callbackUrl: window.location.origin + "/logga-in" })} className="px-6 py-3 bg-navy/5 text-navy text-sm font-medium rounded-full hover:bg-navy/10 transition-colors">Logga ut</button>
       </div>
     );
   }
