@@ -483,7 +483,7 @@ export default function SkapaAnnonsClient() {
         lat: typeof data.lat === "number" ? data.lat : 0,
         lng: typeof data.lng === "number" ? data.lng : 0,
         type: data.type ?? input.type,
-        category: input.categories.join(","),
+        category: input.categories[0] ?? "",
         price: data.price ?? priceNum,
         size: data.size ?? sizeNum,
         areaSummary: data.areaSummary,
@@ -539,7 +539,7 @@ export default function SkapaAnnonsClient() {
         email: leadEmail.trim(),
         address: input.address.trim(),
         type: input.type,
-        category: input.categories.join(","),
+        category: input.categories[0],
         price: priceNum,
         size: sizeNum,
         highlights: input.highlights.trim() || undefined,
@@ -568,7 +568,7 @@ export default function SkapaAnnonsClient() {
         lat: typeof data.lat === "number" ? data.lat : 0,
         lng: typeof data.lng === "number" ? data.lng : 0,
         type: data.type ?? input.type,
-        category: input.categories.join(","),
+        category: input.categories[0] ?? "",
         price: data.price ?? priceNum,
         size: data.size ?? sizeNum,
         areaSummary: data.areaSummary,
@@ -820,10 +820,7 @@ export default function SkapaAnnonsClient() {
                           key={cat}
                           type="button"
                           onClick={() => {
-                            const next = active
-                              ? input.categories.filter((c) => c !== cat)
-                              : [...input.categories, cat];
-                            updateInput({ categories: next });
+                            updateInput({ categories: active ? [] : [cat] });
                           }}
                           className={`px-3 py-1.5 rounded-xl text-[12px] font-semibold transition-all border ${
                             active

@@ -95,6 +95,7 @@ export default function MaklareDashboardClient() {
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileSuccess, setProfileSuccess] = useState(false);
   const [logoUploading, setLogoUploading] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState(false);
   const logoInputRef = useRef<HTMLInputElement>(null);
 
   // Selected client detail
@@ -661,7 +662,67 @@ export default function MaklareDashboardClient() {
           </div>
         </div>
 
-        <button onClick={() => signOut({ callbackUrl: window.location.origin + "/logga-in" })} className="px-6 py-3 bg-navy/5 text-navy text-sm font-medium rounded-full hover:bg-navy/10 transition-colors">Logga ut</button>
+        <div className="flex flex-wrap gap-3">
+          <button onClick={() => signOut({ callbackUrl: window.location.origin + "/logga-in" })} className="px-6 py-3 bg-navy/5 text-navy text-sm font-medium rounded-full hover:bg-navy/10 transition-colors">Logga ut</button>
+          <button
+            onClick={async () => {
+              try {
+                const res = await fetch("/api/auth/account");
+                if (!res.ok) throw new Error();
+                const data = await res.json();
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "mina-uppgifter.json";
+                a.click();
+                URL.revokeObjectURL(url);
+              } catch {
+                alert("Kunde inte exportera data");
+              }
+            }}
+            className="px-6 py-3 bg-navy/5 text-navy text-sm font-medium rounded-full hover:bg-navy/10 transition-colors"
+          >
+            Exportera mina uppgifter
+          </button>
+        </div>
+
+        <div className="mt-6 pt-6 border-t border-red-100">
+          <p className="text-[11px] font-semibold text-gray-400 tracking-[0.1em] uppercase mb-2">Radera konto</p>
+          <p className="text-[13px] text-gray-500 mb-3">Detta raderar permanent ditt konto, alla annonser, meddelanden och sparade favoriter. Åtgärden kan inte ångras.</p>
+          {!deleteConfirm ? (
+            <button
+              onClick={() => setDeleteConfirm(true)}
+              className="px-5 py-2.5 text-sm font-medium text-red-600 border border-red-200 rounded-full hover:bg-red-50 transition-colors"
+            >
+              Radera mitt konto
+            </button>
+          ) : (
+            <div className="flex items-center gap-3">
+              <button
+                onClick={async () => {
+                  try {
+                    const res = await fetch("/api/auth/account", { method: "DELETE" });
+                    if (!res.ok) throw new Error();
+                    signOut({ callbackUrl: window.location.origin + "/logga-in" });
+                  } catch {
+                    alert("Kunde inte radera kontot");
+                    setDeleteConfirm(false);
+                  }
+                }}
+                className="px-5 py-2.5 text-sm font-semibold text-white bg-red-600 rounded-full hover:bg-red-700 transition-colors"
+              >
+                Ja, radera permanent
+              </button>
+              <button
+                onClick={() => setDeleteConfirm(false)}
+                className="px-5 py-2.5 text-sm font-medium text-gray-500 border border-border/60 rounded-full hover:bg-muted/60 transition-colors"
+              >
+                Avbryt
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     );
   }

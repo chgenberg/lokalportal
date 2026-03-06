@@ -157,6 +157,20 @@ model Lead {
   @@map("leads")
 }
 
+model Event {
+  id        String   @id @default(uuid())
+  type      String   // "view" | "inquiry" | "favorite" | "unfavorite" | "publish" | "contact_click"
+  listingId String?
+  userId    String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  @@index([listingId, type, createdAt])
+  @@index([type, createdAt])
+  @@index([createdAt])
+  @@map("events")
+}
+
 model AgentClient {
   id        String   @id @default(uuid())
   agentId   String

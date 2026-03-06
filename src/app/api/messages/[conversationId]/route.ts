@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { checkRateLimit } from "@/lib/rateLimit";
 import prisma from "@/lib/db";
+import { logEvent } from "@/lib/events";
 
 const CONVERSATION_ID_REGEX = /^[a-zA-Z0-9_-]{1,50}$/;
 
@@ -145,6 +146,8 @@ export async function POST(
         data: { lastMessageAt: new Date() },
       }),
     ]);
+
+    logEvent("inquiry", conversation.listingId, session.user.id);
 
     return NextResponse.json({
       id: message.id,

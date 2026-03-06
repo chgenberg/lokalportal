@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { checkRateLimit } from "@/lib/rateLimit";
 import prisma from "@/lib/db";
+import { logEvent } from "@/lib/events";
 
 const LISTING_ID_REGEX = /^[a-zA-Z0-9_-]{1,50}$/;
 
@@ -63,6 +64,8 @@ export async function POST(request: NextRequest) {
       create: { userId: session.user.id, listingId },
     });
 
+    logEvent("favorite", listingId, session.user.id);
+
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error("Favorites POST error:", err);
@@ -83,6 +86,8 @@ export async function DELETE(request: NextRequest) {
     await prisma.favorite.deleteMany({
       where: { userId: session.user.id, listingId },
     });
+
+    logEvent("unfavorite", listingId, session.user.id);
 
     return NextResponse.json({ ok: true });
   } catch (err) {

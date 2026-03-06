@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { checkRateLimit } from "@/lib/rateLimit";
 import prisma from "@/lib/db";
+import { logEvent } from "@/lib/events";
 
 const ID_REGEX = /^[a-zA-Z0-9_-]{1,50}$/;
 const VALID_TYPES = ["sale", "rent"] as const;
@@ -39,6 +40,7 @@ export async function GET(
         data: { viewCount: { increment: 1 } },
       });
       listing.viewCount = (listing.viewCount ?? 0) + 1;
+      logEvent("view", id, session?.user?.id ?? null);
     }
     const { owner, ...rest } = listing;
     const areaDataRaw = (rest as { areaData?: unknown }).areaData as { nearby?: unknown; priceContext?: unknown; demographics?: unknown } | null | undefined;
