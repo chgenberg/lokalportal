@@ -61,7 +61,7 @@ function MaklareMeddelandenContent() {
       </div>
 
       <div className="bg-white rounded-3xl border border-border/40 overflow-hidden shadow-sm">
-        <div className="flex flex-col md:flex-row" style={{ height: "calc(100vh - 220px)", minHeight: "400px" }}>
+        <div className="flex flex-col md:flex-row" style={{ height: "calc(100dvh - 160px)", minHeight: "400px" }}>
           <div className={`w-full md:w-80 border-r border-border overflow-y-auto shrink-0 ${selectedId ? "hidden md:block" : "block"}`}>
             {loading ? (
               <div className="p-4 space-y-2">
@@ -128,7 +128,7 @@ export default function MaklareMeddelandenPage() {
   return (
     <Suspense
       fallback={
-        <div className="bg-white rounded-3xl border border-border/40 p-12 text-center">
+        <div className="bg-white rounded-3xl border border-border/40 p-6 sm:p-8 md:p-12 text-center">
           <div className="w-6 h-6 border-2 border-navy/20 border-t-navy rounded-full animate-spin mx-auto" />
         </div>
       }

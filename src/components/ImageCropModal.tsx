@@ -90,7 +90,7 @@ export default function ImageCropModal({ open, imageFile, onClose, onCropped }: 
     >
       <div className="absolute inset-0 bg-black/60" onClick={onClose} aria-hidden />
       <div ref={containerRef} className="relative z-10 w-full max-w-2xl mx-4 bg-white rounded-2xl overflow-hidden shadow-2xl">
-        <div className="h-[400px] sm:h-[450px] relative bg-navy/5">
+        <div className="h-[min(400px,60vh)] sm:h-[450px] relative bg-navy/5">
           <Cropper
             image={imageUrl}
             crop={crop}
@@ -121,10 +121,10 @@ export default function ImageCropModal({ open, imageFile, onClose, onCropped }: 
             />
           </div>
           <div className="flex gap-2">
-            <button type="button" onClick={onClose} className="px-4 py-2.5 text-[13px] font-medium text-gray-500 hover:text-navy border border-border/60 rounded-xl transition-colors" aria-label="Avbryt">
+            <button type="button" onClick={onClose} className="px-5 py-3 text-[13px] font-medium text-gray-500 hover:text-navy border border-border/60 rounded-xl transition-colors min-h-[44px]" aria-label="Avbryt">
               Avbryt
             </button>
-            <button type="button" onClick={handleSave} disabled={saving} className="px-4 py-2.5 bg-gold text-navy text-[13px] font-semibold rounded-xl hover:shadow-md transition-all disabled:opacity-60">
+            <button type="button" onClick={handleSave} disabled={saving} className="px-5 py-3 bg-gold text-navy text-[13px] font-semibold rounded-xl hover:shadow-md transition-all disabled:opacity-60 min-h-[44px]">
               {saving ? "Sparar..." : "Använd beskärning"}
             </button>
           </div>

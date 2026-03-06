@@ -83,7 +83,7 @@ export default function ContactModal({
           <button
             type="button"
             onClick={handleClose}
-            className="w-8 h-8 rounded-full bg-muted/50 hover:bg-muted flex items-center justify-center text-gray-500 hover:text-navy transition-colors"
+            className="w-11 h-11 rounded-full bg-muted/50 hover:bg-muted flex items-center justify-center text-gray-500 hover:text-navy transition-colors"
             aria-label="Stäng"
           >
             ×

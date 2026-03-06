@@ -325,7 +325,7 @@ function AnnonserContent() {
                       type="button"
                       onClick={() => goToPage(page - 1)}
                       disabled={page <= 1}
-                      className="w-10 h-10 sm:px-4 sm:py-2.5 rounded-full text-sm font-medium text-gray-500 hover:text-navy hover:bg-gray-50 disabled:opacity-40 disabled:pointer-events-none transition-all flex items-center justify-center"
+                      className="w-11 h-11 sm:px-4 sm:py-2.5 rounded-full text-sm font-medium text-gray-500 hover:text-navy hover:bg-gray-50 disabled:opacity-40 disabled:pointer-events-none transition-all flex items-center justify-center"
                       aria-label="Föregående sida"
                     >
                       &larr;
@@ -346,7 +346,7 @@ function AnnonserContent() {
                           <button
                             key={pageNum}
                             onClick={() => goToPage(pageNum)}
-                            className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full text-sm font-medium transition-all ${
+                            className={`w-11 h-11 rounded-full text-sm font-medium transition-all ${
                               pageNum === page
                                 ? "bg-navy text-white"
                                 : "text-gray-500 hover:text-navy hover:bg-gray-50"
@@ -361,7 +361,7 @@ function AnnonserContent() {
                       type="button"
                       onClick={() => goToPage(page + 1)}
                       disabled={page >= totalPages}
-                      className="w-10 h-10 sm:px-4 sm:py-2.5 rounded-full text-sm font-medium text-gray-500 hover:text-navy hover:bg-gray-50 disabled:opacity-40 disabled:pointer-events-none transition-all flex items-center justify-center"
+                      className="w-11 h-11 sm:px-4 sm:py-2.5 rounded-full text-sm font-medium text-gray-500 hover:text-navy hover:bg-gray-50 disabled:opacity-40 disabled:pointer-events-none transition-all flex items-center justify-center"
                       aria-label="Nästa sida"
                     >
                       &rarr;

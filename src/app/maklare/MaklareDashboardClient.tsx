@@ -293,7 +293,7 @@ export default function MaklareDashboardClient() {
             <div className="space-y-3">
               {stats.recentActivity.map((a, i) => (
                 <div key={i} className="flex items-center gap-3 p-3 rounded-2xl bg-muted/30">
-                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${a.type === "inquiry" ? "bg-blue-50 text-blue-500" : "bg-pink-50 text-pink-500"}`}>
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${a.type === "inquiry" ? "bg-blue-50 text-blue-500" : "bg-pink-50 text-pink-500"}`}>
                     {a.type === "inquiry" ? (
                       <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" /></svg>
                     ) : (
@@ -353,7 +353,7 @@ export default function MaklareDashboardClient() {
       return (
         <div className="space-y-6">
           <div className="flex items-center gap-3">
-            <button onClick={() => setSelectedClientId(null)} className="px-3 py-2 text-navy border border-border/60 rounded-2xl text-sm font-medium hover:bg-muted/60 transition-colors">
+            <button onClick={() => setSelectedClientId(null)} className="px-4 py-2.5 text-navy border border-border/60 rounded-2xl text-sm font-medium hover:bg-muted/60 transition-colors min-h-[44px]">
               <svg className="w-4 h-4 inline mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
               Tillbaka
             </button>
@@ -461,7 +461,7 @@ export default function MaklareDashboardClient() {
                     onClick={() => {
                       if (confirm(`Ta bort ${c.name} som klient?`)) handleRemoveClient(c.clientId);
                     }}
-                    className="p-2 text-gray-400 hover:text-red-500 transition-colors shrink-0"
+                    className="p-3 text-gray-400 hover:text-red-500 transition-colors shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center"
                     title="Ta bort klient"
                   >
                     <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12" /></svg>
@@ -514,7 +514,7 @@ export default function MaklareDashboardClient() {
         </div>
 
         {filtered.length === 0 ? (
-          <div className="dashboard-card p-12 text-center">
+          <div className="dashboard-card p-6 sm:p-8 md:p-12 text-center">
             <p className="text-sm text-gray-500">Inga annonser att visa</p>
           </div>
         ) : (

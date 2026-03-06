@@ -105,7 +105,7 @@ export default function AISupportChat() {
 
       {/* Chat window */}
       {open && (
-        <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[150] w-[calc(100vw-2rem)] sm:w-[440px] h-[600px] sm:max-h-[min(600px,calc(100vh-6rem))] flex flex-col bg-white rounded-2xl shadow-2xl border border-border/60 overflow-hidden animate-scale-in">
+        <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[150] w-[calc(100vw-2rem)] sm:w-[440px] h-[calc(100dvh-6rem)] max-h-[600px] flex flex-col bg-white rounded-2xl shadow-2xl border border-border/60 overflow-hidden animate-scale-in">
           {/* Header */}
           <div className="flex-shrink-0 bg-navy text-white px-5 py-4">
             <div className="flex items-center justify-between">
@@ -116,7 +116,7 @@ export default function AISupportChat() {
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+                className="w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
                 aria-label="Stäng chatt"
               >
                 ×
@@ -135,7 +135,7 @@ export default function AISupportChat() {
                       key={q}
                       type="button"
                       onClick={() => sendMessage(q)}
-                      className="px-3 py-1.5 rounded-full bg-white border border-border/60 text-[12px] text-navy hover:border-navy/30 hover:bg-navy/[0.02] transition-colors"
+                      className="px-4 py-2.5 rounded-full bg-white border border-border/60 text-[12px] text-navy hover:border-navy/30 hover:bg-navy/[0.02] transition-colors min-h-[44px]"
                     >
                       {q}
                     </button>

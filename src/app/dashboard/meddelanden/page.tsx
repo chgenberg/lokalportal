@@ -65,7 +65,7 @@ function MeddelandenContent() {
       <div className="bg-white rounded-3xl border border-border/40 overflow-hidden shadow-sm">
         <div
           className="flex flex-col md:flex-row"
-          style={{ height: "calc(100vh - 220px)", minHeight: "400px" }}
+          style={{ height: "calc(100dvh - 160px)", minHeight: "400px" }}
         >
           {/* Conversation list */}
           <div
@@ -172,7 +172,7 @@ export default function MeddelandenPage() {
   return (
     <Suspense
       fallback={
-        <div className="bg-white rounded-3xl border border-border/40 p-12 text-center">
+        <div className="bg-white rounded-3xl border border-border/40 p-6 sm:p-8 md:p-12 text-center">
           <div className="w-6 h-6 border-2 border-navy/20 border-t-navy rounded-full animate-spin mx-auto" />
         </div>
       }

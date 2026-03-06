@@ -787,7 +787,7 @@ export default function SkapaAnnonsClient() {
                 <button
                   type="button"
                   onClick={() => setMapOpen(true)}
-                  className="mt-2 flex items-center gap-2 px-3 py-2 text-[12px] font-medium text-gray-500 hover:text-navy hover:bg-muted/50 rounded-lg transition-colors"
+                  className="mt-2 flex items-center gap-2 px-4 py-2.5 text-[12px] font-medium text-gray-500 hover:text-navy hover:bg-muted/50 rounded-lg transition-colors min-h-[44px]"
                 >
                   <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
@@ -828,7 +828,7 @@ export default function SkapaAnnonsClient() {
                           onClick={() => {
                             updateInput({ categories: active ? [] : [cat] });
                           }}
-                          className={`px-3 py-1.5 rounded-xl text-[12px] font-semibold transition-all border ${
+                          className={`px-4 py-2.5 rounded-xl text-[12px] font-semibold transition-all border min-h-[44px] ${
                             active
                               ? "bg-navy text-white border-navy"
                               : "bg-white text-gray-500 border-border/60 hover:border-navy/20 hover:text-navy"
@@ -898,7 +898,7 @@ export default function SkapaAnnonsClient() {
                         <button
                           type="button"
                           onClick={(e) => { e.stopPropagation(); updateInput({ outdoorImageUrl: "" }); }}
-                          className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 text-white flex items-center justify-center text-sm hover:bg-black/80"
+                          className="absolute top-2 right-2 w-9 h-9 rounded-full bg-black/60 text-white flex items-center justify-center text-sm hover:bg-black/80"
                           aria-label="Ta bort bild"
                         >
                           ×
@@ -928,7 +928,7 @@ export default function SkapaAnnonsClient() {
                         <button
                           type="button"
                           onClick={(e) => { e.stopPropagation(); updateInput({ indoorImageUrl: "" }); }}
-                          className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 text-white flex items-center justify-center text-sm hover:bg-black/80"
+                          className="absolute top-2 right-2 w-9 h-9 rounded-full bg-black/60 text-white flex items-center justify-center text-sm hover:bg-black/80"
                           aria-label="Ta bort bild"
                         >
                           ×
@@ -958,7 +958,7 @@ export default function SkapaAnnonsClient() {
                         <button
                           type="button"
                           onClick={(e) => { e.stopPropagation(); updateInput({ floorPlanImageUrl: "" }); }}
-                          className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 text-white flex items-center justify-center text-sm hover:bg-black/80"
+                          className="absolute top-2 right-2 w-9 h-9 rounded-full bg-black/60 text-white flex items-center justify-center text-sm hover:bg-black/80"
                           aria-label="Ta bort bild"
                         >
                           ×
@@ -988,7 +988,7 @@ export default function SkapaAnnonsClient() {
                           <button
                             type="button"
                             onClick={() => updateInput({ extraImageUrls: (input.extraImageUrls || []).filter((_, j) => j !== i) })}
-                            className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-black/60 text-white flex items-center justify-center text-xs hover:bg-black/80"
+                            className="absolute -top-1 -right-1 w-7 h-7 rounded-full bg-black/60 text-white flex items-center justify-center text-xs hover:bg-black/80"
                             aria-label="Ta bort"
                           >
                             ×
@@ -1000,7 +1000,7 @@ export default function SkapaAnnonsClient() {
                           type="button"
                           onClick={() => { cropSlotRef.current = "extra"; imageInputRef.current?.click(); }}
                           disabled={imageUploading}
-                          className="w-20 h-14 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 hover:border-navy/40 hover:text-navy transition-colors disabled:opacity-60 cursor-pointer"
+                          className="w-20 h-14 min-h-[44px] rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 hover:border-navy/40 hover:text-navy transition-colors disabled:opacity-60 cursor-pointer"
                         >
                           +
                         </button>
@@ -1031,7 +1031,7 @@ export default function SkapaAnnonsClient() {
                         <button
                           type="button"
                           onClick={(e) => { e.stopPropagation(); updateInput({ videoUrl: "" }); }}
-                          className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 text-white flex items-center justify-center text-sm hover:bg-black/80"
+                          className="absolute top-2 right-2 w-9 h-9 rounded-full bg-black/60 text-white flex items-center justify-center text-sm hover:bg-black/80"
                           aria-label="Ta bort video"
                         >
                           ×

@@ -83,7 +83,7 @@ export default function HeroSearch() {
         <button
           type="button"
           onClick={handleSearch}
-          className="w-10 h-10 rounded-full bg-gold text-navy flex items-center justify-center shrink-0 transition-all duration-200 hover:shadow-md hover:opacity-90"
+          className="w-11 h-11 rounded-full bg-gold text-navy flex items-center justify-center shrink-0 transition-all duration-200 hover:shadow-md hover:opacity-90"
           aria-label="Sök lokaler"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

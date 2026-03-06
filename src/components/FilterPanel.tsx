@@ -59,7 +59,7 @@ export default function FilterPanel({ filters, onChange, onClear, onClose, total
             Rensa alla
           </button>
           {onClose && (
-            <button type="button" onClick={onClose} className="p-1 text-gray-400 hover:text-navy rounded-full transition-colors" aria-label="Stäng filter">
+            <button type="button" onClick={onClose} className="p-2.5 text-gray-400 hover:text-navy rounded-full transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center" aria-label="Stäng filter">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -135,7 +135,7 @@ export default function FilterPanel({ filters, onChange, onClear, onClose, total
                         : [...selectedCats, cat];
                       onChange({ category: next.filter(Boolean).join(",") });
                     }}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${
+                    className={`px-4 py-2.5 rounded-full text-xs font-medium transition-all border min-h-[44px] ${
                       active
                         ? "bg-navy text-white border-navy"
                         : "bg-white text-gray-500 border-gray-200 hover:border-navy/20 hover:text-navy"
@@ -160,7 +160,7 @@ export default function FilterPanel({ filters, onChange, onClear, onClose, total
                       key={option}
                       type="button"
                       onClick={() => toggleNearTo(option)}
-                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${
+                      className={`px-4 py-2.5 rounded-full text-xs font-medium transition-all border min-h-[44px] ${
                         active
                           ? "bg-navy text-white border-navy"
                           : "bg-white text-gray-500 border-gray-200 hover:border-navy/20 hover:text-navy"
@@ -182,7 +182,7 @@ export default function FilterPanel({ filters, onChange, onClear, onClose, total
                       key={tag}
                       type="button"
                       onClick={() => toggleTag(tag)}
-                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${
+                      className={`px-4 py-2.5 rounded-full text-xs font-medium transition-all border min-h-[44px] ${
                         active
                           ? "bg-navy text-white border-navy"
                           : "bg-white text-gray-500 border-gray-200 hover:border-navy/20 hover:text-navy"
@@ -205,7 +205,7 @@ export default function FilterPanel({ filters, onChange, onClear, onClose, total
               <button
                 type="button"
                 onClick={onClose}
-                className="px-5 py-2 bg-navy text-white text-sm font-medium rounded-full transition-all hover:shadow-md"
+                className="px-5 py-3 bg-navy text-white text-sm font-medium rounded-full transition-all hover:shadow-md min-h-[44px]"
               >
                 Visa resultat
               </button>
@@ -254,7 +254,7 @@ export default function FilterPanel({ filters, onChange, onClear, onClose, total
                           : [...selectedCats, cat];
                         onChange({ category: next.filter(Boolean).join(",") });
                       }}
-                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${
+                      className={`px-4 py-2.5 rounded-full text-xs font-medium transition-all border min-h-[44px] ${
                         active
                           ? "bg-navy text-white border-navy"
                           : "bg-white text-gray-500 border-gray-200 hover:border-navy/20 hover:text-navy"
@@ -311,7 +311,7 @@ export default function FilterPanel({ filters, onChange, onClear, onClose, total
                       key={option}
                       type="button"
                       onClick={() => toggleNearTo(option)}
-                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${
+                      className={`px-4 py-2.5 rounded-full text-xs font-medium transition-all border min-h-[44px] ${
                         active
                           ? "bg-navy text-white border-navy"
                           : "bg-white text-gray-500 border-gray-200 hover:border-navy/20 hover:text-navy"
@@ -334,7 +334,7 @@ export default function FilterPanel({ filters, onChange, onClear, onClose, total
                       key={tag}
                       type="button"
                       onClick={() => toggleTag(tag)}
-                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${
+                      className={`px-4 py-2.5 rounded-full text-xs font-medium transition-all border min-h-[44px] ${
                         active
                           ? "bg-navy text-white border-navy"
                           : "bg-white text-gray-500 border-gray-200 hover:border-navy/20 hover:text-navy"

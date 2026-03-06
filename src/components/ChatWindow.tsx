@@ -619,7 +619,7 @@ export default function ChatWindow({
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="w-9 h-9 rounded-full hover:bg-muted flex items-center justify-center transition-colors shrink-0 mb-0.5"
+            className="w-11 h-11 rounded-full hover:bg-muted flex items-center justify-center transition-colors shrink-0 mb-0.5"
             aria-label="Bifoga fil"
           >
             <svg
@@ -664,7 +664,7 @@ export default function ChatWindow({
           <button
             onClick={handleSend}
             disabled={(!input.trim() && !pendingFile) || sending || uploading}
-            className="w-9 h-9 rounded-full bg-navy text-white flex items-center justify-center hover:bg-navy-light transition-colors disabled:opacity-30 shrink-0 mb-0.5"
+            className="w-11 h-11 rounded-full bg-navy text-white flex items-center justify-center hover:bg-navy-light transition-colors disabled:opacity-30 shrink-0 mb-0.5"
             aria-label="Skicka meddelande"
           >
             {sending ? (

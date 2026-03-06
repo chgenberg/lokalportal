@@ -200,7 +200,7 @@ export default function DashboardLayoutClient({ children }: { children: React.Re
         {/* Mobile top bar */}
         <div className="lg:hidden flex items-center justify-between mb-5 bg-white rounded-3xl border border-border/40 shadow-sm px-4 py-3.5">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-navy/8 flex items-center justify-center text-navy text-xs font-bold">
+            <div className="w-11 h-11 rounded-full bg-navy/8 flex items-center justify-center text-navy text-xs font-bold">
               {initials}
             </div>
             <p className="text-sm font-semibold text-navy">{session?.user?.name}</p>

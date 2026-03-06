@@ -91,7 +91,7 @@ export default function BookingCalendar({ onComplete, onBack }: BookingCalendarP
     return (
       <div className="space-y-4">
         <p className="text-[13px] text-gray-600">Välj datum (vardagar)</p>
-        <div className="grid grid-cols-5 gap-2 max-h-48 overflow-y-auto">
+        <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 max-h-48 overflow-y-auto">
           {weekdays.map((d) => {
             const dateStr = d.toISOString().slice(0, 10);
             const label = d.getDate();
@@ -102,7 +102,7 @@ export default function BookingCalendar({ onComplete, onBack }: BookingCalendarP
                 key={dateStr}
                 type="button"
                 onClick={() => setData((p) => ({ ...p, date: dateStr }))}
-                className={`px-3 py-2 rounded-lg text-center text-sm font-medium transition-all border ${
+                className={`px-3 py-2.5 rounded-lg text-center text-sm font-medium transition-all border min-h-[44px] ${
                   active ? "bg-navy text-white border-navy" : "bg-muted/50 text-navy border-border hover:border-navy/30"
                 }`}
               >
@@ -137,7 +137,7 @@ export default function BookingCalendar({ onComplete, onBack }: BookingCalendarP
         <p className="text-[13px] text-gray-600">
           Välj tid. Vi ringer mellan 09:00–16:00.
         </p>
-        <div className="grid grid-cols-5 gap-2 max-h-48 overflow-y-auto">
+        <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 max-h-48 overflow-y-auto">
           {TIMES.map((t) => {
             const active = data.time === t;
             return (
@@ -145,7 +145,7 @@ export default function BookingCalendar({ onComplete, onBack }: BookingCalendarP
                 key={t}
                 type="button"
                 onClick={() => setData((p) => ({ ...p, time: t }))}
-                className={`px-3 py-2 rounded-lg text-sm font-medium transition-all border ${
+                className={`px-3 py-2.5 rounded-lg text-sm font-medium transition-all border min-h-[44px] ${
                   active ? "bg-navy text-white border-navy" : "bg-muted/50 text-navy border-border hover:border-navy/30"
                 }`}
               >

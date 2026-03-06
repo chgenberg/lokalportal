@@ -4,7 +4,7 @@ export default function NotFound() {
   return (
     <div className="min-h-screen bg-muted/30 flex items-center justify-center px-4">
       <div className="text-center max-w-md">
-        <div className="text-8xl font-bold text-navy/10 mb-4 tracking-tight">404</div>
+        <div className="text-6xl sm:text-8xl font-bold text-navy/10 mb-4 tracking-tight">404</div>
         <h1 className="text-2xl font-bold text-navy mb-2 tracking-tight">Sidan hittades inte</h1>
         <p className="text-gray-500 mb-8 text-[15px] leading-relaxed">
           Den sida du söker finns inte eller har flyttats.

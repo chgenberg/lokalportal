@@ -110,7 +110,7 @@ export default function ListingDetailPage() {
       <div className="min-h-screen bg-muted/30">
         <div className="bg-navy h-48" />
         <div className="max-w-2xl mx-auto px-4 -mt-16">
-          <div className="bg-white rounded-2xl border border-border/40 p-12 text-center shadow-lg shadow-navy/[0.04]">
+          <div className="bg-white rounded-2xl border border-border/40 p-6 sm:p-8 md:p-12 text-center shadow-lg shadow-navy/[0.04]">
             <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-navy/[0.04] flex items-center justify-center">
               <span className="text-xl font-bold text-navy/30">!</span>
             </div>

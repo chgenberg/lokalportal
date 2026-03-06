@@ -460,7 +460,7 @@ function DashboardContent() {
                         const curr = p.category ? p.category.split(",") : [];
                         const next = active ? curr.filter((c) => c !== cat) : [...curr, cat];
                         return { ...p, category: next.join(",") };
-                      })} className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border ${active ? "bg-navy text-white border-navy" : "bg-white text-gray-500 border-border hover:border-navy/20 hover:text-navy"}`}>{categoryLabels[cat]}</button>
+                      })} className={`px-4 py-2.5 rounded-xl text-xs font-semibold transition-all border min-h-[44px] ${active ? "bg-navy text-white border-navy" : "bg-white text-gray-500 border-border hover:border-navy/20 hover:text-navy"}`}>{categoryLabels[cat]}</button>
                     );
                   })}
                 </div>
@@ -483,7 +483,7 @@ function DashboardContent() {
                   {availableTags.map((tag) => {
                     const active = editForm.tags.includes(tag);
                     return (
-                      <button key={tag} type="button" onClick={() => setEditForm((p) => (p ? { ...p, tags: p.tags.includes(tag) ? p.tags.filter((t) => t !== tag) : [...p.tags, tag] } : p))} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${active ? "bg-navy text-white" : "bg-muted border border-border text-gray-600 hover:border-navy"}`}>{tag}</button>
+                      <button key={tag} type="button" onClick={() => setEditForm((p) => (p ? { ...p, tags: p.tags.includes(tag) ? p.tags.filter((t) => t !== tag) : [...p.tags, tag] } : p))} className={`px-4 py-2.5 rounded-full text-xs font-medium transition-colors min-h-[44px] ${active ? "bg-navy text-white" : "bg-muted border border-border text-gray-600 hover:border-navy"}`}>{tag}</button>
                     );
                   })}
                 </div>
@@ -528,7 +528,7 @@ function DashboardContent() {
           </div>
         </div>
         {listings.length === 0 ? (
-          <div className="dashboard-card p-12 text-center">
+          <div className="dashboard-card p-6 sm:p-8 md:p-12 text-center">
             <p className="text-3xl font-bold text-gray-200 mb-4">0</p>
             <h3 className="font-semibold text-navy mb-2">Inga annonser ännu</h3>
             <p className="text-sm text-gray-500 mb-6">Skapa din första annons för att nå potentiella hyresgäster</p>
@@ -568,9 +568,9 @@ function DashboardContent() {
                     </div>
                     <div className="flex items-center gap-2 shrink-0 flex-wrap sm:justify-end">
                       <span className="px-2.5 py-1 text-xs font-medium rounded-full bg-navy/10 text-navy">{typeLabels[listing.type]}</span>
-                      <button type="button" onClick={() => renewListing(listing.id)} disabled={renewingId === listing.id} className="px-3.5 py-2 text-xs font-medium text-gray-600 border border-border/60 rounded-2xl hover:bg-muted/60 transition-colors disabled:opacity-50" title="Förnya annons (visas längst upp)">{renewingId === listing.id ? "..." : "Förnya"}</button>
-                      <button type="button" onClick={() => startEdit(listing)} className="px-3.5 py-2 text-xs font-medium text-navy border border-border/60 rounded-2xl hover:bg-muted/60 transition-colors">Redigera</button>
-                      <button type="button" onClick={() => setDeleteConfirmId(listing.id)} className="px-3.5 py-2 text-xs text-gray-500 hover:text-red-600 border border-border/60 rounded-2xl hover:border-red-200 transition-colors">Ta bort</button>
+                      <button type="button" onClick={() => renewListing(listing.id)} disabled={renewingId === listing.id} className="px-4 py-2.5 text-xs font-medium text-gray-600 border border-border/60 rounded-2xl hover:bg-muted/60 transition-colors disabled:opacity-50 min-h-[44px]" title="Förnya annons (visas längst upp)">{renewingId === listing.id ? "..." : "Förnya"}</button>
+                      <button type="button" onClick={() => startEdit(listing)} className="px-4 py-2.5 text-xs font-medium text-navy border border-border/60 rounded-2xl hover:bg-muted/60 transition-colors min-h-[44px]">Redigera</button>
+                      <button type="button" onClick={() => setDeleteConfirmId(listing.id)} className="px-4 py-2.5 text-xs text-gray-500 hover:text-red-600 border border-border/60 rounded-2xl hover:border-red-200 transition-colors min-h-[44px]">Ta bort</button>
                     </div>
                   </div>
                 </div>
@@ -621,7 +621,7 @@ function DashboardContent() {
       <div className="space-y-6">
         <h1 className="text-2xl font-bold text-navy">Sparade favoriter</h1>
         {favorites.length === 0 ? (
-          <div className="dashboard-card p-12 text-center">
+          <div className="dashboard-card p-6 sm:p-8 md:p-12 text-center">
             <p className="text-3xl font-bold text-gray-200 mb-4">0</p>
             <h3 className="font-semibold text-navy mb-2">Inga favoriter</h3>
             <p className="text-sm text-gray-500 mb-6">Spara lokaler du är intresserad av</p>
@@ -763,8 +763,8 @@ function DashboardContent() {
                           <img src={profile.logoUrl} alt="Logotyp" className="max-w-full max-h-full object-contain" />
                         </div>
                         <div className="flex gap-2">
-                          <button type="button" onClick={() => logoInputRef.current?.click()} disabled={logoUploading} className="px-3 py-1.5 text-xs font-medium bg-navy/5 text-navy rounded-lg hover:bg-navy/10 disabled:opacity-50">Byt bild</button>
-                          <button type="button" onClick={() => setProfile((p) => (p ? { ...p, logoUrl: "" } : p))} className="px-3 py-1.5 text-xs font-medium text-gray-500 hover:text-red-600">Ta bort</button>
+                          <button type="button" onClick={() => logoInputRef.current?.click()} disabled={logoUploading} className="px-4 py-2.5 text-xs font-medium bg-navy/5 text-navy rounded-lg hover:bg-navy/10 disabled:opacity-50 min-h-[44px]">Byt bild</button>
+                          <button type="button" onClick={() => setProfile((p) => (p ? { ...p, logoUrl: "" } : p))} className="px-4 py-2.5 text-xs font-medium text-gray-500 hover:text-red-600 min-h-[44px]">Ta bort</button>
                         </div>
                       </div>
                     ) : (
@@ -1064,7 +1064,7 @@ function StatisticsTab({
     return (
       <div className="space-y-6">
         <h1 className="text-2xl font-bold text-navy">Statistik</h1>
-        <div className="dashboard-card p-12 text-center">
+        <div className="dashboard-card p-6 sm:p-8 md:p-12 text-center">
           {statsError ? (
             <>
               <p className="text-red-500 mb-4">{statsError}</p>
@@ -1168,7 +1168,7 @@ function StatisticsTab({
                   key={m}
                   type="button"
                   onClick={() => setChartMetric(m)}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-xl transition-all ${
+                  className={`px-4 py-2.5 text-xs font-medium rounded-xl transition-all min-h-[44px] ${
                     chartMetric === m
                       ? "bg-navy text-white shadow-sm"
                       : "text-gray-500 hover:text-navy"

@@ -126,7 +126,7 @@ export default function KontaktPage() {
           {/* Form */}
           <div className="lg:col-span-2">
             {status === "sent" ? (
-              <div className="bg-white rounded-2xl border border-border/40 p-12 shadow-sm text-center">
+              <div className="bg-white rounded-2xl border border-border/40 p-6 sm:p-8 md:p-12 shadow-sm text-center">
                 <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-navy/[0.04] flex items-center justify-center">
                   <span className="text-2xl text-navy/40">&check;</span>
                 </div>
@@ -150,7 +150,7 @@ export default function KontaktPage() {
                   </p>
                 </div>
 
-                <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-border/40 p-8 shadow-sm space-y-5">
+                <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-border/40 p-5 sm:p-6 md:p-8 shadow-sm space-y-5">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <div>
                       <label htmlFor="contact-name" className="block text-[11px] font-semibold text-gray-400 mb-1.5 tracking-[0.1em] uppercase">

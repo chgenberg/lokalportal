@@ -164,7 +164,7 @@ export default function ListingDetailContent({
                     <button
                       type="button"
                       onClick={() => { setTitleDraft(listing.title || ""); setIsEditingTitle(true); }}
-                      className="shrink-0 mt-1 p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
+                      className="shrink-0 mt-1 p-2.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
                       title="Redigera titel"
                     >
                       <svg className="w-4 h-4 text-white/70" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
