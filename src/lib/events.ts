@@ -1,4 +1,5 @@
 import prisma from "./db";
+import type { Prisma } from "@/generated/prisma/client";
 
 type EventType = "view" | "inquiry" | "favorite" | "unfavorite" | "publish" | "contact_click";
 
@@ -14,7 +15,7 @@ export async function logEvent(
         type,
         listingId: listingId ?? undefined,
         userId: userId ?? undefined,
-        metadata: metadata ?? undefined,
+        metadata: metadata as Prisma.InputJsonValue | undefined,
       },
     });
   } catch {

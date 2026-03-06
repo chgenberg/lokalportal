@@ -49,6 +49,8 @@ interface InputForm {
 interface GeneratedListing {
   title: string;
   description: string;
+  floorPlanDescription?: string | null;
+  floorPlanImageUrl?: string | null;
   tags: string[];
   city: string;
   address: string;
