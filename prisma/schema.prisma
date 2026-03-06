@@ -45,6 +45,7 @@ model Listing {
   imageUrls   String[] @default([]) // Up to 10 images; when set, takes precedence over imageUrl
   videoUrl    String?  // Optional video (MP4/WebM)
   floorPlanImageUrl String? // Planritning
+  floorPlanDescription String? // AI-genererad beskrivning av planritningen
   areaData    Json?    // { nearby?, priceContext?, demographics? } from APIs at creation
   featured    Boolean  @default(false)
   viewCount   Int      @default(0)

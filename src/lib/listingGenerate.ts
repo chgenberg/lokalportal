@@ -37,11 +37,13 @@ export interface GenerateInput {
   lat?: number;
   lng?: number;
   imageUrls?: string[];
+  floorPlanImageUrl?: string;
 }
 
 export interface GenerateResult {
   title: string;
   description: string;
+  floorPlanDescription?: string | null;
   tags: string[];
   city: string;
   address: string;
@@ -73,7 +75,7 @@ interface NominatimResult {
   };
 }
 
-interface GeocodeResult {
+export interface GeocodeResult {
   lat: number;
   lng: number;
   city: string;
@@ -110,7 +112,7 @@ async function fetchWithRetry<T>(fn: () => Promise<T>, maxAttempts = 3): Promise
   throw lastError;
 }
 
-async function geocodeAddress(address: string): Promise<GeocodeResult | null> {
+export async function geocodeAddress(address: string): Promise<GeocodeResult | null> {
   const encoded = encodeURIComponent(address.trim());
   const url = `https://nominatim.openstreetmap.org/search?q=${encoded}&format=json&limit=1&addressdetails=1`;
   try {
@@ -779,12 +781,14 @@ const GPT_SYSTEM = `Du skriver en annons i första person, som om du är fastigh
 
 Svara ENDAST med ett giltigt JSON-objekt utan markdown eller annan text. Nycklar:
 - "title": sträng, max 80 tecken. Börja med lokalens starkaste egenskap + plats. Exempel: "Skyltfönster mot Avenyn – 120 m² butik i Göteborg"
-- "description": sträng, 250–450 ord, exakt 5 stycken:
+- "description": sträng, 250–500 ord, exakt 6 stycken:
   1. KROK: En mening som fångar. Lyft det mest unika med lokalen.
   2. LOKALEN: Beskriv storlek, planlösning, skick och utrustning. Skriv som att du visar runt i lokalen: "Lokalen har...", "Här finns...", "Vi har nyligen...".
-  3. LÄGET: Beskriv läget med områdesdata (faciliteter, kommunikationer, demografi) naturligt i löpande text – inte som punktlista. Skriv som att du berättar om grannskapet.
-  4. OMRÅDET: Väv in ekonomisk data och trygghet – medianinkomst, arbetsför befolkning, antal företag och brottsstatistik – på ett nyanserat och säljande sätt. Om inkomsten eller företagstätheten är hög: lyft köpkraft och affärsklimat. Om brottsligheten är under rikssnittet: nämn trygghet som en fördel.
-  5. AVSLUTNING: Kort CTA i jag/vi-form. "Hör av dig så berättar jag mer" eller "Välkommen på visning". Vem passar lokalen för?
+  3. PLANLÖSNING: Om en planritning finns bifogad, beskriv rumsfördelningen, flödet mellan utrymmen, och hur ytan är disponerad. Nämn antal rum, deras ungefärliga storlekar om synliga, och hur lokalen kan möbleras/användas. Om ingen planritning finns, hoppa över detta stycke.
+  4. LÄGET: Beskriv läget med områdesdata (faciliteter, kommunikationer, demografi) naturligt i löpande text – inte som punktlista. Skriv som att du berättar om grannskapet.
+  5. OMRÅDET: Väv in ekonomisk data och trygghet – medianinkomst, arbetsför befolkning, antal företag och brottsstatistik – på ett nyanserat och säljande sätt. Om inkomsten eller företagstätheten är hög: lyft köpkraft och affärsklimat. Om brottsligheten är under rikssnittet: nämn trygghet som en fördel.
+  6. AVSLUTNING: Kort CTA i jag/vi-form. "Hör av dig så berättar jag mer" eller "Välkommen på visning". Vem passar lokalen för?
+- "floorPlanDescription": sträng eller null. Om en planritning finns bifogad, skriv en kort (2–4 meningar) teknisk beskrivning av planlösningen: antal rum, ungefärlig rumsfördelning, ingångar, eventuella våtrum/kök. Denna text visas separat under planritningsbilden. Om ingen planritning finns, sätt till null.
 - "tags": array av strängar, max 10 st. Välj endast bland: Nyrenoverad, Centralt läge, Hög takhöjd, Parkering, Fiber, Klimatanläggning, Lastbrygga, Skyltfönster, Öppen planlösning, Mötesrum, Nära kollektivtrafik, Gångavstånd till restauranger, Tryggt läge, Nära centrum. Välj "Nära kollektivtrafik" om det finns busshållplatser eller tågstation i närheten. Välj "Gångavstånd till restauranger" om det finns restauranger i området. Välj "Tryggt läge" endast om brottsstatistiken är under rikssnittet. Välj "Nära centrum" om lokalen ligger centralt.
 
 REGLER:
@@ -969,10 +973,14 @@ export async function generateListingContent(
 
   const hasLocalhostImages = imageUrls.some((u) => u.includes("localhost") || u.includes("127.0.0.1"));
 
-  // Add vision instruction when images are provided
+  const hasFloorPlan = !!input.floorPlanImageUrl;
+  const floorPlanInstruction = hasFloorPlan
+    ? "\n\nPLANRITNING: En av bilderna är en planritning/ritning av lokalen. Analysera den noggrant: identifiera antal rum, rumsfördelning, ingångar, eventuella våtrum/kök, och hur ytan är disponerad. Använd denna information i stycke 3 (PLANLÖSNING) och i fältet floorPlanDescription."
+    : "\n\nINGEN PLANRITNING: Ingen planritning har bifogats. Hoppa över stycke 3 (PLANLÖSNING) – skriv bara 5 stycken istället. Sätt floorPlanDescription till null.";
+
   const visionInstruction = imageUrls.length > 0
-    ? "\n\nBILDER: Du har fått bilder av lokalen. Använd det du ser i bilderna (fasad, inredning, rum, utrustning, skick, planlösning) för att skriva en mer detaljerad beskrivning. Skriv som att du själv känner lokalen – REFERERA ALDRIG till bilderna i texten. Skriv inte 'som syns på bilden', 'enligt bilderna' eller liknande. Beskriv istället direkt: 'Lokalen har stora fönsterpartier...', 'Köket är utrustat med...' osv."
-    : "";
+    ? "\n\nBILDER: Du har fått bilder av lokalen. Använd det du ser i bilderna (fasad, inredning, rum, utrustning, skick, planlösning) för att skriva en mer detaljerad beskrivning. Skriv som att du själv känner lokalen – REFERERA ALDRIG till bilderna i texten. Skriv inte 'som syns på bilden', 'enligt bilderna' eller liknande. Beskriv istället direkt: 'Lokalen har stora fönsterpartier...', 'Köket är utrustat med...' osv." + floorPlanInstruction
+    : floorPlanInstruction;
 
   const openai = new OpenAI({ apiKey: openaiApiKey, timeout: 30_000 });
 
@@ -981,9 +989,10 @@ export async function generateListingContent(
     properties: {
       title: { type: "string" as const },
       description: { type: "string" as const },
+      floorPlanDescription: { anyOf: [{ type: "string" as const }, { type: "null" as const }] },
       tags: { type: "array" as const, items: { type: "string" as const } },
     },
-    required: ["title", "description", "tags"] as const,
+    required: ["title", "description", "floorPlanDescription", "tags"] as const,
     additionalProperties: false as const,
   };
 
@@ -1074,9 +1083,12 @@ export async function generateListingContent(
     }
   }
   if (!raw) throw new Error("Kunde inte generera annons – tomt svar");
-  const parsed = JSON.parse(raw) as { title?: string; description?: string; tags?: string[] };
+  const parsed = JSON.parse(raw) as { title?: string; description?: string; floorPlanDescription?: string | null; tags?: string[] };
   const title = String(parsed.title ?? "").trim().slice(0, 200) || "Kommersiell lokal";
   const description = String(parsed.description ?? "").trim().slice(0, 5000) || "";
+  const floorPlanDescription = typeof parsed.floorPlanDescription === "string"
+    ? parsed.floorPlanDescription.trim().slice(0, 1000) || null
+    : null;
   const tags = Array.isArray(parsed.tags)
     ? parsed.tags
         .filter((t): t is string => typeof t === "string")
@@ -1087,6 +1099,7 @@ export async function generateListingContent(
   return {
     title,
     description,
+    floorPlanDescription,
     tags,
     city: city.slice(0, 100),
     address: address.trim().slice(0, 300),

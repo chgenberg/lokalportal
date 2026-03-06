@@ -22,6 +22,8 @@ interface PdfBody {
   title: string; description: string; address: string; city: string;
   type: "sale" | "rent"; category: string; price: number; size: number;
   tags: string[]; imageUrls: string[];
+  floorPlanImageUrl?: string | null;
+  floorPlanDescription?: string | null;
   contact: { name: string; email: string; phone: string };
   nearby?: NearbyData; priceContext?: PriceContext | null;
   demographics?: DemographicsData | null;
@@ -91,6 +93,7 @@ interface DescSection { heading: string; body: string }
 const SECTION_HEADINGS = [
   "Om lokalen",
   "Lokalen i detalj",
+  "Planlösning",
   "Läge & kommunikationer",
   "Område & omgivning",
   "Sammanfattning",
@@ -175,7 +178,7 @@ function Footer() {
 }
 
 /* ── PDF Document ── */
-function ListingPdf({ data, logoSrc, imageDataUris }: { data: PdfBody; logoSrc: string; imageDataUris: string[] }) {
+function ListingPdf({ data, logoSrc, imageDataUris, floorPlanDataUri }: { data: PdfBody; logoSrc: string; imageDataUris: string[]; floorPlanDataUri?: string | null }) {
   const priceDisplay = formatPrice(data.price, data.type);
   const pricePerSqm = data.size > 0 ? Math.round(data.price / data.size) : 0;
   const typeLabel = TYPE_LABELS[data.type] || data.type;
@@ -258,8 +261,8 @@ function ListingPdf({ data, logoSrc, imageDataUris }: { data: PdfBody; logoSrc: 
         <Footer />
       </Page>
 
-      {/* ═══════════════════════ PAGE 2: Gallery + More Description + Data ═══════════════════════ */}
-      {(galleryImgs.length > 0 || descSections.length > 3 || pc || hasNearby || demo) && (
+      {/* ═══════════════════════ PAGE 2: Gallery + Floor Plan + More Description + Data ═══════════════════════ */}
+      {(galleryImgs.length > 0 || floorPlanDataUri || descSections.length > 3 || pc || hasNearby || demo) && (
         <Page size="A4" style={{ fontFamily: "Helvetica", backgroundColor: C.white }}>
           <Header logoSrc={logoSrc} />
 
@@ -280,6 +283,17 @@ function ListingPdf({ data, logoSrc, imageDataUris }: { data: PdfBody; logoSrc: 
                   </View>
                 );
               })}
+            </View>
+          )}
+
+          {/* ── Floor Plan ── */}
+          {floorPlanDataUri && (
+            <View style={{ paddingHorizontal: 36, paddingTop: galleryImgs.length > 0 ? 10 : 20, paddingBottom: 8 }}>
+              <SectionHeading>Planlösning</SectionHeading>
+              <Image src={floorPlanDataUri} style={{ width: "100%", maxHeight: 220, objectFit: "contain", borderRadius: 4, border: `1px solid ${C.border}` }} />
+              {data.floorPlanDescription && (
+                <Text style={{ fontSize: 8, lineHeight: 1.7, color: "#334155", marginTop: 8 }}>{data.floorPlanDescription}</Text>
+              )}
             </View>
           )}
 
@@ -427,11 +441,21 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Resolve floor plan image separately
+    let floorPlanDataUri: string | null = null;
+    if (data.floorPlanImageUrl) {
+      try {
+        floorPlanDataUri = await resolveImageToBase64(data.floorPlanImageUrl, origin);
+      } catch (e) {
+        console.error(`Failed to resolve floor plan image:`, e);
+      }
+    }
+
     // Resolved images logged only in dev
-    if (process.env.NODE_ENV !== "production") console.log(`PDF: resolved ${imageDataUris.length}/${resolvedUrls.length} images`);
+    if (process.env.NODE_ENV !== "production") console.log(`PDF: resolved ${imageDataUris.length}/${resolvedUrls.length} images, floorPlan: ${!!floorPlanDataUri}`);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const buffer = await renderToBuffer(ListingPdf({ data, logoSrc, imageDataUris }) as any);
+    const buffer = await renderToBuffer(ListingPdf({ data, logoSrc, imageDataUris, floorPlanDataUri }) as any);
 
     return new NextResponse(Buffer.from(buffer), {
       headers: {

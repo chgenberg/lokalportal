@@ -128,6 +128,8 @@ export async function POST(req: NextRequest) {
         tags: Array.isArray(listingData.tags) ? listingData.tags.slice(0, 20).filter((t: unknown) => typeof t === "string").map((t: string) => t.trim().slice(0, 50)) : [],
         imageUrl: imgs[0] || "",
         imageUrls: imgs.length > 0 ? imgs : [],
+        floorPlanImageUrl: typeof listingData.floorPlanImageUrl === "string" ? listingData.floorPlanImageUrl.trim().slice(0, 2000) || null : null,
+        floorPlanDescription: typeof listingData.floorPlanDescription === "string" ? listingData.floorPlanDescription.trim().slice(0, 1000) || null : null,
         videoUrl: listingData.videoUrl || null,
         lat: listingData.lat ? Number(listingData.lat) : undefined,
         lng: listingData.lng ? Number(listingData.lng) : undefined,

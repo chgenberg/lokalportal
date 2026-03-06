@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { title, description, city, address, type, category, price, size, tags, imageUrl, imageUrls, videoUrl, floorPlanImageUrl, nearby, priceContext, demographics, areaContext, lat, lng, clientId } = body;
+    const { title, description, city, address, type, category, price, size, tags, imageUrl, imageUrls, videoUrl, floorPlanImageUrl, floorPlanDescription, nearby, priceContext, demographics, areaContext, lat, lng, clientId } = body;
 
     if (!title || !description || !city || !address || !type || !category || price == null || price === "" || size == null || size === "") {
       return NextResponse.json({ error: "Alla obligatoriska fält måste fyllas i" }, { status: 400 });
@@ -85,6 +85,7 @@ export async function POST(request: NextRequest) {
 
     const videoUrlStr = typeof videoUrl === "string" ? videoUrl.trim().slice(0, 2000) || null : null;
     const floorPlanStr = typeof floorPlanImageUrl === "string" ? floorPlanImageUrl.trim().slice(0, 2000) || null : null;
+    const floorPlanDescStr = typeof floorPlanDescription === "string" ? floorPlanDescription.trim().slice(0, 1000) || null : null;
     const areaDataJson =
       nearby != null || priceContext != null || demographics != null || areaContext != null
         ? { nearby: nearby ?? undefined, priceContext: priceContext ?? undefined, demographics: demographics ?? undefined, areaContext: areaContext ?? undefined }
@@ -104,6 +105,7 @@ export async function POST(request: NextRequest) {
         imageUrls: urls,
         videoUrl: videoUrlStr,
         floorPlanImageUrl: floorPlanStr,
+        floorPlanDescription: floorPlanDescStr,
         ...(areaDataJson && { areaData: areaDataJson }),
         tags: Array.isArray(tags) ? tags.slice(0, 20).filter((t: unknown) => typeof t === "string").map((t: string) => t.trim().slice(0, 50)) : [],
         ownerId: effectiveOwnerId,

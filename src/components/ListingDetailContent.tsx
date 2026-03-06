@@ -408,6 +408,9 @@ export default function ListingDetailContent({
                 <div className="rounded-xl overflow-hidden border border-border/40 bg-muted/20">
                   <Image src={listing.floorPlanImageUrl} alt="Planlösning" width={800} height={600} className="w-full h-auto object-contain max-h-[500px]" unoptimized />
                 </div>
+                {"floorPlanDescription" in listing && listing.floorPlanDescription && (
+                  <p className="mt-4 text-sm text-gray-600 leading-relaxed">{listing.floorPlanDescription}</p>
+                )}
               </div>
             )}
 

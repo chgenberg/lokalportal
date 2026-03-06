@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { address, type, category, price, size, highlights = "", lat: bodyLat, lng: bodyLng, imageUrls: bodyImageUrls } = body;
+  const { address, type, category, price, size, highlights = "", lat: bodyLat, lng: bodyLng, imageUrls: bodyImageUrls, floorPlanImageUrl: bodyFloorPlan } = body;
   if (!address || typeof address !== "string" || !address.trim()) {
     return NextResponse.json({ error: "Adress krävs" }, { status: 400 });
   }
@@ -83,6 +83,8 @@ export async function POST(request: NextRequest) {
         .map((u) => u.trim().slice(0, 2000))
     : [];
 
+  const floorPlanImageUrl = typeof bodyFloorPlan === "string" && bodyFloorPlan.trim() ? bodyFloorPlan.trim().slice(0, 2000) : undefined;
+
   const input: GenerateInput = {
     address: (address as string).trim(),
     type: type as GenerateInput["type"],
@@ -93,6 +95,7 @@ export async function POST(request: NextRequest) {
     lat: hasBodyCoords ? Number(bodyLat) : undefined,
     lng: hasBodyCoords ? Number(bodyLng) : undefined,
     imageUrls,
+    floorPlanImageUrl,
   };
 
   try {

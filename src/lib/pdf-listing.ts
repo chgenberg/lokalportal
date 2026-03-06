@@ -22,6 +22,8 @@ export async function generateListingPdfBlob(input: PdfListingInput): Promise<Bl
     size: input.size,
     tags: input.tags || [],
     imageUrls: input.imageUrls || (input.imageUrl ? [input.imageUrl] : []),
+    floorPlanImageUrl: input.floorPlanImageUrl || null,
+    floorPlanDescription: input.floorPlanDescription || null,
     contact: input.contact,
     nearby: input.nearby,
     priceContext: input.priceContext,

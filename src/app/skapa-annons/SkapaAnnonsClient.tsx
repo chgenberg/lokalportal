@@ -477,6 +477,7 @@ export default function SkapaAnnonsClient() {
       setGenerated({
         title: data.title ?? "",
         description: data.description ?? "",
+        floorPlanDescription: data.floorPlanDescription ?? null,
         tags: Array.isArray(data.tags) ? data.tags : [],
         city: data.city ?? "",
         address: data.address ?? input.address.trim(),
@@ -491,9 +492,9 @@ export default function SkapaAnnonsClient() {
         imageUrls: [
           input.outdoorImageUrl,
           input.indoorImageUrl,
-          ...(input.floorPlanImageUrl ? [input.floorPlanImageUrl] : []),
           ...(input.extraImageUrls || []),
         ].filter(Boolean),
+        floorPlanImageUrl: input.floorPlanImageUrl || undefined,
         videoUrl: input.videoUrl || undefined,
         nearby: data.nearby,
         priceContext: data.priceContext ?? null,
@@ -544,6 +545,7 @@ export default function SkapaAnnonsClient() {
         size: sizeNum,
         highlights: input.highlights.trim() || undefined,
         imageUrls: imageUrls.length > 0 ? imageUrls : undefined,
+        floorPlanImageUrl: input.floorPlanImageUrl ? toFullUrl(input.floorPlanImageUrl) : undefined,
       };
       if (input.lat != null && input.lng != null && !Number.isNaN(input.lat) && !Number.isNaN(input.lng)) {
         body.lat = input.lat;
@@ -562,6 +564,7 @@ export default function SkapaAnnonsClient() {
       setGenerated({
         title: data.title ?? "",
         description: data.description ?? "",
+        floorPlanDescription: data.floorPlanDescription ?? null,
         tags: Array.isArray(data.tags) ? data.tags : [],
         city: data.city ?? "",
         address: data.address ?? input.address.trim(),
@@ -574,6 +577,7 @@ export default function SkapaAnnonsClient() {
         areaSummary: data.areaSummary,
         imageUrl: generated.imageUrl,
         imageUrls: generated.imageUrls,
+        floorPlanImageUrl: generated.floorPlanImageUrl,
         videoUrl: generated.videoUrl,
         nearby: data.nearby,
         priceContext: data.priceContext ?? null,

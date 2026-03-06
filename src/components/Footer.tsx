@@ -6,7 +6,7 @@ export default function Footer() {
   return (
     <footer className="bg-navy text-white relative">
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-20">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 sm:gap-10 md:gap-14">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 sm:gap-10 md:gap-12">
           <div className="sm:col-span-2 md:col-span-1">
             <div className="mb-4 sm:mb-5">
               <Image
@@ -31,6 +31,15 @@ export default function Footer() {
               <li><Link href="/skapa-annons" className="text-xs sm:text-[13px] text-white/50 hover:text-white transition-colors py-0.5 inline-block">Skapa annons</Link></li>
               <li><Link href="/sa-hyr-du-ut-en-lokal" className="text-xs sm:text-[13px] text-white/50 hover:text-white transition-colors py-0.5 inline-block">Så fungerar det</Link></li>
               <li><Link href="/karta" className="text-xs sm:text-[13px] text-white/50 hover:text-white transition-colors py-0.5 inline-block">Karta</Link></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="text-[11px] font-semibold uppercase tracking-[0.15em] mb-4 sm:mb-5 text-white/30">Verktyg</h4>
+            <ul className="space-y-2.5 sm:space-y-3">
+              <li><Link href="/verktyg/hyreskalkylator" className="text-xs sm:text-[13px] text-white/50 hover:text-white transition-colors py-0.5 inline-block">Hyreskalkylator</Link></li>
+              <li><Link href="/verktyg/lokalradgivare" className="text-xs sm:text-[13px] text-white/50 hover:text-white transition-colors py-0.5 inline-block">Hitta rätt lokal</Link></li>
+              <li><Link href="/verktyg/omradesrapport" className="text-xs sm:text-[13px] text-white/50 hover:text-white transition-colors py-0.5 inline-block">Områdesrapport</Link></li>
             </ul>
           </div>
 
