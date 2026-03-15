@@ -998,7 +998,7 @@ export async function generateListingContent(
 
   let raw: string | undefined;
 
-  // Strategy 0: gpt-5.2 Responses API with Vision (when images provided, skip if localhost)
+  // Strategy 0: gpt-5.3 Responses API with Vision (when images provided, skip if localhost)
   if (imageUrls.length > 0 && !hasLocalhostImages) {
     try {
       const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXTAUTH_URL || "https://offmarket.nu";
@@ -1012,7 +1012,7 @@ export async function generateListingContent(
       }
       
       const response = await openai.responses.create({
-        model: "gpt-5.2",
+        model: "gpt-5.3",
         instructions: GPT_SYSTEM,
         input: [{ type: "message", role: "user", content }],
         text: {
@@ -1029,16 +1029,16 @@ export async function generateListingContent(
       
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
-      console.warn("[generate] gpt-5.2 Vision failed:", msg);
+      console.warn("[generate] gpt-5.3 Vision failed:", msg);
     }
   }
 
-  // Strategy 1: gpt-5.2 Responses API (text-only)
+  // Strategy 1: gpt-5.3 Responses API (text-only)
   if (!raw) {
     try {
       
       const response = await openai.responses.create({
-        model: "gpt-5.2",
+        model: "gpt-5.3",
         instructions: GPT_SYSTEM,
         input: userContent + (hasLocalhostImages ? visionInstruction : ""),
         text: {
@@ -1055,12 +1055,12 @@ export async function generateListingContent(
       
     } catch (err1: unknown) {
       const msg = err1 instanceof Error ? err1.message : String(err1);
-      console.warn("[generate] gpt-5.2 failed:", msg);
+      console.warn("[generate] gpt-5.3 failed:", msg);
 
-      // Strategy 2: gpt-4o-mini Responses API fallback
+      // Strategy 2: gpt-5.3 Responses API fallback
       try {
         const fallbackResponse = await openai.responses.create({
-          model: "gpt-4o-mini",
+          model: "gpt-5.3",
           instructions: GPT_SYSTEM,
           input: userContent + (hasLocalhostImages ? visionInstruction : ""),
           text: {

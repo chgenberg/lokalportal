@@ -120,7 +120,7 @@ export async function POST(req: NextRequest) {
         ].filter(Boolean).join(" ");
 
         const response = await openai.responses.create({
-          model: "gpt-4o-mini",
+          model: "gpt-5.3",
           instructions: "Du är en expert på bostadsmarknaden i Sverige. Ge korta, konkreta sammanfattningar.",
           input: prompt,
           max_output_tokens: 300,

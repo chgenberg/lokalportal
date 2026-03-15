@@ -102,7 +102,7 @@ Skriv på svenska. Var konkret och hjälpsam.`;
     ].filter(Boolean).join("\n");
 
     const response = await openai.responses.create({
-      model: "gpt-4o-mini",
+      model: "gpt-5.3",
       instructions: systemPrompt,
       input: userPrompt,
       text: {
