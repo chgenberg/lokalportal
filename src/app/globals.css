@@ -150,6 +150,16 @@ html {
 .animation-delay-300 { animation-delay: 0.3s; }
 .animation-delay-400 { animation-delay: 0.4s; }
 
+/* ── Hero section animations ────────────────── */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
 /* ── Button hover (minimal) ────────────────────── */
 .btn-glow {
   transition: all 0.2s ease;

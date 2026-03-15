@@ -5,13 +5,13 @@ import { categoryLabels as labels, parseCategories } from "@/lib/types";
 
 /** Unsplash-bilder per kategori (gratis, lokal-tema). */
 const UNSPLASH_BY_CATEGORY: Record<string, string> = {
-  villa: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&q=80",
-  lagenhet: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80",
+  villa: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80",
+  lagenhet: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&q=80",
   radhus: "https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?w=800&q=80",
-  fritidshus: "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?w=800&q=80",
+  fritidshus: "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800&q=80",
   tomt: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800&q=80",
-  gard: "https://images.unsplash.com/photo-1500076656116-558758c991c1?w=800&q=80",
-  ovrigt: "https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=800&q=80",
+  gard: "https://images.unsplash.com/photo-1595877244574-e90ce41ce089?w=800&q=80",
+  ovrigt: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&q=80",
 };
 
 interface PlaceholderImageProps {

@@ -2,8 +2,8 @@ import Link from "next/link";
 import Image from "next/image";
 import ScrollReveal from "./ScrollReveal";
 
-const CTA_LOCAL_IMG = "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80";
-const CTA_OWNER_IMG = "https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=800&q=80";
+const CTA_LOCAL_IMG = "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80";
+const CTA_OWNER_IMG = "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&q=80";
 
 export default function CTASection() {
   return (

@@ -12,8 +12,8 @@ const SELLER_STEPS = [
     description:
       "Din bostad visas för kvalificerade köpare genom våra externa samarbeten för att säkerställa maximal exponering. Skapa en professionell annons med hjälp av vår agent på bara några minuter.",
     image:
-      "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80",
-    imageAlt: "Modernt hem med stora fönster",
+      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80",
+    imageAlt: "Modern villa med trädgård",
   },
   {
     id: 2,
@@ -22,8 +22,8 @@ const SELLER_STEPS = [
     description:
       "Mottag kontaktförfrågningar eller kontakta matchande köpare i appen. Vi verifierar dem och kan hjälpa dig välja den bästa köparen för dig.",
     image:
-      "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=800&q=80",
-    imageAlt: "Möte mellan säljare och köpare",
+      "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&q=80",
+    imageAlt: "Ljus lägenhet med öppen planlösning",
   },
   {
     id: 3,
@@ -32,8 +32,8 @@ const SELLER_STEPS = [
     description:
       "Förhandla villkoren direkt på plattformen. Vi guidar dig genom processen och ser till att avtalet skyddar båda parter – från köpeskilling och tillträde till ansvarsfördelning.",
     image:
-      "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=800&q=80",
-    imageAlt: "Kontraktsskrivning och förhandling",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80",
+    imageAlt: "Elegant villa redo för försäljning",
   },
   {
     id: 4,
@@ -42,8 +42,8 @@ const SELLER_STEPS = [
     description:
       "När allt är klart genomför ni en gemensam besiktning och överlämning. Dokumentera skick, lämna nycklar och ge köparen allt de behöver för en smidig flytt.",
     image:
-      "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80",
-    imageAlt: "Nyckelöverlämning vid tillträde",
+      "https://images.unsplash.com/photo-1558036117-15d82a90b9b1?w=800&q=80",
+    imageAlt: "Nyckelöverlämning vid nytt hem",
   },
 ];
 
@@ -55,8 +55,8 @@ const BUYER_STEPS = [
     description:
       "Bläddra bland hundratals bostäder filtrerade på stad, typ och storlek. Använd vår karta för att hitta det perfekta läget för ditt nya hem.",
     image:
-      "https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=800&q=80",
-    imageAlt: "Person söker bostad på dator",
+      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&q=80",
+    imageAlt: "Modernt vardagsrum med ljusinsläpp",
   },
   {
     id: 2,
@@ -65,8 +65,8 @@ const BUYER_STEPS = [
     description:
       "Skicka en intresseanmälan direkt via plattformen. Beskriv din situation och dina behov så att säljaren kan bedöma om ni matchar.",
     image:
-      "https://images.unsplash.com/photo-1553877522-43269d4ea984?w=800&q=80",
-    imageAlt: "Kommunikation via plattformen",
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&q=80",
+    imageAlt: "Exklusiv villa vid vattnet",
   },
   {
     id: 3,
@@ -75,8 +75,8 @@ const BUYER_STEPS = [
     description:
       "Boka en visning och se bostaden på plats. Kontrollera att den uppfyller dina krav gällande storlek, läge, tillgänglighet och skick.",
     image:
-      "https://images.unsplash.com/photo-1604328698692-f76ea9498e76?w=800&q=80",
-    imageAlt: "Visning av bostad",
+      "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=800&q=80",
+    imageAlt: "Visning av bostad med trädgård",
   },
   {
     id: 4,
@@ -85,8 +85,8 @@ const BUYER_STEPS = [
     description:
       "När köpekontraktet är påskrivet är det dags att flytta in. En smidig överlämning gör att du kan fokusera på det viktigaste – ditt nya liv i bostaden.",
     image:
-      "https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=800&q=80",
-    imageAlt: "Inflyttning i ny bostad",
+      "https://images.unsplash.com/photo-1558036117-15d82a90b9b1?w=800&q=80",
+    imageAlt: "Inflyttning i nytt hem",
   },
 ];
 

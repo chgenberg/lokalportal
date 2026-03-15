@@ -115,7 +115,7 @@ export default function OmOssClient() {
       {/* Hero */}
       <div className="bg-navy relative overflow-hidden min-h-[280px]">
         <Image
-          src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1920&q=80"
+          src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1920&q=80"
           alt=""
           fill
           className="object-cover"
@@ -156,7 +156,7 @@ export default function OmOssClient() {
         <div className="relative bg-white rounded-2xl border border-border/40 overflow-hidden shadow-sm mb-6">
           <div className="absolute top-0 right-0 w-full max-w-xs h-full opacity-[0.06] hidden sm:block">
             <Image
-              src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&q=80"
+              src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=400&q=80"
               alt=""
               fill
               className="object-cover object-right"

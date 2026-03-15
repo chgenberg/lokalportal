@@ -49,7 +49,7 @@ export default function KontaktPage() {
       {/* Hero */}
       <div className="bg-navy relative overflow-hidden min-h-[320px]">
         <Image
-          src="https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=1920&q=80"
+          src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920&q=80"
           alt=""
           fill
           className="object-cover"

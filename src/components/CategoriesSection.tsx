@@ -6,11 +6,11 @@ import Image from "next/image";
 import ScrollReveal from "./ScrollReveal";
 
 const UNSPLASH_BY_CATEGORY: Record<string, string> = {
-  villa: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=600&q=80",
-  lagenhet: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=600&q=80",
-  fritidshus: "https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=600&q=80",
-  tomt: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=600&q=80",
-  ovrigt: "https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=600&q=80",
+  villa: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&q=80",
+  lagenhet: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&q=80",
+  fritidshus: "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=600&q=80",
+  tomt: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600&q=80",
+  ovrigt: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=600&q=80",
 };
 
 const categoryConfig = [

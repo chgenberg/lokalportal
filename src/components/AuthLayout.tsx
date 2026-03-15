@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
-const AUTH_IMAGE = "https://images.unsplash.com/photo-1497366216548-37526070297c?w=960&q=80";
+const AUTH_IMAGE = "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=960&q=80";
 
 interface AuthLayoutProps {
   children: React.ReactNode;
