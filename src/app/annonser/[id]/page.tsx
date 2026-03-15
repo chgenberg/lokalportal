@@ -88,7 +88,7 @@ export default function ListingDetailPage() {
       const res = await fetch("/api/budget-intent", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ listingId: listing.id, amount }),
+        body: JSON.stringify({ listingId: listing.id, budget: amount }),
       });
       const data = await res.json();
       if (res.ok && data.matched) {
@@ -141,7 +141,7 @@ export default function ListingDetailPage() {
       const res = await fetch("/api/viewings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ listingId: id, type: viewingType, proposedTime: new Date(viewingDate).toISOString(), notes: viewingNotes || undefined }),
+        body: JSON.stringify({ listingId: id, type: viewingType, scheduledAt: new Date(viewingDate).toISOString(), notes: viewingNotes || undefined }),
       });
       if (res.ok) {
         setViewingSuccess(true);

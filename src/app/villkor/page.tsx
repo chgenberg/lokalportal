@@ -52,7 +52,7 @@ export default function VillkorPage() {
               <li>Lämna korrekta uppgifter och hålla dem uppdaterade.</li>
               <li>Inte publicera innehåll som är vilseledande, olagligt, diskriminerande eller kränkande.</li>
               <li>Inte använda tjänsten för spam, skräppost eller otillbörlig datainsamling.</li>
-              <li>Följa gällande lagar i samband med annonsering och uthyrning.</li>
+              <li>Följa gällande lagar i samband med annonsering och försäljning.</li>
               <li>Inte försöka kringgå tjänstens säkerhetsfunktioner.</li>
             </ul>
           </section>

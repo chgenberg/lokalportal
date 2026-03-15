@@ -37,7 +37,9 @@ export default function AuthLayout({ children, title, subtitle }: AuthLayoutProp
       <div className="flex-1 flex items-center justify-center px-4 py-12 lg:py-16 bg-white">
         <div className="w-full max-w-sm animate-fade-in">
           <Link href="/" className="inline-block mb-10">
-            <Image src="/HYlogo.png" alt="Offmarket" width={140} height={40} className="h-10 w-auto" priority />
+            <span className="text-2xl font-extrabold tracking-tight text-navy">
+              Offmarket<span className="text-navy/40">.nu</span>
+            </span>
           </Link>
           <h1 className="text-xl font-bold text-navy mb-1.5 tracking-tight">{title}</h1>
           {subtitle && <p className="text-[13px] text-gray-400 mb-6">{subtitle}</p>}

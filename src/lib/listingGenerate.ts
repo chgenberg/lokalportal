@@ -1057,10 +1057,10 @@ export async function generateListingContent(
       const msg = err1 instanceof Error ? err1.message : String(err1);
       console.warn("[generate] gpt-5.2 failed:", msg);
 
-      // Strategy 2: gpt-5-mini Responses API fallback
+      // Strategy 2: gpt-4o-mini Responses API fallback
       try {
         const fallbackResponse = await openai.responses.create({
-          model: "gpt-5-mini",
+          model: "gpt-4o-mini",
           instructions: GPT_SYSTEM,
           input: userContent + (hasLocalhostImages ? visionInstruction : ""),
           text: {

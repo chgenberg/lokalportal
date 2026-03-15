@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
     }));
 
     const response = await openai.responses.create({
-      model: "gpt-5-mini",
+      model: "gpt-4o-mini",
       instructions: SYSTEM_PROMPT + contextNote,
       input: inputMessages,
       max_output_tokens: 500,

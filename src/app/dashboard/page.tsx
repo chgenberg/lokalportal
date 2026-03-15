@@ -1227,7 +1227,7 @@ function MatchesTab() {
 /* ── Service Orders Tab ──────────────────────────────── */
 
 function ServiceOrdersTab() {
-  const [orders, setOrders] = useState<{ id: string; serviceType: string; status: string; createdAt: string; listingId?: string }[]>([]);
+  const [orders, setOrders] = useState<{ id: string; type: string; status: string; createdAt: string; listingId?: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [ordering, setOrdering] = useState<string | null>(null);
 
@@ -1241,11 +1241,11 @@ function ServiceOrdersTab() {
   }, []);
 
   const services = [
-    { type: "photography", label: "Professionell fotografering", desc: "Låt en professionell fotograf ta bilder av din bostad", price: "3 995 kr" },
+    { type: "photo", label: "Professionell fotografering", desc: "Låt en professionell fotograf ta bilder av din bostad", price: "3 995 kr" },
     { type: "valuation", label: "Värdering", desc: "Få en professionell värdering av din bostad", price: "4 995 kr" },
     { type: "inspection", label: "Besiktning", desc: "Utförlig teknisk besiktning med protokoll", price: "8 995 kr" },
     { type: "energy_declaration", label: "Energideklaration", desc: "Lagstadgad energideklaration", price: "4 495 kr" },
-    { type: "legal_advice", label: "Juridisk rådgivning", desc: "Konsultation med fastighetsadvokat", price: "2 995 kr" },
+    { type: "legal", label: "Juridisk rådgivning", desc: "Konsultation med fastighetsadvokat", price: "2 995 kr" },
     { type: "contract", label: "Kontraktsgranskning", desc: "Granskning och upprättande av köpekontrakt", price: "5 995 kr" },
   ];
 
@@ -1255,7 +1255,7 @@ function ServiceOrdersTab() {
   const handleOrder = async (serviceType: string) => {
     setOrdering(serviceType);
     try {
-      const res = await fetch("/api/service-orders", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ serviceType }) });
+      const res = await fetch("/api/service-orders", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: serviceType }) });
       if (res.ok) {
         const data = await res.json();
         setOrders((prev) => [data.order, ...prev]);
@@ -1299,7 +1299,7 @@ function ServiceOrdersTab() {
             {orders.map((o) => (
               <div key={o.id} className="flex items-center justify-between py-3 border-b border-border/30 last:border-0">
                 <div>
-                  <p className="text-sm font-medium text-navy">{services.find((s) => s.type === o.serviceType)?.label || o.serviceType}</p>
+                  <p className="text-sm font-medium text-navy">{services.find((s) => s.type === o.type)?.label || o.type}</p>
                   <p className="text-xs text-gray-400">{new Date(o.createdAt).toLocaleDateString("sv-SE", { day: "numeric", month: "short", year: "numeric" })}</p>
                 </div>
                 <span className={`px-2.5 py-1 text-[10px] font-semibold rounded-full ${statusColors[o.status] || "bg-gray-100 text-gray-600"}`}>

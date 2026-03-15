@@ -12,7 +12,7 @@ PRINCIPER OCH VÄRDERINGAR:
 - Kontakt: info@offmarket.nu, Stockholm.
 
 ANNONSPAKET (priser):
-- Bas: 495 kr/30 dagar – 1 annons
+- Bas: 499 kr/30 dagar – 1 annons
 - Professionell: 995 kr/30 dagar – 5 annonser, utvald, prioriterad support (mest populär)
 - Företag: 2495 kr/30 dagar – obegränsat, toppplacering, egen företagssida
 Årsvis ger 20% rabatt.
@@ -21,7 +21,7 @@ KONTOTYP: Säljare, Köpare, Mäklare. Mäklare kan profilera annonser med egen 
 
 GRATIS: Skapa gratis annons-PDF på /skapa-annons – ingen registrering krävs för att generera PDF.
 
-GUIDE: På /sa-hyr-du-ut-en-lokal finns en steg-för-steg guide för att sälja: planering, marknadsföring, val av köpare, förhandling och tillträde.
+GUIDE: På /sa-fungerar-det finns en steg-för-steg guide för att sälja: planering, marknadsföring, val av köpare, förhandling och tillträde.
 
 VILLKOR: Annonsörer ansvarar för innehållet. Offmarket.nu ansvarar inte för avtal mellan parter. Se /villkor och /integritetspolicy.
 

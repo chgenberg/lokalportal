@@ -76,12 +76,12 @@ export async function POST(req: NextRequest) {
 
     const top10 = listings.slice(0, 10);
     const listingSummaries = top10.map((l, i) =>
-      `${i + 1}. "${l.title}" – ${CAT_LABELS[l.category] || l.category}, ${l.size} m², ${l.price.toLocaleString("sv-SE")} kr/mån, ${l.city}. Tags: ${l.tags.join(", ") || "inga"}`
+      `${i + 1}. "${l.title}" – ${CAT_LABELS[l.category] || l.category}, ${l.size} m², ${l.price.toLocaleString("sv-SE")} kr, ${l.city}. Tags: ${l.tags.join(", ") || "inga"}`
     ).join("\n");
 
     const openai = new OpenAI({ apiKey, timeout: 20_000 });
 
-    const systemPrompt = `Du är en expert på kommersiella lokaler i Sverige. Du hjälper företagare hitta rätt typ av lokal.
+    const systemPrompt = `Du är en expert på bostadsmarknaden i Sverige. Du hjälper köpare hitta rätt typ av bostad.
 Svara ALLTID med giltig JSON (ingen markdown). Nycklar:
 - "recommendation": sträng, 2-3 stycken med personlig rådgivning
 - "suggestedCategory": en av ${VALID_CATEGORIES.join(", ")}
@@ -96,13 +96,13 @@ Skriv på svenska. Var konkret och hjälpsam.`;
       cityStr ? `Önskat område: ${cityStr}` : "",
       reqs.length > 0 ? `Krav: ${reqs.join(", ")}` : "",
       "",
-      top10.length > 0 ? `Tillgängliga lokaler:\n${listingSummaries}` : "Inga matchande lokaler hittades just nu.",
+      top10.length > 0 ? `Tillgängliga bostäder:\n${listingSummaries}` : "Inga matchande bostäder hittades just nu.",
       "",
-      "Ge en personlig rekommendation: vilken typ av lokal passar bäst? Förklara varför. Om det finns matchande lokaler, nämn de bästa och förklara varför de passar.",
+      "Ge en personlig rekommendation: vilken typ av bostad passar bäst? Förklara varför. Om det finns matchande bostäder, nämn de bästa och förklara varför de passar.",
     ].filter(Boolean).join("\n");
 
     const response = await openai.responses.create({
-      model: "gpt-5-mini",
+      model: "gpt-4o-mini",
       instructions: systemPrompt,
       input: userPrompt,
       text: {

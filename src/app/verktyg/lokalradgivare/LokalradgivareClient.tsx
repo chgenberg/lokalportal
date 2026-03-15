@@ -138,7 +138,7 @@ export default function LokalradgivareClient() {
     },
     {
       label: "Stad",
-      subtitle: "Var vill du ha din lokal?",
+      subtitle: "Var vill du bo?",
       content: (
         <div className="relative">
           <input type="text" value={city} onChange={(e) => { setCity(e.target.value); fetchSuggestions(e.target.value); }} onBlur={() => setTimeout(() => setSuggestionsOpen(false), 200)} placeholder="Stockholm, Göteborg..." className="w-full px-4 py-3 bg-muted/50 rounded-xl text-sm border border-border/60 focus:border-navy/30 focus:bg-white outline-none transition-all" />
@@ -207,8 +207,8 @@ export default function LokalradgivareClient() {
       <section className="pt-10 sm:pt-16 md:pt-24 pb-8 sm:pb-12 md:pb-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto text-center">
           <p className="text-[10px] sm:text-xs font-semibold tracking-[0.2em] uppercase text-navy/40 mb-3">Gratis verktyg</p>
-          <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold text-navy tracking-tight mb-3 sm:mb-5">Hitta rätt lokal</h1>
-          <p className="text-gray-500 text-sm sm:text-lg max-w-xl mx-auto">Svara på några frågor om din verksamhet och få personliga rekommendationer.</p>
+          <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold text-navy tracking-tight mb-3 sm:mb-5">Hitta rätt bostad</h1>
+          <p className="text-gray-500 text-sm sm:text-lg max-w-xl mx-auto">Svara på några frågor om dina behov och få personliga rekommendationer.</p>
         </div>
       </section>
 
@@ -300,7 +300,7 @@ export default function LokalradgivareClient() {
               {/* Matching listings */}
               {result.matchingListings.length > 0 && (
                 <div>
-                  <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-4">Matchande lokaler</p>
+                  <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-4">Matchande bostäder</p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {result.matchingListings.map((listing) => {
                       const images = getListingImages(listing);
@@ -318,7 +318,7 @@ export default function LokalradgivareClient() {
                           <div className="p-4">
                             <p className="text-sm font-semibold text-navy line-clamp-1">{listing.title}</p>
                             <p className="text-xs text-gray-400 mt-1">{listing.city} &middot; {listing.size} m²</p>
-                            <p className="text-sm font-bold text-navy mt-2">{listing.price.toLocaleString("sv-SE")} kr/mån</p>
+                            <p className="text-sm font-bold text-navy mt-2">{listing.price.toLocaleString("sv-SE")} kr</p>
                           </div>
                         </Link>
                       );
@@ -329,7 +329,7 @@ export default function LokalradgivareClient() {
 
               {/* CTA */}
               <div className="bg-navy rounded-2xl p-6 sm:p-8 text-center">
-                <h3 className="text-lg font-bold text-white mb-2">Vill du se fler lokaler?</h3>
+                <h3 className="text-lg font-bold text-white mb-2">Vill du se fler bostäder?</h3>
                 <p className="text-sm text-white/50 mb-5">Utforska alla tillgängliga bostäder på Offmarket.nu</p>
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
                   <Link href="/annonser" className="px-6 py-3 bg-gold text-navy text-sm font-semibold rounded-full hover:brightness-105 transition-all">Se alla annonser</Link>

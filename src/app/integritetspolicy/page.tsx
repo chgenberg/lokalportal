@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Integritetspolicy – Offmarket",
+  title: "Integritetspolicy – Offmarket.nu",
   description: "Så hanterar Offmarket dina personuppgifter och cookies.",
 };
 
@@ -29,7 +29,7 @@ export default function IntegritetspolicyPage() {
           <section>
             <h2 className="text-xl font-semibold text-navy mb-3 tracking-tight">2. Personuppgiftsansvarig</h2>
             <p className="text-[15px] text-gray-600 leading-relaxed">
-              Offmarket är personuppgiftsansvarig för behandlingen av dina personuppgifter. Du kan kontakta oss via <a href="mailto:info@offmarket.se" className="text-navy hover:underline">info@offmarket.se</a>.
+              Offmarket är personuppgiftsansvarig för behandlingen av dina personuppgifter. Du kan kontakta oss via <a href="mailto:info@offmarket.nu" className="text-navy hover:underline">info@offmarket.nu</a>.
             </p>
           </section>
 
@@ -96,7 +96,7 @@ export default function IntegritetspolicyPage() {
           <section>
             <h2 className="text-xl font-semibold text-navy mb-3 tracking-tight">9. Kontakt</h2>
             <p className="text-[15px] text-gray-600 leading-relaxed">
-              För frågor om integritet och personuppgifter, kontakta oss på <a href="mailto:info@offmarket.se" className="text-navy hover:underline">info@offmarket.se</a> eller via vår <Link href="/kontakt" className="text-navy hover:underline">kontaktsida</Link>.
+              För frågor om integritet och personuppgifter, kontakta oss på <a href="mailto:info@offmarket.nu" className="text-navy hover:underline">info@offmarket.nu</a> eller via vår <Link href="/kontakt" className="text-navy hover:underline">kontaktsida</Link>.
             </p>
           </section>
         </div>

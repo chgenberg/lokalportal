@@ -57,8 +57,8 @@ export async function POST() {
           quantity: 1,
         },
       ],
-      success_url: `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/dashboard?payment=premium-success`,
-      cancel_url: `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/dashboard?payment=premium-canceled`,
+      success_url: `${process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_SITE_URL || "https://offmarket.nu"}/dashboard?payment=premium-success`,
+      cancel_url: `${process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_SITE_URL || "https://offmarket.nu"}/dashboard?payment=premium-canceled`,
       metadata: { userId: user.id, type: "premium" },
     });
 

@@ -27,13 +27,13 @@ export const metadata: Metadata = {
     siteName: "Offmarket.nu",
     locale: "sv_SE",
     type: "website",
-    images: [{ url: "/logo-offmarket.png", width: 1200, height: 630, alt: "Offmarket.nu – Off-market bostäder till salu" }],
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "Offmarket.nu – Off-market bostäder till salu" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Offmarket.nu – Off-market bostäder till salu",
     description: "Sveriges marknadsplats för off-market bostäder.",
-    images: [{ url: "/logo-offmarket.png" }],
+    images: [{ url: "/opengraph-image" }],
   },
   metadataBase: new URL(siteUrl),
 };

@@ -764,7 +764,7 @@ export default function SkapaAnnonsClient() {
         {step === "input" && (
           <div className="bg-white rounded-2xl border border-border/60 p-6 sm:p-8 shadow-sm animate-fade-in">
             <p className="text-[11px] font-semibold text-gray-400 tracking-[0.1em] uppercase mb-4">Steg 2 av 4</p>
-            <h2 className="text-lg font-bold text-navy mb-2">Grunddata om lokalen</h2>
+            <h2 className="text-lg font-bold text-navy mb-2">Grunddata om bostaden</h2>
             {generateError && (
               <div role="alert" className="mb-5 p-3 bg-red-50 border border-red-200 rounded-xl text-[13px] text-red-700">
                 {generateError}

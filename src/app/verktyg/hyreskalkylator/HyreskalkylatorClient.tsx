@@ -8,11 +8,9 @@ type Step = "email" | "input" | "loading" | "result";
 
 const CATEGORIES = [
   { value: "villa", label: "Villa" },
-  { value: "lägenhet", label: "Lägenhet" },
+  { value: "lagenhet", label: "Lägenhet" },
   { value: "fritidshus", label: "Fritidshus" },
   { value: "tomt", label: "Tomt" },
-  { value: "radhus", label: "Radhus" },
-  { value: "ovrigt", label: "Övrigt" },
 ];
 
 interface Suggestion {
@@ -44,7 +42,7 @@ export default function HyreskalkylatorClient() {
   const [emailError, setEmailError] = useState("");
 
   const [address, setAddress] = useState("");
-  const [category, setCategory] = useState("lägenhet");
+  const [category, setCategory] = useState("lagenhet");
   const [size, setSize] = useState("");
   const [inputError, setInputError] = useState("");
 

@@ -95,13 +95,13 @@ export default function Header() {
     ? [
         { href: "/annonser", label: "Alla annonser" },
         { href: "/karta", label: "Karta" },
-        { href: "/sa-hyr-du-ut-en-lokal", label: "Så fungerar det" },
+        { href: "/sa-fungerar-det", label: "Så fungerar det" },
         { href: "/dashboard", label: "Dashboard" },
       ]
     : [
         { href: "/annonser", label: "Alla annonser" },
         { href: "/karta", label: "Karta" },
-        { href: "/sa-hyr-du-ut-en-lokal", label: "Så fungerar det" },
+        { href: "/sa-fungerar-det", label: "Så fungerar det" },
         { href: "/kategorier", label: "Kategorier" },
       ];
 

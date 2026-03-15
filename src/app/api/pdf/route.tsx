@@ -413,17 +413,7 @@ export async function POST(req: NextRequest) {
   try {
     const data = (await req.json()) as PdfBody;
 
-    // Read logo
-    const fs = await import("fs");
-    const pathMod = await import("path");
-    const logoPath = pathMod.join(process.cwd(), "public", "HYlogo.png");
-    let logoSrc = "";
-    try {
-      const buf = fs.readFileSync(logoPath);
-      logoSrc = `data:image/png;base64,${buf.toString("base64")}`;
-    } catch (err) {
-      console.error("PDF logo load error:", err);
-    }
+    const logoSrc = "";
 
     // Resolve image URLs
     const origin = req.nextUrl.origin;

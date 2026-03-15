@@ -142,11 +142,11 @@ export default function OmOssClient() {
           <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-start">
             <ThomasPortrait />
             <div className="text-center sm:text-left">
-              <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-1">Grundare & Chefslokalletare</p>
+              <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-1">Grundare & VD</p>
               <h2 className="text-xl font-bold text-navy mb-1 tracking-tight">Thomas Claesson</h2>
               <p className="text-[13px] text-gray-400 mb-4">&ldquo;Jag har aldrig träffat en bostad jag inte gillade. Okej, kanske den i Borås utan fönster. Men annars.&rdquo;</p>
               <p className="text-[15px] text-gray-600 leading-relaxed">
-                Thomas har jobbat med kommersiella bostäder i över 25 år. Det hela började 1998 när han av misstag hyrde ut sitt garage till en startup som behövde &ldquo;ett litet kontor med karaktär&rdquo;. Startupen gick under efter tre månader, men Thomas hade hittat sin livs passion: att matcha rätt bostad med rätt människa.
+                Thomas har jobbat med bostäder i över 25 år. Det hela började 1998 när han av en slump hjälpte en granne att sälja sin villa utanför Mölndal – köparen hittades på bara tre dagar. Thomas hade hittat sin livs passion: att matcha rätt bostad med rätt människa.
               </p>
             </div>
           </div>
@@ -165,17 +165,17 @@ export default function OmOssClient() {
           </div>
           <div className="relative p-8">
           <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-3">Thomas resa</p>
-          <h2 className="text-xl font-bold text-navy mb-6 tracking-tight">Från garageuthyrning till Sveriges smartaste bostadsplattform</h2>
+          <h2 className="text-xl font-bold text-navy mb-6 tracking-tight">Från en villaförsäljning till Sveriges smartaste bostadsplattform</h2>
           <div className="space-y-6">
             {[
               {
                 year: "1998",
                 title: "Det oavsiktliga geniet",
-                text: "Thomas hyr ut sitt garage i Mölndal. Köparen klagar på att det luktar motorolja. Thomas svarar: \"Det är karaktär.\" En bransch-legend föds.",
+                text: "Thomas hjälper en granne att sälja sin villa i Mölndal. Köparen hittas på tre dagar. Thomas inser att bostadsmarknaden behöver en personlig touch. En bransch-legend föds.",
               },
               {
                 year: "2003",
-                title: "500 lokaler och en insikt",
+                title: "500 bostäder och en insikt",
                 text: "Efter att ha förmedlat sin 500:e bostad inser Thomas att han kan uppskatta en bostads yta med blotta ögat, med max 2 m² felmarginal. Hans fru är mindre imponerad än han hade hoppats.",
               },
               {
@@ -233,7 +233,7 @@ export default function OmOssClient() {
             Varje annonsör verifieras med BankID. Varje annons kan skapas med vår agent på under fem minuter. Och varje köpare kan söka, filtrera och kontakta direkt – utan mellanhänder, utan krångel.
           </p>
           <p className="text-[15px] text-gray-600 leading-relaxed">
-            Thomas brukar säga: <em>&ldquo;En bra bostad kan förändra ett företag. En dålig plattform ska inte stå i vägen.&rdquo;</em> Vi håller med honom. Mest för att han är chefen.
+            Thomas brukar säga: <em>&ldquo;En bra bostad kan förändra ett liv. En dålig plattform ska inte stå i vägen.&rdquo;</em> Vi håller med honom. Mest för att han är chefen.
           </p>
         </div>
 

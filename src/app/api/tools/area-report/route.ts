@@ -75,8 +75,8 @@ export async function POST(req: NextRequest) {
         ].filter(Boolean).join("\n");
 
         const response = await openai.responses.create({
-          model: "gpt-5-mini",
-          instructions: `Du är en expert på kommersiella fastighetsmarknaden i Sverige. Skriv en professionell områdesanalys baserad på fakta. Skriv på svenska. Strukturera med rubriker: Sammanfattning, Demografi & Ekonomi, Infrastruktur & Tillgänglighet, Marknad & Priser, Trygghet, Slutsats. Var konkret och hjälpsam. Nämn inte att du är en AI.`,
+          model: "gpt-4o-mini",
+          instructions: `Du är en expert på bostadsmarknaden i Sverige. Skriv en professionell områdesanalys baserad på fakta. Skriv på svenska. Strukturera med rubriker: Sammanfattning, Demografi & Ekonomi, Infrastruktur & Tillgänglighet, Marknad & Priser, Trygghet, Slutsats. Var konkret och hjälpsam. Nämn inte att du är en AI.`,
           input: `Skriv en detaljerad områdesrapport för: ${address.trim()}\n\nFakta:\n${facts}`,
           max_output_tokens: 1200,
         });

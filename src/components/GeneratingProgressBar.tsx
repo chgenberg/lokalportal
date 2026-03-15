@@ -3,21 +3,21 @@
 import { useState, useEffect, useRef } from "react";
 
 const FACTS = [
-  "Visste du att kontorsbostäder i Sverige har en genomsnittlig vakansgrad på 7–10 %?",
-  "En bra annons med bilder får i snitt 3× fler visningsförfrågningar.",
+  "Visste du att off-market bostäder ofta säljs 5–10 % snabbare än på öppna marknaden?",
+  "En bra annons med bilder får i snitt 3x fler visningsförfrågningar.",
   "Första intrycket av en bostad avgörs inom 7 sekunder – precis som med människor.",
   "Bostäder nära kollektivtrafik värderas i snitt 15–20 % högre.",
   "Över 60 % av alla bostadssökningar börjar online.",
   "En professionell planritning ökar intresset med upp till 30 %.",
-  "Genomsnittlig tid för att hyra ut en kommersiell bostad i Sverige är 3–6 månader.",
+  "Villor med trädgård i söderläge säljs i snitt 8 % dyrare.",
   "Ljusinsläpp är den mest efterfrågade egenskapen bland köpare.",
-  "Flexibla kontorslösningar har ökat med 40 % sedan 2020.",
-  "Energicertifikat kan påverka hyresnivån med upp till 10 %.",
+  "Energideklarationen kan påverka bostadens marknadsvärde med upp till 10 %.",
   "De flesta köpare besöker 4–6 bostäder innan de bestämmer sig.",
   "En välskriven beskrivning kan halvera tiden det tar att hitta rätt köpare.",
-  "Parkeringsplatser är den näst mest sökta egenskapen efter yta.",
-  "Hyresnivåer i Stockholms innerstad har stigit med 25 % de senaste 5 åren.",
-  "Lagerbostäder har blivit den snabbast växande segmentet inom kommersiella fastigheter.",
+  "Balkong eller uteplats är bland de mest eftertraktade egenskaperna hos köpare.",
+  "Bostadspriserna i Sveriges storstäder har stigit i snitt 4 % per år det senaste decenniet.",
+  "En hemstylad bostad säljs i snitt 10–15 % snabbare.",
+  "Off-market försäljning ger säljaren mer kontroll över processen och vilka som ser bostaden.",
 ];
 
 const DURATION_MS = 60_000; // 60 seconds total

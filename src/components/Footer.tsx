@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import NewsletterSignup from "./NewsletterSignup";
 
 export default function Footer() {
@@ -9,13 +8,9 @@ export default function Footer() {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 sm:gap-10 md:gap-12">
           <div className="sm:col-span-2 md:col-span-1">
             <div className="mb-4 sm:mb-5">
-              <Image
-                src="/HYlogo.png"
-                alt="Offmarket.nu"
-                width={140}
-                height={40}
-                className="h-8 sm:h-9 w-auto object-contain brightness-0 invert opacity-80"
-              />
+              <span className="text-xl font-extrabold tracking-tight text-white/80">
+                Offmarket<span className="text-white/40">.nu</span>
+              </span>
             </div>
             <p className="text-xs sm:text-[13px] text-white/40 leading-relaxed mb-5 sm:mb-6">
               Sveriges marknadsplats för off-market bostäder till salu.
@@ -29,7 +24,7 @@ export default function Footer() {
               <li><Link href="/annonser" className="text-xs sm:text-[13px] text-white/50 hover:text-white transition-colors py-0.5 inline-block">Alla annonser</Link></li>
               <li><Link href="/kategorier" className="text-xs sm:text-[13px] text-white/50 hover:text-white transition-colors py-0.5 inline-block">Kategorier</Link></li>
               <li><Link href="/skapa-annons" className="text-xs sm:text-[13px] text-white/50 hover:text-white transition-colors py-0.5 inline-block">Skapa annons</Link></li>
-              <li><Link href="/sa-hyr-du-ut-en-lokal" className="text-xs sm:text-[13px] text-white/50 hover:text-white transition-colors py-0.5 inline-block">Så fungerar det</Link></li>
+              <li><Link href="/sa-fungerar-det" className="text-xs sm:text-[13px] text-white/50 hover:text-white transition-colors py-0.5 inline-block">Så fungerar det</Link></li>
               <li><Link href="/karta" className="text-xs sm:text-[13px] text-white/50 hover:text-white transition-colors py-0.5 inline-block">Karta</Link></li>
             </ul>
           </div>
@@ -37,7 +32,7 @@ export default function Footer() {
           <div>
             <h4 className="text-[11px] font-semibold uppercase tracking-[0.15em] mb-4 sm:mb-5 text-white/30">Verktyg</h4>
             <ul className="space-y-2.5 sm:space-y-3">
-              <li><Link href="/verktyg/hyreskalkylator" className="text-xs sm:text-[13px] text-white/50 hover:text-white transition-colors py-0.5 inline-block">Hyreskalkylator</Link></li>
+              <li><Link href="/verktyg/hyreskalkylator" className="text-xs sm:text-[13px] text-white/50 hover:text-white transition-colors py-0.5 inline-block">Priskalkylator</Link></li>
               <li><Link href="/verktyg/lokalradgivare" className="text-xs sm:text-[13px] text-white/50 hover:text-white transition-colors py-0.5 inline-block">Hitta rätt bostad</Link></li>
               <li><Link href="/verktyg/omradesrapport" className="text-xs sm:text-[13px] text-white/50 hover:text-white transition-colors py-0.5 inline-block">Områdesrapport</Link></li>
             </ul>
