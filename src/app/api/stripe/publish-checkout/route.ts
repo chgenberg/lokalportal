@@ -116,6 +116,9 @@ export async function POST(req: NextRequest) {
     const rawImgs = Array.isArray(listingData.imageUrls) ? listingData.imageUrls : listingData.imageUrl ? [listingData.imageUrl] : [];
     const imgs = rawImgs.slice(0, 10).filter((u: unknown): u is string => typeof u === "string").map((u: string) => u.trim().slice(0, 2000)).filter(Boolean);
 
+    const categoryVal = VALID_CATEGORIES.includes(listingData.category) ? listingData.category : "lagenhet";
+    const propertyTypeVal = listingData.propertyType && VALID_CATEGORIES.includes(listingData.propertyType) ? listingData.propertyType : categoryVal;
+
     const newListing = await prisma.listing.create({
       data: {
         title: String(listingData.title).trim().slice(0, 200),
@@ -123,9 +126,17 @@ export async function POST(req: NextRequest) {
         city: String(listingData.city).trim().slice(0, 100),
         address: String(listingData.address).trim().slice(0, 300),
         type: VALID_TYPES.includes(listingData.type) ? listingData.type : "sale",
-        category: VALID_CATEGORIES.includes(listingData.category) ? listingData.category : "lagenhet",
+        category: categoryVal,
+        propertyType: propertyTypeVal,
         price: Math.floor(price),
         size: Math.floor(size),
+        ...(typeof listingData.rooms === "number" && listingData.rooms > 0 && { rooms: listingData.rooms }),
+        ...(typeof listingData.lotSize === "number" && listingData.lotSize > 0 && { lotSize: listingData.lotSize }),
+        ...(typeof listingData.condition === "string" && listingData.condition && { condition: listingData.condition }),
+        ...(typeof listingData.energyClass === "string" && listingData.energyClass && { energyClass: listingData.energyClass }),
+        ...(typeof listingData.yearBuilt === "number" && listingData.yearBuilt > 1800 && { yearBuilt: listingData.yearBuilt }),
+        ...(typeof listingData.monthlyFee === "number" && listingData.monthlyFee >= 0 && { monthlyFee: listingData.monthlyFee }),
+        ...(typeof listingData.acceptancePrice === "number" && listingData.acceptancePrice > 0 && { acceptancePrice: listingData.acceptancePrice }),
         tags: Array.isArray(listingData.tags) ? listingData.tags.slice(0, 20).filter((t: unknown) => typeof t === "string").map((t: string) => t.trim().slice(0, 50)) : [],
         imageUrl: imgs[0] || "",
         imageUrls: imgs.length > 0 ? imgs : [],
@@ -146,6 +157,8 @@ export async function POST(req: NextRequest) {
         stripeStatus: "pending",
       },
     });
+
+    await prisma.user.update({ where: { id: userId }, data: { isSeller: true } });
 
     // 4. Create Stripe Checkout Session
     const origin = req.nextUrl.origin;

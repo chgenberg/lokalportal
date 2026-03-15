@@ -22,7 +22,7 @@ function cacheSet(key: string, value: unknown): void {
 const NOMINATIM_USER_AGENT = "Offmarket.nu/1.0 (residential; listing generator)";
 
 export const VALID_TYPES = ["sale"] as const;
-export const VALID_CATEGORIES = ["villa", "lägenhet", "fritidshus", "tomt", "radhus", "ovrigt"] as const;
+export const VALID_CATEGORIES = ["villa", "lagenhet", "fritidshus", "tomt"] as const;
 
 export type InputType = (typeof VALID_TYPES)[number];
 export type InputCategory = (typeof VALID_CATEGORIES)[number];

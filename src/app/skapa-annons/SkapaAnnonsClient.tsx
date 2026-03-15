@@ -132,8 +132,20 @@ export default function SkapaAnnonsClient() {
   const handlePublish = () => {
     if (!generated) return;
 
+    const enrichedGenerated = {
+      ...generated,
+      rooms: input.rooms ? parseInt(input.rooms, 10) : null,
+      lotSize: input.lotSize ? parseInt(input.lotSize, 10) : null,
+      condition: input.condition || null,
+      energyClass: input.energyClass || null,
+      yearBuilt: input.yearBuilt ? parseInt(input.yearBuilt, 10) : null,
+      monthlyFee: input.monthlyFee ? parseInt(input.monthlyFee, 10) : null,
+      acceptancePrice: input.acceptancePrice ? parseInt(input.acceptancePrice, 10) : null,
+      propertyType: input.categories[0] || generated.category,
+    };
+
     sessionStorage.setItem(PENDING_LISTING_KEY, JSON.stringify({
-      generated,
+      generated: enrichedGenerated,
       leadEmail,
       leadName,
       input,

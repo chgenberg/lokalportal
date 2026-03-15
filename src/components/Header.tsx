@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import Image from "next/image";
+
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
@@ -117,14 +117,9 @@ export default function Header() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-14 sm:h-[72px]">
             <Link href="/" className="flex items-center gap-2 group shrink-0">
-              <Image
-                src="/HYlogo.png"
-                alt="Offmarket"
-                width={200}
-                height={60}
-                className="h-10 sm:h-[52px] w-auto object-contain"
-                priority
-              />
+              <span className="text-xl sm:text-2xl font-extrabold tracking-tight text-navy">
+                Offmarket<span className="text-navy/40">.nu</span>
+              </span>
             </Link>
 
             <nav className="hidden md:flex items-center gap-1">
