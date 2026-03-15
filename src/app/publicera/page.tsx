@@ -2,8 +2,8 @@ import { Suspense } from "react";
 import PubliceraClient from "./PubliceraClient";
 
 export const metadata = {
-  title: "Publicera annons | HittaYta.se",
-  description: "Publicera din annons på HittaYta.se",
+  title: "Publicera annons | Offmarket.nu",
+  description: "Publicera din annons på Offmarket.nu",
 };
 
 export default function PubliceraPage() {

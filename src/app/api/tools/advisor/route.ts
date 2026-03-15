@@ -17,9 +17,7 @@ const TAG_MAP: Record<string, string[]> = {
 };
 
 const CAT_LABELS: Record<string, string> = {
-  butik: "Butik", kontor: "Kontor", lager: "Lager", restaurang: "Restaurang/Café",
-  verkstad: "Verkstad", showroom: "Showroom", popup: "Pop-up", atelje: "Ateljé/Studio",
-  gym: "Gym/Träningslokal", ovrigt: "Övrigt",
+  villa: "Villa", lagenhet: "Lägenhet", fritidshus: "Fritidshus", tomt: "Tomt",
 };
 
 export async function POST(req: NextRequest) {
@@ -61,7 +59,7 @@ export async function POST(req: NextRequest) {
 
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const where: Record<string, any> = { type: "rent" };
+    const where: Record<string, any> = { type: "sale" };
     if (cityStr) where.city = { contains: cityStr, mode: "insensitive" };
     if (budgetNum > 0) where.price = { lte: Math.ceil(budgetNum * 1.3) };
     if (sizeNum > 0) where.size = { gte: Math.floor(sizeNum * 0.5), lte: Math.ceil(sizeNum * 2) };
@@ -154,7 +152,7 @@ Skriv på svenska. Var konkret och hjälpsam.`;
 
     return NextResponse.json({
       recommendation: parsed.recommendation || "",
-      suggestedCategory: parsed.suggestedCategory || "kontor",
+      suggestedCategory: parsed.suggestedCategory || "lagenhet",
       matchingListings,
       tips: Array.isArray(parsed.tips) ? parsed.tips.slice(0, 5) : [],
     });

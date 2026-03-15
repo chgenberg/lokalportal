@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Alla annonser – Hittayta.se",
+  title: "Alla annonser – Offmarket.nu",
   description:
-    "Utforska kommersiella lokaler till salu och uthyrning. Butiker, kontor, lager och mer i hela Sverige.",
+    "Utforska off-market bostäder till salu. Villor, lägenheter, fritidshus och tomter i hela Sverige – innan de når den öppna marknaden.",
   openGraph: {
-    title: "Alla annonser – Hittayta.se",
-    description: "Utforska kommersiella lokaler till salu och uthyrning i hela Sverige.",
+    title: "Alla annonser – Offmarket.nu",
+    description: "Utforska off-market bostäder till salu i hela Sverige.",
   },
 };
 

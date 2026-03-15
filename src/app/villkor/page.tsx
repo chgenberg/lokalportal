@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Användarvillkor – Hittayta.se",
-  description: "Villkor för användning av Hittayta.se:s tjänster.",
+  title: "Användarvillkor – Offmarket.nu",
+  description: "Villkor för användning av Offmarket.nu:s tjänster.",
 };
 
 export default function VillkorPage() {
@@ -22,14 +22,14 @@ export default function VillkorPage() {
           <section>
             <h2 className="text-xl font-semibold text-navy mb-3 tracking-tight">1. Godkännande</h2>
             <p className="text-[15px] text-gray-600 leading-relaxed">
-              Genom att använda Hittayta.se (&quot;tjänsten&quot;) godkänner du dessa villkor. Om du inte godkänner dem får du inte använda tjänsten. Villkoren gäller alla besökare, registrerade användare och annonsörer.
+              Genom att använda Offmarket.nu (&quot;tjänsten&quot;) godkänner du dessa villkor. Om du inte godkänner dem får du inte använda tjänsten. Villkoren gäller alla besökare, registrerade användare och annonsörer.
             </p>
           </section>
 
           <section>
             <h2 className="text-xl font-semibold text-navy mb-3 tracking-tight">2. Tjänstens omfattning</h2>
             <p className="text-[15px] text-gray-600 leading-relaxed">
-              Hittayta.se är en marknadsplats för kommersiella lokaler (butiker, kontor, lager m.m.). Vi tillhandahåller plattformen där annonsörer kan publicera annonser och besökare kan söka och kontakta annonsörer. Hittayta.se är inte part i affärer mellan användare och ansvarar inte för avtal som ingås mellan hyresvärd och hyresgäst.
+              Offmarket.nu är en marknadsplats för off-market bostäder (villor, lägenheter, fritidshus, tomter). Vi tillhandahåller plattformen där annonsörer kan publicera annonser och besökare kan söka och kontakta annonsörer. Offmarket.nu är inte part i affärer mellan användare och ansvarar inte för avtal som ingås mellan säljare och köpare.
             </p>
           </section>
 
@@ -60,21 +60,21 @@ export default function VillkorPage() {
           <section>
             <h2 className="text-xl font-semibold text-navy mb-3 tracking-tight">5. Annonser och innehåll</h2>
             <p className="text-[15px] text-gray-600 leading-relaxed">
-              Annonsörer ansvarar fullt ut för innehållet i sina annonser, inklusive att uppgifter om lokaler, priser och villkor är korrekta. Vi förbehåller oss rätten att utan förvarning ta bort annonser eller avsluta konton som strider mot dessa villkor eller gällande lagstiftning.
+              Annonsörer ansvarar fullt ut för innehållet i sina annonser, inklusive att uppgifter om bostäder, priser och villkor är korrekta. Vi förbehåller oss rätten att utan förvarning ta bort annonser eller avsluta konton som strider mot dessa villkor eller gällande lagstiftning.
             </p>
           </section>
 
           <section>
             <h2 className="text-xl font-semibold text-navy mb-3 tracking-tight">6. Betalning och annonspaket</h2>
             <p className="text-[15px] text-gray-600 leading-relaxed">
-              Betalning för annonspaket regleras enligt gällande prislista på webbplatsen. Priser anges inklusive moms om inte annat anges. Avtal om lokaler ingås direkt mellan annonsör och intressent – Hittayta.se är inte part i sådana avtal.
+              Betalning för annonspaket regleras enligt gällande prislista på webbplatsen. Priser anges inklusive moms om inte annat anges. Avtal om bostäder ingås direkt mellan annonsör och intressent – Offmarket.nu är inte part i sådana avtal.
             </p>
           </section>
 
           <section>
             <h2 className="text-xl font-semibold text-navy mb-3 tracking-tight">7. Immateriella rättigheter</h2>
             <p className="text-[15px] text-gray-600 leading-relaxed">
-              Tjänsten, inklusive design, logotyper, texter och programkod, tillhör Hittayta.se eller våra licensgivare och skyddas av upphovsrätt och andra immateriella rättigheter. Användare får inte kopiera, distribuera eller på annat sätt använda material från tjänsten utan skriftligt tillstånd.
+              Tjänsten, inklusive design, logotyper, texter och programkod, tillhör Offmarket.nu eller våra licensgivare och skyddas av upphovsrätt och andra immateriella rättigheter. Användare får inte kopiera, distribuera eller på annat sätt använda material från tjänsten utan skriftligt tillstånd.
             </p>
           </section>
 
@@ -109,7 +109,7 @@ export default function VillkorPage() {
           <section>
             <h2 className="text-xl font-semibold text-navy mb-3 tracking-tight">12. Kontakt</h2>
             <p className="text-[15px] text-gray-600 leading-relaxed">
-              Frågor om villkoren? Kontakta oss på <a href="mailto:info@ledigyta.se" className="text-navy hover:underline">info@ledigyta.se</a> eller via vår <Link href="/kontakt" className="text-navy hover:underline">kontaktsida</Link>.
+              Frågor om villkoren? Kontakta oss på <a href="mailto:info@offmarket.nu" className="text-navy hover:underline">info@offmarket.nu</a> eller via vår <Link href="/kontakt" className="text-navy hover:underline">kontaktsida</Link>.
             </p>
           </section>
         </div>

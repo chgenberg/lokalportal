@@ -62,7 +62,7 @@ export default function KontaktPage() {
           <p className="text-[11px] font-semibold tracking-[0.25em] uppercase text-white/40 mb-3">Kontakt</p>
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-4 tracking-tight">Thomas väntar på ditt mejl</h1>
           <p className="text-white/50 text-[15px] max-w-lg mx-auto leading-relaxed">
-            Har du frågor, förslag eller bara vill prata takhöjder? Fyll i formuläret nedan. Thomas svarar personligen – oftast med utropstecken.
+            Har du frågor, förslag eller bara vill prata bostäder? Fyll i formuläret nedan. Thomas svarar personligen – oftast med utropstecken.
           </p>
         </div>
       </div>
@@ -75,10 +75,10 @@ export default function KontaktPage() {
             <div className="bg-white rounded-2xl border border-border/40 p-6 shadow-sm">
               <div className="mb-4">
                 <p className="text-[14px] font-semibold text-navy">Thomas Claesson</p>
-                <p className="text-[11px] text-gray-400">Grundare & Chefslokalletare</p>
+                <p className="text-[11px] text-gray-400">Grundare & VD</p>
               </div>
               <p className="text-[13px] text-gray-500 leading-relaxed italic">
-                &ldquo;Skriv till mig. Jag läser varje meddelande. Ibland två gånger om det handlar om skyltfönster.&rdquo;
+                &ldquo;Skriv till mig. Jag läser varje meddelande. Ibland två gånger om det handlar om bostäder.&rdquo;
               </p>
             </div>
 
@@ -87,12 +87,12 @@ export default function KontaktPage() {
               <div className="space-y-4">
                 <div>
                   <p className="text-[11px] text-gray-400 tracking-wide mb-0.5">E-post</p>
-                  <a href="mailto:info@hittayta.se" className="text-[14px] font-medium text-navy hover:underline">info@hittayta.se</a>
+                  <a href="mailto:info@offmarket.se" className="text-[14px] font-medium text-navy hover:underline">info@offmarket.se</a>
                 </div>
                 <div>
                   <p className="text-[11px] text-gray-400 tracking-wide mb-0.5">Plats</p>
                   <p className="text-[14px] font-medium text-navy">Stockholm, Sverige</p>
-                  <p className="text-[12px] text-gray-400 mt-0.5">Kontoret har 3,2 m takhöjd. Thomas mätte.</p>
+                  <p className="text-[12px] text-gray-400 mt-0.5">Stockholm, Sverige</p>
                 </div>
               </div>
             </div>
@@ -100,7 +100,7 @@ export default function KontaktPage() {
             <div className="bg-white rounded-2xl border border-border/40 p-6 shadow-sm">
               <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-4">Svarstid</p>
               <p className="text-[13px] text-gray-500 leading-relaxed">
-                Thomas svarar vanligtvis inom 24 timmar på vardagar. Om du nämner &ldquo;skyltfönster&rdquo; i ämnesraden svarar han inom 2.
+                Thomas svarar vanligtvis inom 24 timmar på vardagar. Om du nämner &ldquo;bostad&rdquo; i ämnesraden svarar han inom 2.
               </p>
             </div>
 
@@ -146,7 +146,7 @@ export default function KontaktPage() {
               <div className="space-y-6">
                 <div className="bg-navy/[0.03] rounded-2xl border border-navy/10 p-5">
                   <p className="text-[13px] text-navy/70 leading-relaxed">
-                    <span className="font-semibold">Tips från Thomas:</span> Ju mer detaljer du ger, desto bättre kan jag hjälpa dig. Berätta gärna vilken typ av lokal du söker, var, och om takhöjd är viktigt (det borde det vara).
+                    <span className="font-semibold">Tips från Thomas:</span> Ju mer detaljer du ger, desto bättre kan jag hjälpa dig. Berätta gärna vilken typ av bostad du söker, var, och vad som är viktigt för dig.
                   </p>
                 </div>
 
@@ -207,7 +207,7 @@ export default function KontaktPage() {
                       rows={6}
                       value={form.message}
                       onChange={(e) => setForm((p) => ({ ...p, message: e.target.value }))}
-                      placeholder="Beskriv ditt ärende... Thomas uppskattar detaljer (och komplimanger om hans plattform)."
+                        placeholder="Beskriv ditt ärende... Thomas uppskattar detaljer (och komplimanger om plattformen)."
                       className="w-full px-4 py-3 rounded-xl text-sm border border-border/60 bg-muted/50 focus:border-navy/30 focus:bg-white outline-none transition-all resize-none"
                     />
                   </div>
@@ -216,7 +216,7 @@ export default function KontaktPage() {
                     <div role="alert" className="bg-red-50 border border-red-200 rounded-xl p-4">
                       <p className="text-[13px] text-red-600">
                         {errorMessage || (
-                          <>Något gick fel. Thomas skyller på servern. Försök igen eller mejla direkt till <a href="mailto:info@hittayta.se" className="underline">info@hittayta.se</a>.</>
+                          <>Något gick fel. Thomas skyller på servern. Försök igen eller mejla direkt till <a href="mailto:info@offmarket.se" className="underline">info@offmarket.se</a>.</>
                         )}
                       </p>
                     </div>

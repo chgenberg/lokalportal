@@ -21,7 +21,7 @@ describe("CookieConsent", () => {
   });
 
   it("hides the banner when consent was already accepted", () => {
-    localStorage.setItem("hittayta_cookie_consent", "accepted");
+    localStorage.setItem("offmarket_cookie_consent", "accepted");
     render(<CookieConsent />);
     expect(screen.queryByText(/Vi använder cookies/)).not.toBeInTheDocument();
   });
@@ -29,14 +29,14 @@ describe("CookieConsent", () => {
   it("stores consent and hides when accepting", () => {
     render(<CookieConsent />);
     fireEvent.click(screen.getByText("Acceptera alla"));
-    expect(localStorage.getItem("hittayta_cookie_consent")).toBe("accepted");
+    expect(localStorage.getItem("offmarket_cookie_consent")).toBe("accepted");
     expect(screen.queryByText(/Vi använder cookies/)).not.toBeInTheDocument();
   });
 
   it("stores declined and hides when declining", () => {
     render(<CookieConsent />);
     fireEvent.click(screen.getByText("Endast nödvändiga"));
-    expect(localStorage.getItem("hittayta_cookie_consent")).toBe("declined");
+    expect(localStorage.getItem("offmarket_cookie_consent")).toBe("declined");
     expect(screen.queryByText(/Vi använder cookies/)).not.toBeInTheDocument();
   });
 });

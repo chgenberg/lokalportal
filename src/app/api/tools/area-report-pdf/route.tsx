@@ -119,7 +119,7 @@ function AreaReportPdf({ data }: { data: ReportBody }) {
 
         {/* Footer */}
         <View style={{ position: "absolute", bottom: 20, left: 32, right: 32, flexDirection: "row", justifyContent: "space-between" }}>
-          <Text style={{ fontSize: 7, color: C.textLight }}>HittaYta.se – Områdesrapport</Text>
+          <Text style={{ fontSize: 7, color: C.textLight }}>Offmarket.nu – Områdesrapport</Text>
           <Text style={{ fontSize: 7, color: C.textLight }}>Sida 1</Text>
         </View>
       </Page>
@@ -149,7 +149,7 @@ function AreaReportPdf({ data }: { data: ReportBody }) {
             <Text style={{ fontSize: 13, fontFamily: "Helvetica-Bold", color: C.navy, marginBottom: 12 }}>Marknad &amp; Priser</Text>
             {priceContext.rent && (
               <View style={{ backgroundColor: C.muted, borderRadius: 8, padding: 16, marginBottom: 8 }}>
-                <Text style={{ fontSize: 10, fontFamily: "Helvetica-Bold", color: C.navy, marginBottom: 6 }}>Hyresmarknaden (kontor)</Text>
+                <Text style={{ fontSize: 10, fontFamily: "Helvetica-Bold", color: C.navy, marginBottom: 6 }}>Hyresmarknaden (bostäder)</Text>
                 <View style={{ flexDirection: "row", gap: 16 }}>
                   <View>
                     <Text style={{ fontSize: 8, color: C.textLight }}>Median</Text>
@@ -168,7 +168,7 @@ function AreaReportPdf({ data }: { data: ReportBody }) {
             )}
             {priceContext.sale && (
               <View style={{ backgroundColor: C.muted, borderRadius: 8, padding: 16 }}>
-                <Text style={{ fontSize: 10, fontFamily: "Helvetica-Bold", color: C.navy, marginBottom: 6 }}>Köpmarknaden (kontor)</Text>
+                <Text style={{ fontSize: 10, fontFamily: "Helvetica-Bold", color: C.navy, marginBottom: 6 }}>Köpmarknaden (bostäder)</Text>
                 <View style={{ flexDirection: "row", gap: 16 }}>
                   <View>
                     <Text style={{ fontSize: 8, color: C.textLight }}>Median</Text>
@@ -191,13 +191,13 @@ function AreaReportPdf({ data }: { data: ReportBody }) {
         {/* Disclaimer */}
         <View style={{ backgroundColor: C.muted, borderRadius: 8, padding: 16, marginTop: "auto" }}>
           <Text style={{ fontSize: 8, color: C.textLight, lineHeight: 1.6 }}>
-            Denna rapport är genererad automatiskt baserat på offentliga datakällor (SCB, BRÅ, OpenStreetMap, Wikipedia) och tillgängliga annonser på HittaYta.se. Informationen är avsedd som vägledning och utgör inte professionell rådgivning. Kontakta en fastighetsmäklare för specifik rådgivning.
+            Denna rapport är genererad automatiskt baserat på offentliga datakällor (SCB, BRÅ, OpenStreetMap, Wikipedia) och tillgängliga annonser på Offmarket.nu. Informationen är avsedd som vägledning och utgör inte professionell rådgivning. Kontakta en fastighetsmäklare för specifik rådgivning.
           </Text>
         </View>
 
         {/* Footer */}
         <View style={{ position: "absolute", bottom: 20, left: 32, right: 32, flexDirection: "row", justifyContent: "space-between" }}>
-          <Text style={{ fontSize: 7, color: C.textLight }}>HittaYta.se – Områdesrapport</Text>
+          <Text style={{ fontSize: 7, color: C.textLight }}>Offmarket.nu – Områdesrapport</Text>
           <Text style={{ fontSize: 7, color: C.textLight }}>Sida 2</Text>
         </View>
       </Page>

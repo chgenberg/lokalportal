@@ -6,28 +6,18 @@ import Image from "next/image";
 import ScrollReveal from "./ScrollReveal";
 
 const UNSPLASH_BY_CATEGORY: Record<string, string> = {
-  butik: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&q=80",
-  kontor: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&q=80",
-  lager: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=600&q=80",
-  restaurang: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&q=80",
-  verkstad: "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=600&q=80",
-  showroom: "https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=600&q=80",
-  popup: "https://images.unsplash.com/photo-1528698827591-e19cef791f48?w=600&q=80",
-  atelje: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=600&q=80",
-  gym: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&q=80",
+  villa: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=600&q=80",
+  lagenhet: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=600&q=80",
+  fritidshus: "https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=600&q=80",
+  tomt: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=600&q=80",
   ovrigt: "https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=600&q=80",
 };
 
 const categoryConfig = [
-  { key: "butik", label: "Butik" },
-  { key: "kontor", label: "Kontor" },
-  { key: "lager", label: "Lager" },
-  { key: "restaurang", label: "Restaurang/Café" },
-  { key: "verkstad", label: "Verkstad/Industri" },
-  { key: "showroom", label: "Showroom" },
-  { key: "popup", label: "Pop-up" },
-  { key: "atelje", label: "Ateljé/Studio" },
-  { key: "gym", label: "Gym/Träningslokal" },
+  { key: "villa", label: "Villa" },
+  { key: "lagenhet", label: "Lägenhet" },
+  { key: "fritidshus", label: "Fritidshus" },
+  { key: "tomt", label: "Tomt" },
   { key: "ovrigt", label: "Övrigt" },
 ];
 
@@ -80,7 +70,7 @@ export default function CategoriesSection() {
         <ScrollReveal>
           <div className="mb-8 sm:mb-12">
             <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-gray-400 mb-2">Kategorier</p>
-            <h2 className="text-2xl sm:text-3xl font-bold text-navy tracking-tight">Utforska lokaler</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold text-navy tracking-tight">Utforska bostäder</h2>
           </div>
         </ScrollReveal>
 

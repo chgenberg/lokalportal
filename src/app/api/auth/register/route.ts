@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     if (!email || !password || !name || !role) {
       return NextResponse.json({ error: "Alla fält måste fyllas i" }, { status: 400 });
     }
-    if (!["landlord", "tenant", "agent"].includes(role)) {
+    if (!["buyer", "seller", "admin", "partner"].includes(role)) {
       return NextResponse.json({ error: "Ogiltig roll" }, { status: 400 });
     }
 
@@ -65,6 +65,9 @@ export async function POST(request: NextRequest) {
         passwordHash,
         name: nameStr,
         role,
+        isBuyer: role === "buyer",
+        isSeller: role === "seller",
+        isAdmin: role === "admin",
         phone: phoneStr || null,
       },
     });

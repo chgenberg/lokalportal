@@ -9,7 +9,7 @@ export async function DELETE(
 ) {
   const session = await getServerSession(authOptions);
   if (!session?.user) return NextResponse.json({ error: "Ej inloggad" }, { status: 401 });
-  if (session.user.role !== "agent") return NextResponse.json({ error: "Endast för mäklare" }, { status: 403 });
+  if (session.user.role !== "partner" && !session.user.isAdmin) return NextResponse.json({ error: "Ej behörig" }, { status: 403 });
 
   const { clientId } = await params;
   if (!clientId) return NextResponse.json({ error: "Klient-id saknas" }, { status: 400 });

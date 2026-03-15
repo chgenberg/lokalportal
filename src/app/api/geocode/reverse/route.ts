@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkRateLimit, getClientKey } from "@/lib/rateLimit";
 
-const NOMINATIM_USER_AGENT = "HittaYta.se/1.0 (commercial; reverse geocode)";
+const NOMINATIM_USER_AGENT = "Offmarket.nu/1.0 (residential; reverse geocode)";
 
 export async function GET(request: NextRequest) {
   const key = `geocode-reverse:${getClientKey(request)}`;

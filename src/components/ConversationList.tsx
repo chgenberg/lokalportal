@@ -62,7 +62,7 @@ export default function ConversationList({
         </div>
         <p className="text-sm font-medium text-navy">Inga konversationer</p>
         <p className="text-xs text-gray-400 mt-1 text-center">
-          Kontakta en hyresvärd från en annons för att starta en konversation
+          Kontakta en säljare från en annons för att starta en konversation
         </p>
       </div>
     );

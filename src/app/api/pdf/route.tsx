@@ -20,7 +20,7 @@ interface AreaContextData {
 }
 interface PdfBody {
   title: string; description: string; address: string; city: string;
-  type: "sale" | "rent"; category: string; price: number; size: number;
+  type: "sale"; category: string; price: number; size: number;
   tags: string[]; imageUrls: string[];
   floorPlanImageUrl?: string | null;
   floorPlanDescription?: string | null;
@@ -30,11 +30,10 @@ interface PdfBody {
   areaContext?: AreaContextData | null;
 }
 
-const TYPE_LABELS: Record<string, string> = { sale: "Säljes", rent: "Uthyres" };
+const TYPE_LABELS: Record<string, string> = { sale: "Säljes" };
 const CAT_LABELS: Record<string, string> = {
-  butik: "Butik", kontor: "Kontor", lager: "Lager", restaurang: "Restaurang",
-  verkstad: "Verkstad", showroom: "Showroom", popup: "Pop-up", atelje: "Ateljé",
-  gym: "Gym/Studio", ovrigt: "Övrigt",
+  villa: "Villa", lägenhet: "Lägenhet", fritidshus: "Fritidshus", tomt: "Tomt",
+  radhus: "Radhus", ovrigt: "Övrigt",
 };
 
 function fmtNum(n: number) { return n.toLocaleString("sv-SE"); }
@@ -91,8 +90,8 @@ async function resolveImageToBase64(url: string, origin: string): Promise<string
 interface DescSection { heading: string; body: string }
 
 const SECTION_HEADINGS = [
-  "Om lokalen",
-  "Lokalen i detalj",
+  "Om bostaden",
+  "Bostaden i detalj",
   "Planlösning",
   "Läge & kommunikationer",
   "Område & omgivning",
@@ -160,8 +159,8 @@ function Header({ logoSrc }: { logoSrc: string }) {
   return (
     <View>
       <View style={{ backgroundColor: C.navy, paddingHorizontal: 36, paddingVertical: 14, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-        {logoSrc ? <Image src={logoSrc} style={{ height: 22 }} /> : <Text style={{ color: C.gold, fontSize: 13, fontWeight: "bold" }}>HittaYta.se</Text>}
-        <Text style={{ color: C.gold, fontSize: 7, fontWeight: "bold", letterSpacing: 1.5 }}>KOMMERSIELLA LOKALER I SVERIGE</Text>
+        {logoSrc ? <Image src={logoSrc} style={{ height: 22 }} /> : <Text style={{ color: C.gold, fontSize: 13, fontWeight: "bold" }}>Offmarket.nu</Text>}
+        <Text style={{ color: C.gold, fontSize: 7, fontWeight: "bold", letterSpacing: 1.5 }}>BOSTÄDER I SVERIGE</Text>
       </View>
       <GoldDivider />
     </View>
@@ -171,8 +170,8 @@ function Header({ logoSrc }: { logoSrc: string }) {
 function Footer() {
   return (
     <View style={{ backgroundColor: C.navy, paddingHorizontal: 36, paddingVertical: 10, flexDirection: "row", justifyContent: "space-between", marginTop: "auto" }}>
-      <Text style={{ fontSize: 6, color: "rgba(255,255,255,0.35)" }}>Genererad via HittaYta.se · {new Date().toLocaleDateString("sv-SE")}</Text>
-      <Text style={{ fontSize: 6, color: C.gold, fontWeight: "bold" }}>hittayta.se</Text>
+      <Text style={{ fontSize: 6, color: "rgba(255,255,255,0.35)" }}>Genererad via Offmarket.nu · {new Date().toLocaleDateString("sv-SE")}</Text>
+      <Text style={{ fontSize: 6, color: C.gold, fontWeight: "bold" }}>offmarket.nu</Text>
     </View>
   );
 }
@@ -218,7 +217,7 @@ function ListingPdf({ data, logoSrc, imageDataUris, floorPlanDataUri }: { data: 
           {[
             { label: "PRIS", value: priceDisplay },
             { label: "STORLEK", value: `${data.size} m²` },
-            ...(pricePerSqm > 0 ? [{ label: `KR/M²${data.type === "rent" ? " /MÅN" : ""}`, value: `${fmtNum(pricePerSqm)} kr` }] : []),
+            ...(pricePerSqm > 0 ? [{ label: "KR/M²", value: `${fmtNum(pricePerSqm)} kr` }] : []),
             { label: "PLATS", value: data.city },
           ].map((f, i) => (
             <View key={i} style={{ flex: 1, paddingVertical: 10, paddingHorizontal: 10, alignItems: "center", borderRight: i < 3 ? `1px solid ${C.border}` : undefined }}>
@@ -314,9 +313,9 @@ function ListingPdf({ data, logoSrc, imageDataUris, floorPlanDataUri }: { data: 
             <View style={{ marginHorizontal: 36, marginTop: 10 }}>
               <SectionHeading>Prisjämförelse</SectionHeading>
               <View style={{ backgroundColor: C.muted, borderRadius: 6, padding: 14, border: `1px solid ${C.border}` }}>
-                <Text style={{ fontSize: 7, color: C.textMuted, marginBottom: 10 }}>Kr/m²{data.type === "rent" ? " per månad" : ""} – baserat på {pc.count} liknande lokaler i området</Text>
+                <Text style={{ fontSize: 7, color: C.textMuted, marginBottom: 10 }}>Kr/m² – baserat på {pc.count} liknande bostäder i området</Text>
                 {[
-                  { label: "Denna lokal", value: pricePerSqm, color: C.gold },
+                  { label: "Denna bostad", value: pricePerSqm, color: C.gold },
                   { label: "Medianpris", value: Math.round(pc.medianPrice), color: C.navy },
                   { label: "Lägsta", value: Math.round(pc.minPrice), color: "#94a3b8" },
                   { label: "Högsta", value: Math.round(pc.maxPrice), color: "#94a3b8" },

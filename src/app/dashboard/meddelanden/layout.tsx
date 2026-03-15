@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Meddelanden – Hittayta.se",
+  title: "Meddelanden – Offmarket.nu",
   description:
-    "Visa och hantera dina meddelanden på Hittayta.se. Kontakta hyresvärdar och hyresgäster direkt.",
+    "Visa och hantera dina meddelanden på Offmarket.nu. Kontakta säljare och köpare direkt.",
 };
 
 export default function MeddelandenLayout({

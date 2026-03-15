@@ -25,13 +25,13 @@ export default function CTASection() {
               <div className="absolute inset-0 bg-gradient-to-t from-navy/80 via-navy/30 to-transparent" />
               <div className="absolute inset-0 flex flex-col justify-end p-5 sm:p-8">
                 <h2 className="text-lg sm:text-2xl font-bold text-white mb-1.5 sm:mb-2 tracking-tight">
-                  Hitta rätt lokal snabbare
+                  Hitta rätt bostad innan den når marknaden
                 </h2>
                 <p className="text-xs sm:text-sm text-white/80 mb-4 sm:mb-6 max-w-sm">
-                  Sök bland butiker, kontor, lager och unika ytor. Verifierade annonsörer.
+                  Sök bland villor, lägenheter, fritidshus och tomter till salu. Verifierade säljare.
                 </p>
                 <span className="inline-flex items-center gap-2 w-fit px-4 sm:px-5 py-2 sm:py-2.5 bg-white text-navy text-xs sm:text-sm font-semibold rounded-full transition-all group-hover:bg-white/95">
-                  Sök lokaler
+                  Sök bostäder
                 </span>
               </div>
             </Link>

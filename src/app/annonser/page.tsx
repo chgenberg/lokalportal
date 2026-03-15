@@ -166,7 +166,7 @@ function AnnonserContent() {
       {/* Heading + search */}
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-10 pb-4 sm:pb-6">
         <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-navy tracking-tight mb-4 sm:mb-6">
-          Hitta lokal att hyra
+          Hitta bostad att köpa
         </h1>
 
         {/* Search bar + Filter button */}
@@ -182,7 +182,7 @@ function AnnonserContent() {
               value={filterState.searchInput}
               onChange={(e) => updateFilters({ searchInput: e.target.value })}
               className="w-full pl-10 sm:pl-11 pr-4 py-3 sm:py-3 bg-white rounded-full text-sm border border-gray-200 focus:border-navy/30 focus:ring-2 focus:ring-navy/5 outline-none transition-all"
-              aria-label="Sök lokaler"
+              aria-label="Sök bostäder"
             />
           </div>
           <button
@@ -246,8 +246,8 @@ function AnnonserContent() {
         <div className="flex items-center justify-between border-b border-gray-100 pb-3 sm:pb-4">
           <p className="text-xs sm:text-sm text-gray-500">
             {loading ? "Laddar..." : total > 0 ? (
-              <><span className="font-semibold text-navy">{total.toLocaleString("sv-SE")}</span> lokaler</>
-            ) : "Inga lokaler hittades"}
+              <><span className="font-semibold text-navy">{total.toLocaleString("sv-SE")}</span> bostäder</>
+            ) : "Inga bostäder hittades"}
           </p>
           <div className="flex items-center gap-2 sm:gap-3">
             <button
@@ -310,7 +310,7 @@ function AnnonserContent() {
                 <div className="w-12 h-12 sm:w-14 sm:h-14 mx-auto mb-4 sm:mb-5 rounded-2xl bg-gray-50 flex items-center justify-center">
                   <span className="text-base sm:text-lg font-bold text-gray-300">0</span>
                 </div>
-                <h3 className="text-base sm:text-lg font-semibold text-navy mb-2">Inga lokaler hittades</h3>
+                <h3 className="text-base sm:text-lg font-semibold text-navy mb-2">Inga bostäder hittades</h3>
                 <p className="text-sm text-gray-400 mb-5 sm:mb-6">Prova att ändra dina sökfilter</p>
                 <button onClick={clearFilters} className="px-6 py-2.5 bg-navy text-white text-sm font-medium rounded-full transition-all hover:shadow-md">Rensa filter</button>
               </div>
@@ -412,7 +412,7 @@ function AnnonserContent() {
               Lista
             </button>
             <span className="px-3 py-1.5 bg-white text-xs font-medium text-gray-500 rounded-full shadow-lg border border-gray-100">
-              {total} lokaler
+              {total} bostäder
             </span>
           </div>
           <div className="h-full">

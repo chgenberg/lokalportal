@@ -6,7 +6,7 @@ import prisma from "@/lib/db";
 export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session?.user) return NextResponse.json({ error: "Ej inloggad" }, { status: 401 });
-  if (session.user.role !== "landlord" && session.user.role !== "agent") return NextResponse.json({ error: "Endast för hyresvärdar och mäklare" }, { status: 403 });
+  if (session.user.role !== "seller" && session.user.role !== "admin") return NextResponse.json({ error: "Endast för säljare" }, { status: 403 });
 
   const userId = session.user.id;
 
@@ -31,7 +31,7 @@ export async function GET() {
       });
     }
 
-    const [conversationsByListing, favoritesByListing, conversationsWithLandlordReply, allConversations] = await Promise.all([
+    const [conversationsByListing, favoritesByListing, conversationsWithSellerReply, allConversations] = await Promise.all([
       prisma.conversation.groupBy({
         by: ["listingId"],
         where: { listingId: { in: listingIds } },
@@ -44,7 +44,7 @@ export async function GET() {
         _count: { id: true },
       }),
       prisma.conversation.findMany({
-        where: { landlordId: userId, listingId: { in: listingIds } },
+        where: { sellerId: userId, listingId: { in: listingIds } },
         select: { id: true },
       }),
       prisma.conversation.findMany({
@@ -56,7 +56,7 @@ export async function GET() {
 
     const convMap = new Map(conversationsByListing.map((c) => [c.listingId, { count: c._count.id, lastAt: c._max.createdAt }]));
     const favMap = new Map(favoritesByListing.map((f) => [f.listingId, f._count.id]));
-    const landlordRepliedIds = new Set(conversationsWithLandlordReply.map((c) => c.id));
+    const sellerRepliedIds = new Set(conversationsWithSellerReply.map((c) => c.id));
 
     const perListing = myListings.map((listing) => {
       const conv = convMap.get(listing.id);
@@ -73,7 +73,7 @@ export async function GET() {
     const totalInquiries = conversationsByListing.reduce((s, c) => s + c._count.id, 0);
     const totalFavorites = favoritesByListing.reduce((s, f) => s + f._count.id, 0);
     const totalConversations = allConversations.length;
-    const repliedCount = allConversations.filter((c) => landlordRepliedIds.has(c.id)).length;
+    const repliedCount = allConversations.filter((c) => sellerRepliedIds.has(c.id)).length;
     const responseRate = totalConversations > 0 ? Math.round((repliedCount / totalConversations) * 100) : 0;
 
     const inquiryCountByListing = new Map(conversationsByListing.map((c) => [c.listingId, c._count.id]));

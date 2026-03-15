@@ -55,8 +55,26 @@ export async function POST(req: NextRequest) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
         const listingId = session.metadata?.listingId;
+        const userId = session.metadata?.userId;
+        const checkoutType = session.metadata?.type;
         const subscriptionId = session.subscription as string;
 
+        // Handle premium user subscription
+        if (checkoutType === "premium" && userId && subscriptionId) {
+          const sub = await stripe.subscriptions.retrieve(subscriptionId);
+          const periodEnd = getPeriodEnd(sub);
+          await prisma.user.update({
+            where: { id: userId },
+            data: {
+              subscriptionTier: "premium",
+              subscriptionStripeId: subscriptionId,
+              ...(periodEnd && { subscriptionExpiresAt: periodEnd }),
+            },
+          });
+          break;
+        }
+
+        // Handle listing subscription
         if (listingId && subscriptionId) {
           const sub = await stripe.subscriptions.retrieve(subscriptionId);
           const periodEnd = getPeriodEnd(sub);

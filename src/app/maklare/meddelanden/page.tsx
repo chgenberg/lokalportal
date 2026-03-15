@@ -9,8 +9,8 @@ import ChatWindow from "@/components/ChatWindow";
 interface ConversationItem {
   id: string;
   listingId: string;
-  landlordId: string;
-  tenantId: string;
+  sellerId: string;
+  buyerId: string;
   listingTitle: string;
   otherUserName: string;
   otherUserRole: string;

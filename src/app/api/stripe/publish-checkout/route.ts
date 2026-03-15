@@ -40,8 +40,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Namn krävs" }, { status: 400 });
     }
 
-    const VALID_TYPES = ["sale", "rent"];
-    const VALID_CATEGORIES = ["butik", "kontor", "lager", "restaurang", "verkstad", "showroom", "popup", "atelje", "gym", "ovrigt"];
+    const VALID_TYPES = ["sale"];
+    const VALID_CATEGORIES = ["villa", "lagenhet", "fritidshus", "tomt"];
     if (!listingData.title || !listingData.address || !listingData.city) {
       return NextResponse.json({ error: "Titel, adress och stad krävs för annonsen" }, { status: 400 });
     }
@@ -89,7 +89,8 @@ export async function POST(req: NextRequest) {
             name,
             phone: phone || null,
             passwordHash,
-            role: "landlord",
+            role: "seller",
+            isSeller: true,
           },
         });
         userId = newUser.id;
@@ -121,8 +122,8 @@ export async function POST(req: NextRequest) {
         description: String(listingData.description || "").trim().slice(0, 5000),
         city: String(listingData.city).trim().slice(0, 100),
         address: String(listingData.address).trim().slice(0, 300),
-        type: VALID_TYPES.includes(listingData.type) ? listingData.type : "rent",
-        category: VALID_CATEGORIES.includes(listingData.category) ? listingData.category : "ovrigt",
+        type: VALID_TYPES.includes(listingData.type) ? listingData.type : "sale",
+        category: VALID_CATEGORIES.includes(listingData.category) ? listingData.category : "lagenhet",
         price: Math.floor(price),
         size: Math.floor(size),
         tags: Array.isArray(listingData.tags) ? listingData.tags.slice(0, 20).filter((t: unknown) => typeof t === "string").map((t: string) => t.trim().slice(0, 50)) : [],
@@ -160,7 +161,7 @@ export async function POST(req: NextRequest) {
             recurring: { interval: "month" },
             product_data: {
               name: `Annons: ${newListing.title.slice(0, 60)}`,
-              description: "Månadsprenumeration för annons på HittaYta.se",
+              description: "Månadsprenumeration för annons på Offmarket.nu",
             },
           },
           quantity: 1,

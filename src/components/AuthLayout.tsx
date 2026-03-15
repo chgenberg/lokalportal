@@ -27,7 +27,7 @@ export default function AuthLayout({ children, title, subtitle }: AuthLayoutProp
         <div className="absolute inset-0 bg-navy/50" />
         <div className="relative z-10 flex flex-col justify-end p-10 xl:p-14">
           <p className="text-white/80 text-[17px] leading-relaxed max-w-md mb-6 italic">
-            &ldquo;HittaYta hjälpte oss hitta kontor på rekordtid. Agenten skrev annonserna åt oss – sparade flera timmar.&rdquo;
+            &ldquo;Offmarket hjälpte oss sälja bostaden snabbt och diskret. Agenten skrev annonserna åt oss – sparade flera timmar.&rdquo;
           </p>
           <p className="text-white/60 text-[13px] font-medium">Maria K., Fastighetsförvaltare</p>
         </div>
@@ -37,7 +37,7 @@ export default function AuthLayout({ children, title, subtitle }: AuthLayoutProp
       <div className="flex-1 flex items-center justify-center px-4 py-12 lg:py-16 bg-white">
         <div className="w-full max-w-sm animate-fade-in">
           <Link href="/" className="inline-block mb-10">
-            <Image src="/HYlogo.png" alt="HittaYta" width={140} height={40} className="h-10 w-auto" priority />
+            <Image src="/HYlogo.png" alt="Offmarket" width={140} height={40} className="h-10 w-auto" priority />
           </Link>
           <h1 className="text-xl font-bold text-navy mb-1.5 tracking-tight">{title}</h1>
           {subtitle && <p className="text-[13px] text-gray-400 mb-6">{subtitle}</p>}

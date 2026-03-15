@@ -16,8 +16,8 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const VALID_TYPES = ["sale", "rent"] as const;
-  const VALID_CATEGORIES = ["butik", "kontor", "lager", "restaurang", "verkstad", "showroom", "popup", "atelje", "gym", "ovrigt"] as const;
+  const VALID_TYPES = ["sale"] as const;
+  const VALID_CATEGORIES = ["villa", "lagenhet", "fritidshus", "tomt"] as const;
   const MAX_TITLE = 200;
   const MAX_DESC = 5000;
   const MAX_CITY = 100;
@@ -27,14 +27,14 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { title, description, city, address, type, category, price, size, tags, imageUrl, imageUrls, videoUrl, floorPlanImageUrl, floorPlanDescription, nearby, priceContext, demographics, areaContext, lat, lng, clientId } = body;
+    const { title, description, city, address, type, category, price, size, tags, imageUrl, imageUrls, videoUrl, floorPlanImageUrl, floorPlanDescription, nearby, priceContext, demographics, areaContext, lat, lng, clientId, propertyType, rooms, lotSize, condition, energyClass, yearBuilt, monthlyFee, acceptancePrice, privacyLevel, status: listingStatus } = body;
 
     if (!title || !description || !city || !address || !type || !category || price == null || price === "" || size == null || size === "") {
       return NextResponse.json({ error: "Alla obligatoriska fält måste fyllas i" }, { status: 400 });
     }
 
     if (!VALID_TYPES.includes(type)) {
-      return NextResponse.json({ error: "Ogiltig typ. Använd sale eller rent." }, { status: 400 });
+      return NextResponse.json({ error: "Ogiltig typ." }, { status: 400 });
     }
     // category can be comma-separated (multi-select)
     const categoryParts = String(category).split(",").map((c: string) => c.trim()).filter(Boolean);
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
     // If agent creates on behalf of a client, verify the relationship
     let effectiveOwnerId = session.user.id;
     let agentId: string | undefined;
-    if (clientId && typeof clientId === "string" && session.user.role === "agent") {
+    if (clientId && typeof clientId === "string" && session.user.role === "partner") {
       const link = await prisma.agentClient.findUnique({
         where: { agentId_clientId: { agentId: session.user.id, clientId } },
       });
@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
       }
       effectiveOwnerId = clientId;
       agentId = session.user.id;
-    } else if (session.user.role === "agent") {
+    } else if (session.user.role === "partner") {
       agentId = session.user.id;
     }
 
@@ -91,16 +91,28 @@ export async function POST(request: NextRequest) {
         ? { nearby: nearby ?? undefined, priceContext: priceContext ?? undefined, demographics: demographics ?? undefined, areaContext: areaContext ?? undefined }
         : undefined;
 
+    const resolvedPropertyType = typeof propertyType === "string" && ["villa", "lagenhet", "fritidshus", "tomt"].includes(propertyType) ? propertyType : category;
+
     const listing = await prisma.listing.create({
       data: {
         title: String(title).trim().slice(0, MAX_TITLE),
         description: String(description).trim().slice(0, MAX_DESC),
         city: String(city).trim().slice(0, MAX_CITY),
         address: String(address).trim().slice(0, MAX_ADDRESS),
-        type,
+        type: type || "sale",
         category,
+        propertyType: resolvedPropertyType,
         price: Math.floor(priceNum),
         size: Math.floor(sizeNum),
+        rooms: typeof rooms === "number" && rooms > 0 ? rooms : null,
+        lotSize: typeof lotSize === "number" && lotSize > 0 ? lotSize : null,
+        condition: typeof condition === "string" ? condition : null,
+        energyClass: typeof energyClass === "string" ? energyClass : null,
+        yearBuilt: typeof yearBuilt === "number" && yearBuilt > 1800 ? yearBuilt : null,
+        monthlyFee: typeof monthlyFee === "number" && monthlyFee >= 0 ? monthlyFee : null,
+        acceptancePrice: typeof acceptancePrice === "number" && acceptancePrice > 0 ? acceptancePrice : null,
+        status: typeof listingStatus === "string" && ["draft", "active", "paused"].includes(listingStatus) ? listingStatus : "active",
+        privacyLevel: privacyLevel && typeof privacyLevel === "object" ? privacyLevel : null,
         imageUrl: imageUrlStr || "",
         imageUrls: urls,
         videoUrl: videoUrlStr,
@@ -116,6 +128,20 @@ export async function POST(request: NextRequest) {
         ...(hasValidCoords && { lat: latNum, lng: lngNum }),
       },
     });
+
+    // Mark user as seller if not already
+    if (!session.user.isSeller) {
+      await prisma.user.update({
+        where: { id: effectiveOwnerId },
+        data: { isSeller: true },
+      }).catch(() => {});
+    }
+
+    // Trigger matching for new listing
+    try {
+      const { runMatching } = await import("@/app/api/matching/route");
+      await runMatching(listing.id);
+    } catch { /* matching is best-effort */ }
 
     return NextResponse.json({
       ...listing,

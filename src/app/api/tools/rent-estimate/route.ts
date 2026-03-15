@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
 
     const comparables = await prisma.listing.findMany({
       where: {
-        type: "rent",
+        type: "sale",
         category: { contains: category },
         city: { equals: city, mode: "insensitive" },
         size: { gte: sizeMin, lte: sizeMax },
@@ -97,7 +97,7 @@ export async function POST(req: NextRequest) {
 
     const [areaData, priceContext] = await Promise.all([
       lat && lng ? fetchAreaData(city, lat, lng, address.trim()) : Promise.resolve(null),
-      fetchAreaPriceContext(city, category, "rent"),
+      fetchAreaPriceContext(city, category, "sale"),
     ]);
 
     let aiSummary = "";
@@ -105,24 +105,23 @@ export async function POST(req: NextRequest) {
       try {
         const openai = new OpenAI({ apiKey, timeout: 15_000 });
         const catLabels: Record<string, string> = {
-          butik: "butik", kontor: "kontor", lager: "lager", restaurang: "restaurang",
-          verkstad: "verkstad", showroom: "showroom", popup: "pop-up", atelje: "ateljé",
-          gym: "gym", ovrigt: "lokal",
+          villa: "villa", lägenhet: "lägenhet", fritidshus: "fritidshus", tomt: "tomt",
+          radhus: "radhus", ovrigt: "bostad",
         };
         const catLabel = catLabels[category] ?? category;
 
         const prompt = [
-          `Ge en kort sammanfattning (3-4 meningar) av hyresläget för en ${catLabel} på ${sizeNum} m² i ${city}.`,
-          estimatedPerSqm > 0 ? `Uppskattad hyra: ${estimatedRent.toLocaleString("sv-SE")} kr/mån (${estimatedPerSqm} kr/m²/mån).` : "Inga jämförbara objekt hittades.",
-          comparables.length > 0 ? `Baserat på ${comparables.length} liknande lokaler.` : "",
-          priceContext ? `Marknadens medianpris: ${priceContext.medianPrice.toLocaleString("sv-SE")} kr/mån.` : "",
+          `Ge en kort sammanfattning (3-4 meningar) av försäljningsläget för en ${catLabel} på ${sizeNum} m² i ${city}.`,
+          estimatedPerSqm > 0 ? `Uppskattat pris: ${estimatedRent.toLocaleString("sv-SE")} kr (${estimatedPerSqm} kr/m²).` : "Inga jämförbara objekt hittades.",
+          comparables.length > 0 ? `Baserat på ${comparables.length} liknande bostäder.` : "",
+          priceContext ? `Marknadens medianpris: ${priceContext.medianPrice.toLocaleString("sv-SE")} kr.` : "",
           areaData?.demographics ? `Befolkning: ${areaData.demographics.population.toLocaleString("sv-SE")}. Medianinkomst: ${areaData.demographics.medianIncome ?? "okänd"} tkr/år.` : "",
           "Skriv på svenska. Var konkret och hjälpsam. Nämn inte att du är en AI.",
         ].filter(Boolean).join(" ");
 
         const response = await openai.responses.create({
           model: "gpt-5-mini",
-          instructions: "Du är en expert på kommersiella hyresmarknaden i Sverige. Ge korta, konkreta sammanfattningar.",
+          instructions: "Du är en expert på bostadsmarknaden i Sverige. Ge korta, konkreta sammanfattningar.",
           input: prompt,
           max_output_tokens: 300,
         });
@@ -150,6 +149,6 @@ export async function POST(req: NextRequest) {
     });
   } catch (err) {
     console.error("[rent-estimate] Error:", err);
-    return NextResponse.json({ error: "Kunde inte beräkna hyresuppskattning" }, { status: 500 });
+    return NextResponse.json({ error: "Kunde inte beräkna prisuppskattning" }, { status: 500 });
   }
 }

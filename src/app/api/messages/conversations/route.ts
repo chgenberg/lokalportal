@@ -20,8 +20,8 @@ export async function GET(request: NextRequest) {
           senderId: { not: session.user.id },
           conversation: {
             OR: [
-              { landlordId: session.user.id },
-              { tenantId: session.user.id },
+              { sellerId: session.user.id },
+              { buyerId: session.user.id },
             ],
           },
         },
@@ -32,14 +32,14 @@ export async function GET(request: NextRequest) {
     const conversations = await prisma.conversation.findMany({
       where: {
         OR: [
-          { landlordId: session.user.id },
-          { tenantId: session.user.id },
+          { sellerId: session.user.id },
+          { buyerId: session.user.id },
         ],
       },
       include: {
         listing: { select: { title: true } },
-        landlord: { select: { name: true, role: true } },
-        tenant: { select: { name: true, role: true } },
+        seller: { select: { name: true, role: true } },
+        buyer: { select: { name: true, role: true } },
         messages: { orderBy: { createdAt: "desc" }, take: 1 },
       },
       orderBy: { lastMessageAt: "desc" },
@@ -61,14 +61,14 @@ export async function GET(request: NextRequest) {
     const unreadMap = Object.fromEntries(unreadCounts.map((u) => [u.conversationId, u._count.id]));
 
     const enriched = conversations.map((conv) => {
-      const isLandlord = session.user.id === conv.landlordId;
-      const otherUser = isLandlord ? conv.tenant : conv.landlord;
+      const isSeller = session.user.id === conv.sellerId;
+      const otherUser = isSeller ? conv.buyer : conv.seller;
       const lastMsg = conv.messages[0];
       return {
         id: conv.id,
         listingId: conv.listingId,
-        landlordId: conv.landlordId,
-        tenantId: conv.tenantId,
+        sellerId: conv.sellerId,
+        buyerId: conv.buyerId,
         createdAt: conv.createdAt.toISOString(),
         lastMessageAt: conv.lastMessageAt.toISOString(),
         listingTitle: conv.listing.title,
@@ -121,11 +121,14 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const listing = await prisma.listing.findUnique({ where: { id: listingId } });
+    const listing = await prisma.listing.findUnique({
+      where: { id: listingId },
+      select: { id: true, ownerId: true, acceptancePrice: true },
+    });
     if (!listing) return NextResponse.json({ error: "Annons hittades inte" }, { status: 404 });
 
     const existing = await prisma.conversation.findUnique({
-      where: { listingId_tenantId: { listingId, tenantId: session.user.id } },
+      where: { listingId_buyerId: { listingId, buyerId: session.user.id } },
     });
     if (existing) {
       return NextResponse.json({
@@ -137,7 +140,7 @@ export async function POST(request: NextRequest) {
 
     if (!listing.ownerId) {
       return NextResponse.json(
-        { error: "Denna annons har ingen hyresvärd kopplad. Kontakta support." },
+        { error: "Denna annons har ingen säljare kopplad. Kontakta support." },
         { status: 400 }
       );
     }
@@ -148,8 +151,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Budget gate: check if buyer has submitted a matching budget
+    if (listing.acceptancePrice && listing.acceptancePrice > 0) {
+      const budgetIntent = await prisma.budgetIntent.findUnique({
+        where: { userId_listingId: { userId: session.user.id, listingId } },
+      });
+      if (!budgetIntent || !budgetIntent.matched) {
+        return NextResponse.json(
+          { error: "Du måste ange en budget som matchar säljarens krav innan du kan kontakta säljaren.", requiresBudget: true },
+          { status: 403 }
+        );
+      }
+    }
+
     const conversation = await prisma.conversation.create({
-      data: { listingId, landlordId: listing.ownerId, tenantId: session.user.id },
+      data: { listingId, sellerId: listing.ownerId, buyerId: session.user.id, budgetMatched: true },
     });
 
     return NextResponse.json({

@@ -5,7 +5,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
 const PIN_ICON = L.icon({
-  iconUrl: "/hittaytapin.png",
+  iconUrl: "/offmarketpin.png",
   iconSize: [36, 44],
   iconAnchor: [18, 44],
 });

@@ -16,7 +16,7 @@ export async function GET() {
   try {
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { name: true, email: true, phone: true, role: true, logoUrl: true, companyName: true },
+      select: { name: true, email: true, phone: true, role: true, logoUrl: true, companyName: true, isBuyer: true, isSeller: true, isAdmin: true, bankIdVerified: true, subscriptionTier: true },
     });
     if (!user) return NextResponse.json({ error: "Användare hittades inte" }, { status: 404 });
     return NextResponse.json({
@@ -26,6 +26,11 @@ export async function GET() {
       role: user.role,
       logoUrl: user.logoUrl ?? "",
       companyName: user.companyName ?? "",
+      isBuyer: user.isBuyer,
+      isSeller: user.isSeller,
+      isAdmin: user.isAdmin,
+      bankIdVerified: user.bankIdVerified,
+      subscriptionTier: user.subscriptionTier,
     });
   } catch (err) {
     console.error("Profile GET error:", err);

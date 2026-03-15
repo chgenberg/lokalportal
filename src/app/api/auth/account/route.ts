@@ -16,7 +16,7 @@ export async function DELETE(_request: NextRequest) {
       await tx.event.deleteMany({ where: { userId } });
       await tx.message.deleteMany({ where: { senderId: userId } });
       await tx.conversation.deleteMany({
-        where: { OR: [{ landlordId: userId }, { tenantId: userId }] },
+        where: { OR: [{ sellerId: userId }, { buyerId: userId }] },
       });
       await tx.favorite.deleteMany({ where: { userId } });
       await tx.agentClient.deleteMany({
@@ -81,7 +81,7 @@ export async function GET() {
     });
 
     const conversations = await prisma.conversation.findMany({
-      where: { OR: [{ landlordId: userId }, { tenantId: userId }] },
+      where: { OR: [{ sellerId: userId }, { buyerId: userId }] },
       include: {
         messages: {
           select: {

@@ -9,14 +9,14 @@ import CTASection from "@/components/CTASection";
 
 const HERO_IMAGE = "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&q=80";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://hittayta.se";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://offmarket.nu";
 
 const websiteJsonLd = {
   "@context": "https://schema.org",
   "@type": "WebSite",
-  name: "HittaYta.se",
+  name: "Offmarket.nu",
   url: siteUrl,
-  description: "Sveriges ledande marknadsplats för kommersiella lokaler.",
+  description: "Sveriges marknadsplats för off-market bostäder till salu.",
   potentialAction: {
     "@type": "SearchAction",
     target: {
@@ -39,21 +39,21 @@ export default function Home() {
           <div className="grid md:grid-cols-2 gap-8 md:gap-10 lg:gap-16 items-center">
             <div className="order-2 md:order-1">
               <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-gray-400 mb-3">
-                Sveriges marknadsplats för kommersiella lokaler
+                Sveriges marknadsplats för off-market bostäder
               </p>
               <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-navy leading-[1.1] tracking-tight mb-3 sm:mb-4">
-                Hitta rätt lokal snabbare
+                Hitta rätt bostad innan den når marknaden
               </h1>
               <p className="text-sm sm:text-base text-gray-600 max-w-lg leading-relaxed mb-6 sm:mb-8">
-                Sök bland butiker, kontor, lager och unika ytor.
-                Verifierade annonsörer. Trygga affärer.
+                Sök bland villor, lägenheter, fritidshus och tomter till salu.
+                Verifierade säljare. Trygga affärer.
               </p>
               <HeroSearch />
             </div>
             <div className="order-1 md:order-2 relative aspect-[4/3] rounded-2xl sm:rounded-3xl overflow-hidden shadow-lg">
               <Image
                 src={HERO_IMAGE}
-                alt="Moderna kontorsytor och kommersiella lokaler"
+                alt="Bostäder och villor till salu"
                 fill
                 className="object-cover"
                 sizes="(max-width: 768px) 100vw, 50vw"

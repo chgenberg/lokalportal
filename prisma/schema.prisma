@@ -12,21 +12,35 @@ model User {
   email            String   @unique
   passwordHash     String
   name             String
-  role             String   @default("tenant") // "landlord" | "tenant" | "agent"
+  role             String   @default("buyer") // "buyer" | "seller" | "admin" | "partner"
+  isBuyer          Boolean  @default(false)
+  isSeller         Boolean  @default(false)
+  isAdmin          Boolean  @default(false)
   phone            String?
-  logoUrl          String?  // mäklare: logotyp i annonser
-  companyName      String?  // mäklare: mäklarbyrå/företagsnamn
-  stripeCustomerId String?  @unique // Stripe customer ID
+  logoUrl          String?
+  companyName      String?
+  stripeCustomerId String?  @unique
+  bankIdVerified        Boolean  @default(false)
+  bankIdPersonalNumber  String?
+  subscriptionTier      String   @default("free") // "free" | "premium"
+  subscriptionStripeId  String?  @unique
+  subscriptionExpiresAt DateTime?
   createdAt        DateTime @default(now())
 
   listings              Listing[]
   agentListings         Listing[]      @relation("AgentListings")
   favorites             Favorite[]
-  landlordConversations Conversation[] @relation("LandlordConversations")
-  tenantConversations   Conversation[] @relation("TenantConversations")
+  sellerConversations   Conversation[] @relation("SellerConversations")
+  buyerConversations    Conversation[] @relation("BuyerConversations")
   messages              Message[]
   agentClients          AgentClient[]  @relation("AgentClients")
   clientOfAgents        AgentClient[]  @relation("ClientOfAgent")
+  buyerProfiles         BuyerProfile[]
+  budgetIntents         BudgetIntent[]
+  matches               Match[]
+  viewingBookings       ViewingBooking[]
+  serviceOrders         ServiceOrder[]  @relation("UserServiceOrders")
+  notifications         Notification[]
 
   @@map("users")
 }
@@ -37,16 +51,29 @@ model Listing {
   description String
   city        String
   address     String
-  type        String   // "sale" | "rent"
-  category    String   // comma-separated: "butik","kontor","lager","restaurang","verkstad","showroom","popup","atelje","gym","ovrigt"
+  type        String   // "sale"
+  category    String   // "villa" | "lagenhet" | "fritidshus" | "tomt"
+  propertyType String  @default("lagenhet") // "villa" | "lagenhet" | "fritidshus" | "tomt"
   price       Int
   size        Int
+  rooms       Int?
+  lotSize     Int?
+  condition   String?  // "nyskick" | "renoverat" | "bra_skick" | "renoveringsbehov"
+  energyClass String?  // "A" | "B" | "C" | "D" | "E" | "F" | "G"
+  yearBuilt   Int?
+  monthlyFee  Int?
+  acceptancePrice Int? // Seller's minimum acceptable price (hidden from buyers)
+  status      String   @default("active") // "draft" | "active" | "paused" | "sold" | "removed"
+  ownershipVerified Boolean @default(false)
+
+  privacyLevel Json?  // { addressVisibility: "area"|"street"|"full", showFloorPlan: bool, maxPublicImages: int, documentsAfterContact: bool }
+
   imageUrl    String   @default("")
-  imageUrls   String[] @default([]) // Up to 10 images; when set, takes precedence over imageUrl
-  videoUrl    String?  // Optional video (MP4/WebM)
-  floorPlanImageUrl String? // Planritning
-  floorPlanDescription String? // AI-genererad beskrivning av planritningen
-  areaData    Json?    // { nearby?, priceContext?, demographics? } from APIs at creation
+  imageUrls   String[] @default([])
+  videoUrl    String?
+  floorPlanImageUrl String?
+  floorPlanDescription String?
+  areaData    Json?
   featured    Boolean  @default(false)
   viewCount   Int      @default(0)
   createdAt   DateTime @default(now())
@@ -58,7 +85,7 @@ model Listing {
   contactEmail String @default("")
   contactPhone String @default("")
 
-  // Stripe subscription
+  // Stripe subscription (for listing publication)
   stripeSubscriptionId String?  @unique
   stripeStatus         String   @default("free") // "free" | "active" | "past_due" | "canceled"
   stripePriceId        String?
@@ -70,18 +97,26 @@ model Listing {
   agentId String?
   agent   User?   @relation("AgentListings", fields: [agentId], references: [id], onDelete: SetNull)
 
-  conversations Conversation[]
-  favorites     Favorite[]
+  conversations   Conversation[]
+  favorites       Favorite[]
+  matches         Match[]
+  budgetIntents   BudgetIntent[]
+  viewingBookings ViewingBooking[]
+  serviceOrders   ServiceOrder[]
 
   @@index([city])
   @@index([type])
   @@index([category])
+  @@index([propertyType])
+  @@index([status])
   @@index([featured])
   @@index([ownerId])
   @@index([price])
   @@index([size])
+  @@index([rooms])
   @@index([createdAt])
   @@index([city, type])
+  @@index([city, propertyType])
   @@index([city, category])
   @@index([type, category])
   @@index([city, type, price])
@@ -95,18 +130,19 @@ model Conversation {
   id            String   @id @default(uuid())
   listingId     String
   listing       Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
-  landlordId    String
-  landlord      User     @relation("LandlordConversations", fields: [landlordId], references: [id], onDelete: Cascade)
-  tenantId      String
-  tenant        User     @relation("TenantConversations", fields: [tenantId], references: [id], onDelete: Cascade)
+  sellerId      String
+  seller        User     @relation("SellerConversations", fields: [sellerId], references: [id], onDelete: Cascade)
+  buyerId       String
+  buyer         User     @relation("BuyerConversations", fields: [buyerId], references: [id], onDelete: Cascade)
+  budgetMatched Boolean  @default(false)
   createdAt     DateTime @default(now())
   lastMessageAt DateTime @default(now())
 
   messages Message[]
 
-  @@unique([listingId, tenantId])
-  @@index([landlordId])
-  @@index([tenantId])
+  @@unique([listingId, buyerId])
+  @@index([sellerId])
+  @@index([buyerId])
   @@index([lastMessageAt])
   @@map("conversations")
 }
@@ -160,7 +196,7 @@ model Lead {
 
 model Event {
   id        String   @id @default(uuid())
-  type      String   // "view" | "inquiry" | "favorite" | "unfavorite" | "publish" | "contact_click"
+  type      String   // "view" | "inquiry" | "favorite" | "unfavorite" | "publish" | "contact_click" | "match"
   listingId String?
   userId    String?
   metadata  Json?
@@ -185,4 +221,138 @@ model AgentClient {
   @@index([agentId])
   @@index([clientId])
   @@map("agent_clients")
+}
+
+model BuyerProfile {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String   @default("Min sökning")
+  active    Boolean  @default(true)
+
+  areas         String[] @default([]) // Cities/areas of interest
+  propertyTypes String[] @default([]) // "villa" | "lagenhet" | "fritidshus" | "tomt"
+  minPrice      Int?
+  maxPrice      Int?
+  minSize       Int?
+  maxSize       Int?
+  minRooms      Int?
+  maxRooms      Int?
+  minLotSize    Int?
+  maxLotSize    Int?
+  condition     String[] @default([]) // Acceptable conditions
+  features      String[] @default([]) // Special: "pool","sjotomt","garage","balkong", etc.
+
+  notifyEmail   Boolean  @default(true)
+  notifyPush    Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  matches Match[]
+
+  @@index([userId])
+  @@index([active])
+  @@map("buyer_profiles")
+}
+
+model BudgetIntent {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listingId String
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  budget    Int      // Buyer's maximum budget
+  matched   Boolean  @default(false) // True if budget >= acceptancePrice
+  createdAt DateTime @default(now())
+
+  @@unique([userId, listingId])
+  @@index([userId])
+  @@index([listingId])
+  @@index([matched])
+  @@map("budget_intents")
+}
+
+model Match {
+  id             String   @id @default(uuid())
+  buyerProfileId String
+  buyerProfile   BuyerProfile @relation(fields: [buyerProfileId], references: [id], onDelete: Cascade)
+  listingId      String
+  listing        Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  score          Float    @default(0) // Match quality 0-1
+  seen           Boolean  @default(false)
+  dismissed      Boolean  @default(false)
+  notified       Boolean  @default(false)
+  createdAt      DateTime @default(now())
+
+  @@unique([buyerProfileId, listingId])
+  @@index([userId])
+  @@index([listingId])
+  @@index([seen])
+  @@index([createdAt])
+  @@map("matches")
+}
+
+model ViewingBooking {
+  id        String   @id @default(uuid())
+  listingId String
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String   // "digital" | "physical"
+  status    String   @default("pending") // "pending" | "confirmed" | "completed" | "canceled"
+  scheduledAt DateTime
+  videoLink   String?
+  notes       String?
+  createdAt   DateTime @default(now())
+
+  @@index([listingId])
+  @@index([userId])
+  @@index([status])
+  @@index([scheduledAt])
+  @@map("viewing_bookings")
+}
+
+model ServiceOrder {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation("UserServiceOrders", fields: [userId], references: [id], onDelete: Cascade)
+  listingId String?
+  listing   Listing? @relation(fields: [listingId], references: [id], onDelete: SetNull)
+  type      String   // "photo" | "valuation" | "contract" | "inspection" | "energy_declaration" | "legal" | "moving"
+  status    String   @default("pending") // "pending" | "in_progress" | "completed" | "canceled"
+  price     Int?
+  notes     String?
+  metadata  Json?
+  stripePaymentId String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([listingId])
+  @@index([type])
+  @@index([status])
+  @@map("service_orders")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String   // "match" | "message" | "budget_match" | "viewing" | "status_update" | "system"
+  title     String
+  body      String
+  read      Boolean  @default(false)
+  link      String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([read])
+  @@index([type])
+  @@index([createdAt])
+  @@index([userId, read])
+  @@map("notifications")
 }

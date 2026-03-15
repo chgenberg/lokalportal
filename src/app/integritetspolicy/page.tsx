@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Integritetspolicy – Hittayta.se",
-  description: "Så hanterar Hittayta.se dina personuppgifter och cookies.",
+  title: "Integritetspolicy – Offmarket",
+  description: "Så hanterar Offmarket dina personuppgifter och cookies.",
 };
 
 export default function IntegritetspolicyPage() {
@@ -22,14 +22,14 @@ export default function IntegritetspolicyPage() {
           <section>
             <h2 className="text-xl font-semibold text-navy mb-3 tracking-tight">1. Introduktion</h2>
             <p className="text-[15px] text-gray-600 leading-relaxed">
-              Hittayta.se (&quot;vi&quot;, &quot;oss&quot;) värnar om din integritet. Denna policy beskriver vilka personuppgifter vi samlar in, hur vi använder dem och vilka rättigheter du har enligt GDPR (EU 2016/679).
+              Offmarket (&quot;vi&quot;, &quot;oss&quot;) värnar om din integritet. Denna policy beskriver vilka personuppgifter vi samlar in, hur vi använder dem och vilka rättigheter du har enligt GDPR (EU 2016/679).
             </p>
           </section>
 
           <section>
             <h2 className="text-xl font-semibold text-navy mb-3 tracking-tight">2. Personuppgiftsansvarig</h2>
             <p className="text-[15px] text-gray-600 leading-relaxed">
-              Hittayta.se är personuppgiftsansvarig för behandlingen av dina personuppgifter. Du kan kontakta oss via <a href="mailto:info@ledigyta.se" className="text-navy hover:underline">info@ledigyta.se</a>.
+              Offmarket är personuppgiftsansvarig för behandlingen av dina personuppgifter. Du kan kontakta oss via <a href="mailto:info@offmarket.se" className="text-navy hover:underline">info@offmarket.se</a>.
             </p>
           </section>
 
@@ -96,7 +96,7 @@ export default function IntegritetspolicyPage() {
           <section>
             <h2 className="text-xl font-semibold text-navy mb-3 tracking-tight">9. Kontakt</h2>
             <p className="text-[15px] text-gray-600 leading-relaxed">
-              För frågor om integritet och personuppgifter, kontakta oss på <a href="mailto:info@ledigyta.se" className="text-navy hover:underline">info@ledigyta.se</a> eller via vår <Link href="/kontakt" className="text-navy hover:underline">kontaktsida</Link>.
+              För frågor om integritet och personuppgifter, kontakta oss på <a href="mailto:info@offmarket.se" className="text-navy hover:underline">info@offmarket.se</a> eller via vår <Link href="/kontakt" className="text-navy hover:underline">kontaktsida</Link>.
             </p>
           </section>
         </div>

@@ -2,8 +2,8 @@ import ScrollReveal from "./ScrollReveal";
 
 const features = [
   {
-    title: "Verifierade annonsörer",
-    description: "Alla annonsörer verifieras med BankID för att säkerställa trygghet och kvalitet.",
+    title: "Verifierade säljare",
+    description: "Alla säljare verifieras med BankID för att säkerställa trygghet och kvalitet.",
     bgClass: "bg-[#FFF8ED]",
     icon: (
       <svg className="w-10 h-10 text-navy/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
@@ -11,7 +11,7 @@ const features = [
   },
   {
     title: "Snabb publicering",
-    description: "Lägg upp din annons på under 5 minuter. Nå tusentals potentiella hyresgäster direkt.",
+    description: "Lägg upp din annons på under 5 minuter. Nå tusentals potentiella köpare direkt.",
     bgClass: "bg-[#E8F4FD]",
     icon: (
       <svg className="w-10 h-10 text-navy/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>
@@ -34,7 +34,7 @@ export default function FeaturesSection() {
         <ScrollReveal>
           <div className="text-center mb-10 sm:mb-16">
             <h2 className="text-2xl sm:text-3xl font-bold text-navy tracking-tight">
-              Hitta lokal med HittaYta och känn dig trygg
+              Hitta bostad med Offmarket och känn dig trygg
             </h2>
           </div>
         </ScrollReveal>

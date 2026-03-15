@@ -43,10 +43,9 @@ export async function POST(req: NextRequest) {
     const lat = geocode?.lat ?? 0;
     const lng = geocode?.lng ?? 0;
 
-    const [areaData, priceContextRent, priceContextSale] = await Promise.all([
+    const [areaData, priceContextSale] = await Promise.all([
       lat && lng ? fetchAreaData(city, lat, lng, address.trim()) : Promise.resolve(null),
-      fetchAreaPriceContext(city, "kontor", "rent"),
-      fetchAreaPriceContext(city, "kontor", "sale"),
+      fetchAreaPriceContext(city, "lagenhet", "sale"),
     ]);
 
     const demographics = areaData?.demographics ?? null;
@@ -71,8 +70,7 @@ export async function POST(req: NextRequest) {
           nearby?.busStops ? `Busshållplatser: ${nearby.busStops.count}${nearby.busStops.nearest ? ` (närmaste: ${nearby.busStops.nearest})` : ""}` : "",
           nearby?.trainStations ? `Tågstationer: ${nearby.trainStations.count}${nearby.trainStations.nearest ? ` (närmaste: ${nearby.trainStations.nearest})` : ""}` : "",
           nearby ? `Parkering: ${nearby.parking}, Skolor: ${nearby.schools}, Sjukvård: ${nearby.healthcare}` : "",
-          priceContextRent ? `Medianpris hyra kontor: ${priceContextRent.medianPrice.toLocaleString("sv-SE")} kr/mån (${priceContextRent.count} objekt)` : "",
-          priceContextSale ? `Medianpris köp kontor: ${priceContextSale.medianPrice.toLocaleString("sv-SE")} kr (${priceContextSale.count} objekt)` : "",
+          priceContextSale ? `Medianpris bostad: ${priceContextSale.medianPrice.toLocaleString("sv-SE")} kr (${priceContextSale.count} objekt)` : "",
           areaContext ? `Wikipedia: ${areaContext.summary}` : "",
         ].filter(Boolean).join("\n");
 
@@ -97,7 +95,6 @@ export async function POST(req: NextRequest) {
       nearby,
       areaContext,
       priceContext: {
-        rent: priceContextRent,
         sale: priceContextSale,
       },
       aiAnalysis,

@@ -96,11 +96,11 @@ export default function HeroStats() {
   return (
     <div className="max-w-5xl mx-auto rounded-3xl px-4 sm:px-6 py-8 sm:py-14">
       <div className="grid grid-cols-3 gap-4 sm:flex sm:flex-wrap sm:items-center sm:justify-center sm:gap-y-6">
-        <CountUpStat value={stats.totalListings} label="Lokaler" />
+        <CountUpStat value={stats.totalListings} label="Bostäder" />
         <div className="hidden sm:block h-12 w-px bg-white/20 shrink-0" aria-hidden />
         <CountUpStat value={stats.totalCities} label="Städer" />
         <div className="hidden sm:block h-12 w-px bg-white/20 shrink-0" aria-hidden />
-        <StaticStat value="500+" label="Annonsörer" />
+        <StaticStat value="500+" label="Säljare" />
       </div>
     </div>
   );

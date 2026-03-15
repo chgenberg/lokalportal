@@ -17,7 +17,7 @@ export default function GlobalError({
     <html lang="sv">
       <head>
         <meta charSet="utf-8" />
-        <title>Fel – Hittayta.se</title>
+        <title>Fel – Offmarket.nu</title>
       </head>
       <body style={{ margin: 0, fontFamily: "system-ui, sans-serif", background: "#fff", color: "#0a1628" }}>
         <div

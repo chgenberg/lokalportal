@@ -62,8 +62,8 @@ export async function POST(request: NextRequest) {
     Number(bodyLat) <= 90 &&
     Number(bodyLng) >= -180 &&
     Number(bodyLng) <= 180;
-  if (!VALID_TYPES.includes(type as "sale" | "rent")) {
-    return NextResponse.json({ error: "Ogiltig typ. Använd sale eller rent." }, { status: 400 });
+  if (!VALID_TYPES.includes(type as "sale")) {
+    return NextResponse.json({ error: "Ogiltig typ. Använd sale." }, { status: 400 });
   }
   if (!VALID_CATEGORIES.includes(category as (typeof VALID_CATEGORIES)[number])) {
     return NextResponse.json({ error: "Ogiltig kategori." }, { status: 400 });

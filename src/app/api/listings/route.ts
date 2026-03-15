@@ -4,8 +4,8 @@ import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/db";
 import type { Prisma } from "@/generated/prisma/client";
 
-const VALID_TYPES = ["sale", "rent"] as const;
-const VALID_CATEGORIES = ["butik", "kontor", "lager", "restaurang", "verkstad", "showroom", "popup", "atelje", "gym", "ovrigt"] as const;
+const VALID_TYPES = ["sale"] as const;
+const VALID_CATEGORIES = ["villa", "lagenhet", "fritidshus", "tomt"] as const;
 type SortOption = "date" | "price_asc" | "price_desc" | "size";
 const VALID_SORTS: SortOption[] = ["date", "price_asc", "price_desc", "size"];
 const MAX_STRING_LENGTH = 100;
@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
     if (!session?.user) {
       return NextResponse.json({ error: "Ej inloggad" }, { status: 401 });
     }
-    if (session.user.role === "agent") {
+    if (session.user.isAdmin) {
       mineUserId = session.user.id;
       isAgentMine = true;
     } else {
@@ -59,6 +59,11 @@ export async function GET(request: NextRequest) {
   }
   const sort: SortOption = rawSort && VALID_SORTS.includes(rawSort as SortOption) ? (rawSort as SortOption) : "date";
 
+  const rawPropertyType = trimMax(searchParams.get("propertyType"));
+  const propertyType = rawPropertyType && VALID_CATEGORIES.includes(rawPropertyType as (typeof VALID_CATEGORIES)[number]) ? rawPropertyType : undefined;
+  const roomsMin = parsePositiveInt(searchParams.get("roomsMin"));
+  const roomsMax = parsePositiveInt(searchParams.get("roomsMax"));
+
   const city = trimMax(searchParams.get("city"));
   const search = trimMax(searchParams.get("search"));
   const featured = searchParams.get("featured") === "true" ? true : undefined;
@@ -80,12 +85,23 @@ export async function GET(request: NextRequest) {
   try {
     const where: Prisma.ListingWhereInput = {};
 
+    // Only show active listings in public search; owners see all their listings
+    if (!mine) {
+      where.status = "active";
+    }
+
     if (ownerId) where.ownerId = ownerId;
     if (isAgentMine && mineUserId) {
       where.OR = [{ ownerId: mineUserId }, { agentId: mineUserId }];
     }
     if (city) where.city = { equals: city, mode: "insensitive" };
     if (type) where.type = type;
+    if (propertyType) where.propertyType = propertyType;
+    if (roomsMin != null || roomsMax != null) {
+      where.rooms = {};
+      if (roomsMin != null) where.rooms.gte = roomsMin;
+      if (roomsMax != null) where.rooms.lte = roomsMax;
+    }
     if (category) {
       if (category.includes(",")) {
         const categories = category.split(",").map((c) => c.trim()).filter(Boolean);
@@ -141,7 +157,9 @@ export async function GET(request: NextRequest) {
 
 function formatListing(l: {
   id: string; title: string; description: string; city: string; address: string;
-  type: string; category: string; price: number; size: number; imageUrl: string; imageUrls?: string[];
+  type: string; category: string; propertyType: string; price: number; size: number;
+  rooms: number | null; lotSize: number | null; condition: string | null; status: string;
+  imageUrl: string; imageUrls?: string[];
   featured: boolean; createdAt: Date; lat: number; lng: number; tags: string[];
   ownerId: string | null; contactName: string; contactEmail: string; contactPhone: string;
 }) {
@@ -153,8 +171,13 @@ function formatListing(l: {
     address: l.address,
     type: l.type,
     category: l.category,
+    propertyType: l.propertyType,
     price: l.price,
     size: l.size,
+    rooms: l.rooms,
+    lotSize: l.lotSize,
+    condition: l.condition,
+    status: l.status,
     imageUrl: l.imageUrl,
     imageUrls: l.imageUrls ?? [],
     featured: l.featured,

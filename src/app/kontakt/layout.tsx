@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Kontakta oss – Hittayta.se",
+  title: "Kontakta oss – Offmarket.nu",
   description:
-    "Kontakta Hittayta.se med frågor om kommersiella lokaler, annonser eller support. Vi svarar vanligtvis inom 24 timmar.",
+    "Kontakta Offmarket.nu med frågor om off-market bostäder, annonser eller support. Vi svarar vanligtvis inom 24 timmar.",
   openGraph: {
-    title: "Kontakta oss – Hittayta.se",
-    description: "Skicka ett meddelande till Hittayta.se. Vi hjälper dig gärna.",
+    title: "Kontakta oss – Offmarket.nu",
+    description: "Skicka ett meddelande till Offmarket.nu. Vi hjälper dig gärna.",
   },
 };
 

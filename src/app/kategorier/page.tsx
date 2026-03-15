@@ -5,64 +5,28 @@ import Link from "next/link";
 
 const categoryConfig = [
   {
-    id: "butik",
-    label: "Butikslokaler",
-    description: "Hitta den perfekta butikslokalen i attraktiva lägen med hög exponering. Allt från gallerior till gatuplan.",
-    features: ["Skyltfönster", "Centrala lägen", "Hög gångtrafik"],
+    id: "villa",
+    label: "Villor",
+    description: "Hitta din drömvilla med trädgård och egen tomt. Från charmiga småhus till exklusiva herrgårdar.",
+    features: ["Trädgård", "Garage", "Egen tomt"],
   },
   {
-    id: "kontor",
-    label: "Kontorslokaler",
-    description: "Moderna kontorslokaler med flexibla planlösningar. Från kontorshotell till hela våningsplan.",
-    features: ["Fiber & IT", "Mötesrum", "Flexibla ytor"],
+    id: "lagenhet",
+    label: "Lägenheter",
+    description: "Lägenheter i alla storlekar – från ettor till stora familjelägenheter i attraktiva lägen.",
+    features: ["Balkong", "Centralt läge", "Nära kollektivtrafik"],
   },
   {
-    id: "lager",
-    label: "Lagerlokaler",
-    description: "Lagerlokaler i strategiska lägen med bra logistikförutsättningar. Lastbryggor och stora portar.",
-    features: ["Lastbrygga", "Bra logistik", "Stora ytor"],
+    id: "fritidshus",
+    label: "Fritidshus",
+    description: "Fritidshus och sommarstugor vid sjö, hav eller i skogen. Perfekt för semester och vila.",
+    features: ["Sjötomt", "Natur", "Avkoppling"],
   },
   {
-    id: "restaurang",
-    label: "Restaurang & Café",
-    description: "Restaurang- och cafélokaler med köksutrustning, ventilation och möjlighet till serveringstillstånd.",
-    features: ["Kök", "Ventilation", "Serveringstillstånd"],
-  },
-  {
-    id: "verkstad",
-    label: "Verkstad & Industri",
-    description: "Verkstads- och industrilokaler med hög takhöjd, bra tillgänglighet och tunga installationer.",
-    features: ["Hög takhöjd", "Tunga installationer", "Bra tillgänglighet"],
-  },
-  {
-    id: "showroom",
-    label: "Showroom",
-    description: "Representativa lokaler för produktvisning, kundmöten och utställningar i attraktiva lägen.",
-    features: ["Representativt", "Kundmöten", "Utställning"],
-  },
-  {
-    id: "popup",
-    label: "Pop-up lokaler",
-    description: "Korttidslokaler perfekta för pop-up butiker, event, marknadsföring och tillfälliga projekt.",
-    features: ["Korttidsavtal", "Flexibelt", "Event"],
-  },
-  {
-    id: "atelje",
-    label: "Ateljé & Studio",
-    description: "Kreativa lokaler för konstnärer, fotografer, designers och andra kreativa verksamheter.",
-    features: ["Kreativa ytor", "Naturligt ljus", "Öppen planlösning"],
-  },
-  {
-    id: "gym",
-    label: "Gym & Träningslokal",
-    description: "Lokaler anpassade för gym, yoga, dans och andra tränings- och hälsoverksamheter.",
-    features: ["Hög takhöjd", "Ventilation", "Omklädningsrum"],
-  },
-  {
-    id: "ovrigt",
-    label: "Övriga lokaler",
-    description: "Andra typer av kommersiella lokaler och unika utrymmen som inte passar i övriga kategorier.",
-    features: ["Flexibelt", "Unika lägen", "Anpassningsbart"],
+    id: "tomt",
+    label: "Tomter",
+    description: "Byggtomter och tomter för nybyggnation. Hitta rätt plats för ditt framtida hem.",
+    features: ["Bygglov", "Infrastruktur", "Läge"],
   },
 ];
 
@@ -87,7 +51,7 @@ export default function KategorierPage() {
       <div className="bg-muted border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <h1 className="text-2xl sm:text-3xl font-bold text-navy mb-2">Kategorier</h1>
-          <p className="text-gray-500">Utforska våra lokalkategorier och hitta det som passar ditt behov</p>
+          <p className="text-gray-500">Utforska våra bostadskategorier och hitta det som passar ditt behov</p>
         </div>
       </div>
 
@@ -128,7 +92,7 @@ export default function KategorierPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
         <div className="bg-muted rounded-2xl p-8 md:p-12 text-center">
           <h2 className="text-2xl font-bold text-navy mb-3">Hittar du inte rätt kategori?</h2>
-          <p className="text-gray-500 mb-6 max-w-lg mx-auto">Kontakta oss så hjälper vi dig hitta en lokal som passar dina specifika behov.</p>
+          <p className="text-gray-500 mb-6 max-w-lg mx-auto">Kontakta oss så hjälper vi dig hitta en bostad som passar dina specifika behov.</p>
           <Link href="/annonser" className="inline-flex items-center gap-2 px-6 py-3 bg-navy text-white text-sm font-medium rounded-xl hover:bg-navy-light transition-colors">
             Visa alla annonser &rarr;
           </Link>

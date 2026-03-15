@@ -292,7 +292,7 @@ export default function OmradesrapportClient() {
                   <div className="space-y-4">
                     {result.priceContext.rent && (
                       <div className="bg-muted/40 rounded-xl p-5">
-                        <p className="text-xs font-semibold text-navy mb-3">Hyresmarknaden (kontor)</p>
+                        <p className="text-xs font-semibold text-navy mb-3">Hyresmarknaden (bostäder)</p>
                         <div className="grid grid-cols-3 gap-4">
                           <div>
                             <p className="text-[10px] text-gray-400 mb-1">Median</p>
@@ -311,7 +311,7 @@ export default function OmradesrapportClient() {
                     )}
                     {result.priceContext.sale && (
                       <div className="bg-muted/40 rounded-xl p-5">
-                        <p className="text-xs font-semibold text-navy mb-3">Köpmarknaden (kontor)</p>
+                        <p className="text-xs font-semibold text-navy mb-3">Köpmarknaden (bostäder)</p>
                         <div className="grid grid-cols-3 gap-4">
                           <div>
                             <p className="text-[10px] text-gray-400 mb-1">Median</p>
@@ -344,10 +344,10 @@ export default function OmradesrapportClient() {
 
               {/* CTA */}
               <div className="bg-navy rounded-2xl p-6 sm:p-8 text-center">
-                <h3 className="text-lg font-bold text-white mb-2">Letar du efter lokal i {result.city}?</h3>
-                <p className="text-sm text-white/50 mb-5">Se alla tillgängliga lokaler i området</p>
+                <h3 className="text-lg font-bold text-white mb-2">Letar du efter bostad i {result.city}?</h3>
+                <p className="text-sm text-white/50 mb-5">Se alla tillgängliga bostäder i området</p>
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                  <a href={`/annonser?city=${encodeURIComponent(result.city)}`} className="px-6 py-3 bg-gold text-navy text-sm font-semibold rounded-full hover:brightness-105 transition-all">Se lokaler i {result.city}</a>
+                  <a href={`/annonser?city=${encodeURIComponent(result.city)}`} className="px-6 py-3 bg-gold text-navy text-sm font-semibold rounded-full hover:brightness-105 transition-all">Se bostäder i {result.city}</a>
                   <button type="button" onClick={() => { setStep("input"); setAddress(""); setResult(null); }} className="px-6 py-3 bg-white/10 text-white text-sm font-semibold rounded-full hover:bg-white/20 transition-all">Ny rapport</button>
                 </div>
               </div>

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkRateLimit, getClientKey } from "@/lib/rateLimit";
 
-const NOMINATIM_USER_AGENT = "HittaYta.se/1.0 (commercial; geocode)";
+const NOMINATIM_USER_AGENT = "Offmarket.nu/1.0 (residential; geocode)";
 const MAX_QUERY_LENGTH = 500;
 
 export async function GET(request: NextRequest) {

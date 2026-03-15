@@ -330,7 +330,7 @@ export default function LokalradgivareClient() {
               {/* CTA */}
               <div className="bg-navy rounded-2xl p-6 sm:p-8 text-center">
                 <h3 className="text-lg font-bold text-white mb-2">Vill du se fler lokaler?</h3>
-                <p className="text-sm text-white/50 mb-5">Utforska alla tillgängliga lokaler på HittaYta.se</p>
+                <p className="text-sm text-white/50 mb-5">Utforska alla tillgängliga bostäder på Offmarket.nu</p>
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
                   <Link href="/annonser" className="px-6 py-3 bg-gold text-navy text-sm font-semibold rounded-full hover:brightness-105 transition-all">Se alla annonser</Link>
                   <button type="button" onClick={() => { setStep("quiz"); setQuizStep(0); setResult(null); }} className="px-6 py-3 bg-white/10 text-white text-sm font-semibold rounded-full hover:bg-white/20 transition-all">Ny sökning</button>

@@ -36,7 +36,7 @@ export default function NewsletterSignup() {
   return (
     <div>
       <h4 className="text-[11px] font-semibold uppercase tracking-[0.15em] mb-5 text-white/20">Prenumerera</h4>
-      <p className="text-[13px] text-white/40 mb-3">Få tips och nyheter om kommersiella lokaler.</p>
+      <p className="text-[13px] text-white/40 mb-3">Få tips och nyheter om off-market bostäder.</p>
       {status === "success" ? (
         <p className="text-[13px] text-white/80">Tack! Du är nu prenumerant.</p>
       ) : (

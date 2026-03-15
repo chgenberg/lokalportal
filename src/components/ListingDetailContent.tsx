@@ -235,19 +235,49 @@ export default function ListingDetailContent({
                   <p className="text-[10px] font-semibold text-gray-400 tracking-[0.12em] uppercase mb-0.5">Storlek</p>
                   <p className="text-sm font-bold text-navy tracking-tight whitespace-nowrap">{listing.size} m²</p>
                 </div>
-                <div className="text-center py-4 px-2 sm:border-l border-border/40">
-                  <p className="text-[10px] font-semibold text-gray-400 tracking-[0.12em] uppercase mb-0.5">Kr/m²</p>
-                  <p className="text-sm font-bold text-navy tracking-tight whitespace-nowrap">
-                    {listing.size > 0
-                      ? `${Math.round(listing.price / listing.size).toLocaleString("sv-SE")} ${listing.type === "rent" ? "kr/m²/mån" : "kr/m²"}`
-                      : "—"}
-                  </p>
-                </div>
+                {listing.rooms ? (
+                  <div className="text-center py-4 px-2 sm:border-l border-border/40">
+                    <p className="text-[10px] font-semibold text-gray-400 tracking-[0.12em] uppercase mb-0.5">Rum</p>
+                    <p className="text-sm font-bold text-navy tracking-tight whitespace-nowrap">{listing.rooms} rum</p>
+                  </div>
+                ) : (
+                  <div className="text-center py-4 px-2 sm:border-l border-border/40">
+                    <p className="text-[10px] font-semibold text-gray-400 tracking-[0.12em] uppercase mb-0.5">Kr/m²</p>
+                    <p className="text-sm font-bold text-navy tracking-tight whitespace-nowrap">
+                      {listing.size > 0
+                        ? `${Math.round(listing.price / listing.size).toLocaleString("sv-SE")} kr/m²`
+                        : "—"}
+                    </p>
+                  </div>
+                )}
                 <div className="text-center py-4 px-2 border-l border-border/40">
                   <p className="text-[10px] font-semibold text-gray-400 tracking-[0.12em] uppercase mb-0.5">Plats</p>
                   <p className="text-sm font-bold text-navy tracking-tight whitespace-nowrap">{listing.city}</p>
                 </div>
               </div>
+              {/* Extra nyckeltal row */}
+              {(listing.lotSize || (listing.rooms && listing.size > 0)) && (
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-0 border-b border-border/40">
+                  {listing.rooms && listing.size > 0 && (
+                    <div className="text-center py-4 px-2 border-b sm:border-b-0 border-border/40">
+                      <p className="text-[10px] font-semibold text-gray-400 tracking-[0.12em] uppercase mb-0.5">Kr/m²</p>
+                      <p className="text-sm font-bold text-navy tracking-tight whitespace-nowrap">{Math.round(listing.price / listing.size).toLocaleString("sv-SE")} kr/m²</p>
+                    </div>
+                  )}
+                  {listing.lotSize ? (
+                    <div className="text-center py-4 px-2 sm:border-l border-border/40">
+                      <p className="text-[10px] font-semibold text-gray-400 tracking-[0.12em] uppercase mb-0.5">Tomtyta</p>
+                      <p className="text-sm font-bold text-navy tracking-tight whitespace-nowrap">{listing.lotSize.toLocaleString("sv-SE")} m²</p>
+                    </div>
+                  ) : null}
+                  {listing.monthlyFee ? (
+                    <div className="text-center py-4 px-2 sm:border-l border-border/40">
+                      <p className="text-[10px] font-semibold text-gray-400 tracking-[0.12em] uppercase mb-0.5">Avgift/mån</p>
+                      <p className="text-sm font-bold text-navy tracking-tight whitespace-nowrap">{listing.monthlyFee.toLocaleString("sv-SE")} kr</p>
+                    </div>
+                  ) : null}
+                </div>
+              )}
 
               {/* Adress */}
               <div className="px-6 py-4 border-b border-border/40">
@@ -429,7 +459,7 @@ export default function ListingDetailContent({
               return (
                 <div className="bg-white rounded-2xl border border-border/40 p-6 sm:p-8 shadow-sm">
                   <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-1">Lägesanalys</p>
-                  <p className="text-[12px] text-gray-400 mb-5">Inom 2,5 km från lokalen</p>
+                  <p className="text-[12px] text-gray-400 mb-5">Inom 2,5 km från bostaden</p>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                     {categories.map((cat, i) => {
                       const score = Math.min(cat.count, 5);
@@ -540,7 +570,7 @@ export default function ListingDetailContent({
 
           <div className="lg:col-span-1">
             <div className="sticky top-28 space-y-4">
-              {listing.owner?.role === "agent" && listing.owner?.logoUrl && (
+              {listing.owner?.role === "partner" && listing.owner?.logoUrl && (
                 <div className="bg-white rounded-2xl border border-border/40 p-6 shadow-sm">
                   <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-3">Mäklare</p>
                   <div className="flex items-center gap-3">
@@ -591,17 +621,49 @@ export default function ListingDetailContent({
                 <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-4">Snabbfakta</p>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center py-2 border-b border-border/30">
-                    <span className="text-[12px] text-gray-400 tracking-wide">Typ</span>
-                    <span className="text-[13px] font-medium text-navy">{typeLabels[listing.type]}</span>
-                  </div>
-                  <div className="flex justify-between items-center py-2 border-b border-border/30">
-                    <span className="text-[12px] text-gray-400 tracking-wide">Kategori</span>
-                    <span className="text-[13px] font-medium text-navy">{formatCategories(listing.category)}</span>
+                    <span className="text-[12px] text-gray-400 tracking-wide">Bostadstyp</span>
+                    <span className="text-[13px] font-medium text-navy">{formatCategories(listing.propertyType || listing.category)}</span>
                   </div>
                   <div className="flex justify-between items-center py-2 border-b border-border/30">
                     <span className="text-[12px] text-gray-400 tracking-wide">Storlek</span>
                     <span className="text-[13px] font-medium text-navy">{listing.size} m²</span>
                   </div>
+                  {listing.rooms ? (
+                    <div className="flex justify-between items-center py-2 border-b border-border/30">
+                      <span className="text-[12px] text-gray-400 tracking-wide">Rum</span>
+                      <span className="text-[13px] font-medium text-navy">{listing.rooms}</span>
+                    </div>
+                  ) : null}
+                  {listing.lotSize ? (
+                    <div className="flex justify-between items-center py-2 border-b border-border/30">
+                      <span className="text-[12px] text-gray-400 tracking-wide">Tomtyta</span>
+                      <span className="text-[13px] font-medium text-navy">{listing.lotSize.toLocaleString("sv-SE")} m²</span>
+                    </div>
+                  ) : null}
+                  {listing.condition ? (
+                    <div className="flex justify-between items-center py-2 border-b border-border/30">
+                      <span className="text-[12px] text-gray-400 tracking-wide">Skick</span>
+                      <span className="text-[13px] font-medium text-navy capitalize">{listing.condition}</span>
+                    </div>
+                  ) : null}
+                  {listing.energyClass ? (
+                    <div className="flex justify-between items-center py-2 border-b border-border/30">
+                      <span className="text-[12px] text-gray-400 tracking-wide">Energiklass</span>
+                      <span className="text-[13px] font-medium text-navy">{listing.energyClass}</span>
+                    </div>
+                  ) : null}
+                  {listing.yearBuilt ? (
+                    <div className="flex justify-between items-center py-2 border-b border-border/30">
+                      <span className="text-[12px] text-gray-400 tracking-wide">Byggnadsår</span>
+                      <span className="text-[13px] font-medium text-navy">{listing.yearBuilt}</span>
+                    </div>
+                  ) : null}
+                  {listing.monthlyFee ? (
+                    <div className="flex justify-between items-center py-2 border-b border-border/30">
+                      <span className="text-[12px] text-gray-400 tracking-wide">Månadsavgift</span>
+                      <span className="text-[13px] font-medium text-navy">{listing.monthlyFee.toLocaleString("sv-SE")} kr</span>
+                    </div>
+                  ) : null}
                   <div className="flex justify-between items-center py-2">
                     <span className="text-[12px] text-gray-400 tracking-wide">Publicerad</span>
                     <span className="text-[13px] font-medium text-navy">

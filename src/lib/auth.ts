@@ -2,20 +2,29 @@ import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import prisma from "./db";
+import type { UserRole } from "./types";
 
 declare module "next-auth" {
   interface User {
     id: string;
-    role: "landlord" | "tenant" | "agent";
+    role: UserRole;
+    isBuyer: boolean;
+    isSeller: boolean;
+    isAdmin: boolean;
     name: string;
     email: string;
+    subscriptionTier: string;
   }
   interface Session {
     user: {
       id: string;
-      role: "landlord" | "tenant" | "agent";
+      role: UserRole;
+      isBuyer: boolean;
+      isSeller: boolean;
+      isAdmin: boolean;
       name: string;
       email: string;
+      subscriptionTier: string;
     };
   }
 }
@@ -23,7 +32,11 @@ declare module "next-auth" {
 declare module "next-auth/jwt" {
   interface JWT {
     id: string;
-    role: "landlord" | "tenant" | "agent";
+    role: UserRole;
+    isBuyer: boolean;
+    isSeller: boolean;
+    isAdmin: boolean;
+    subscriptionTier: string;
   }
 }
 
@@ -50,7 +63,11 @@ export const authOptions: NextAuthOptions = {
           id: user.id,
           email: user.email,
           name: user.name,
-          role: user.role as "landlord" | "tenant" | "agent",
+          role: user.role as UserRole,
+          isBuyer: user.isBuyer,
+          isSeller: user.isSeller,
+          isAdmin: user.isAdmin,
+          subscriptionTier: user.subscriptionTier,
         };
       },
     }),
@@ -64,6 +81,10 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = user.id;
         token.role = user.role;
+        token.isBuyer = user.isBuyer;
+        token.isSeller = user.isSeller;
+        token.isAdmin = user.isAdmin;
+        token.subscriptionTier = user.subscriptionTier;
       }
       return token;
     },
@@ -71,6 +92,10 @@ export const authOptions: NextAuthOptions = {
       if (token && session.user) {
         session.user.id = token.id;
         session.user.role = token.role;
+        session.user.isBuyer = token.isBuyer;
+        session.user.isSeller = token.isSeller;
+        session.user.isAdmin = token.isAdmin;
+        session.user.subscriptionTier = token.subscriptionTier;
       }
       return session;
     },

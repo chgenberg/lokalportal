@@ -17,7 +17,7 @@ interface ListingMapProps {
 
 function createMarkerIcon() {
   return L.icon({
-    iconUrl: "/hittaytapin.png",
+    iconUrl: "/offmarketpin.png",
     iconSize: [36, 44],
     iconAnchor: [18, 44],
     popupAnchor: [0, -44],
@@ -85,7 +85,7 @@ export default function ListingMap({
               font-size: 11px;
               font-weight: 600;
               border-radius: 999px;
-              background: ${listing.type === "rent" ? "#2563eb" : "#059669"};
+              background: #059669;
               color: white;
             ">${typeLabels[listing.type]}</span>
             <span style="

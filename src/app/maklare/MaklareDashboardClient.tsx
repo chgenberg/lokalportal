@@ -402,13 +402,13 @@ export default function MaklareDashboardClient() {
         {/* Add client form */}
         <div className="dashboard-card p-6">
           <h2 className="font-semibold text-navy mb-3">Lägg till klient</h2>
-          <p className="text-xs text-gray-500 mb-4">Sök efter en befintlig hyresvärd via e-postadress för att koppla dem som din klient.</p>
+          <p className="text-xs text-gray-500 mb-4">Sök efter en befintlig säljare via e-postadress för att koppla dem som din klient.</p>
           <form onSubmit={handleAddClient} className="flex flex-col sm:flex-row gap-3">
             <input
               type="email"
               value={addClientEmail}
               onChange={(e) => setAddClientEmail(e.target.value)}
-              placeholder="Hyresvärdens e-postadress"
+              placeholder="Säljarens e-postadress"
               className="flex-1 px-4 py-3 bg-muted rounded-xl text-sm border border-border focus:border-navy outline-none"
               required
             />
@@ -531,9 +531,7 @@ export default function MaklareDashboardClient() {
   /* ── STATISTICS TAB ───────────────────────────────── */
   if (tab === "statistics") {
     const categoryLabels: Record<string, string> = {
-      butik: "Butik", kontor: "Kontor", lager: "Lager", restaurang: "Restaurang",
-      verkstad: "Verkstad", showroom: "Showroom", popup: "Pop-up", atelje: "Ateljé",
-      gym: "Gym", ovrigt: "Övrigt",
+      villa: "Villa", lagenhet: "Lägenhet", fritidshus: "Fritidshus", tomt: "Tomt",
     };
 
     return (
@@ -734,7 +732,7 @@ export default function MaklareDashboardClient() {
 
 function ListingRow({ listing, showOwner }: { listing: PortfolioListing; showOwner?: boolean }) {
   const img = listing.imageUrls?.[0] || listing.imageUrl;
-  const typeLabel = listing.type === "rent" ? "Uthyrning" : "Försäljning";
+  const typeLabel = "Försäljning";
 
   return (
     <Link href={`/annonser/${listing.id}`} className="dashboard-card p-4 flex items-center gap-4 hover:shadow-md transition-shadow group">

@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Cookiepolicy – Hittayta.se",
-  description: "Information om hur Hittayta.se använder cookies.",
+  title: "Cookiepolicy – Offmarket",
+  description: "Information om hur Offmarket använder cookies.",
 };
 
 export default function CookiesPage() {
@@ -28,7 +28,7 @@ export default function CookiesPage() {
 
           <section>
             <h2 className="text-xl font-semibold text-navy mb-3 tracking-tight">2. Vilka cookies använder vi?</h2>
-            <p className="text-[15px] text-gray-600 leading-relaxed mb-4">Hittayta.se använder följande typer av cookies:</p>
+            <p className="text-[15px] text-gray-600 leading-relaxed mb-4">Offmarket använder följande typer av cookies:</p>
 
             <div className="space-y-4">
               <div className="bg-muted/50 rounded-xl p-5 border border-border/40">
@@ -82,7 +82,7 @@ export default function CookiesPage() {
           <section>
             <h2 className="text-xl font-semibold text-navy mb-3 tracking-tight">6. Kontakt</h2>
             <p className="text-[15px] text-gray-600 leading-relaxed">
-              Har du frågor om vår användning av cookies? Kontakta oss på <a href="mailto:info@ledigyta.se" className="text-navy hover:underline">info@ledigyta.se</a> eller via vår <Link href="/kontakt" className="text-navy hover:underline">kontaktsida</Link>.
+              Har du frågor om vår användning av cookies? Kontakta oss på <a href="mailto:info@offmarket.se" className="text-navy hover:underline">info@offmarket.se</a> eller via vår <Link href="/kontakt" className="text-navy hover:underline">kontaktsida</Link>.
             </p>
           </section>
         </div>

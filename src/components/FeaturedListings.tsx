@@ -14,7 +14,7 @@ export default function FeaturedListings() {
     const fetchListings = async () => {
       try {
         const res = await fetch("/api/listings?featured=true");
-        if (!res.ok) { setError("Kunde inte ladda utvalda lokaler."); setListings([]); return; }
+        if (!res.ok) { setError("Kunde inte ladda utvalda bostäder."); setListings([]); return; }
         const data = await res.json();
         const items = Array.isArray(data) ? data : data.listings ?? [];
         setListings(items.slice(0, 4));
@@ -29,7 +29,7 @@ export default function FeaturedListings() {
         <div className="flex items-end justify-between mb-10 sm:mb-14">
           <div>
             <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-gray-400 mb-3">Utvalda</p>
-            <h2 className="text-2xl sm:text-3xl font-bold text-navy tracking-tight">Utvalda lokaler</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold text-navy tracking-tight">Utvalda bostäder</h2>
           </div>
           <Link href="/annonser" className="hidden sm:inline-block text-[13px] font-semibold text-navy/50 hover:text-navy transition-colors tracking-wide">
             Visa alla &rarr;

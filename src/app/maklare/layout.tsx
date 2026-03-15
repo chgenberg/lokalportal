@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import MaklareLayoutClient from "./MaklareLayoutClient";
 
 export const metadata: Metadata = {
-  title: "Mäklare – Hittayta.se",
+  title: "Mäklare – Offmarket.nu",
   description: "Mäklare-dashboard för att hantera klienter, portfölj och statistik.",
   robots: { index: false, follow: false },
 };

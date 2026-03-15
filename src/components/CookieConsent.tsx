@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 
-const CONSENT_KEY = "hittayta_cookie_consent";
+const CONSENT_KEY = "offmarket_cookie_consent";
 
 export default function CookieConsent() {
   const [visible, setVisible] = useState(false);

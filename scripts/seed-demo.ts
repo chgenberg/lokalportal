@@ -1,5 +1,5 @@
 /**
- * Seed script: creates demo landlord + tenants with listings, favorites,
+ * Seed script: creates demo seller + buyers with listings, favorites,
  * conversations and messages so the dashboard looks fully populated.
  *
  * Usage:  npx tsx scripts/seed-demo.ts
@@ -21,13 +21,13 @@ async function main() {
   // ── Cleanup old seed data ──────────────────────────────
   console.log("  Rensar gammal seed-data...");
   const seedEmails = [
-    "hyresvard@hittayta.se",
-    "hyresgast@hittayta.se",
-    "maklare@hittayta.se",
-    "demo-tenant-2@hittayta.se",
-    "demo-tenant-3@hittayta.se",
-    "demo-tenant-4@hittayta.se",
-    "demo-tenant-5@hittayta.se",
+    "saljare@offmarket.nu",
+    "kopare@offmarket.nu",
+    "admin@offmarket.nu",
+    "demo-buyer-2@offmarket.nu",
+    "demo-buyer-3@offmarket.nu",
+    "demo-buyer-4@offmarket.nu",
+    "demo-buyer-5@offmarket.nu",
   ];
   const existingUsers = await prisma.user.findMany({ where: { email: { in: seedEmails } }, select: { id: true } });
   const existingIds = existingUsers.map((u) => u.id);
@@ -40,259 +40,354 @@ async function main() {
   const passwordHash = await bcrypt.hash(PASSWORD, 12);
 
   // ── Users ──────────────────────────────────────────────
-  const landlord = await prisma.user.upsert({
-    where: { email: "hyresvard@hittayta.se" },
+  const seller = await prisma.user.upsert({
+    where: { email: "saljare@offmarket.nu" },
     update: {},
     create: {
-      email: "hyresvard@hittayta.se",
+      email: "saljare@offmarket.nu",
       name: "Erik Fastigheter AB",
       passwordHash,
-      role: "landlord",
+      role: "seller",
+      isSeller: true,
       phone: "070-123 45 67",
     },
   });
-  console.log(`  Landlord: ${landlord.email} (${landlord.id})`);
+  console.log(`  Seller: ${seller.email} (${seller.id})`);
 
-  const tenant = await prisma.user.upsert({
-    where: { email: "hyresgast@hittayta.se" },
+  const buyer = await prisma.user.upsert({
+    where: { email: "kopare@offmarket.nu" },
     update: {},
     create: {
-      email: "hyresgast@hittayta.se",
+      email: "kopare@offmarket.nu",
       name: "Anna Svensson",
       passwordHash,
-      role: "tenant",
+      role: "buyer",
+      isBuyer: true,
       phone: "073-987 65 43",
     },
   });
-  console.log(`  Tenant:   ${tenant.email} (${tenant.id})`);
+  console.log(`  Buyer:   ${buyer.email} (${buyer.id})`);
 
-  const agent = await prisma.user.upsert({
-    where: { email: "maklare@hittayta.se" },
+  const admin = await prisma.user.upsert({
+    where: { email: "admin@offmarket.nu" },
     update: {},
     create: {
-      email: "maklare@hittayta.se",
+      email: "admin@offmarket.nu",
       name: "Nordic Fastighetsmäklare AB",
       passwordHash,
-      role: "agent",
+      role: "admin",
+      isAdmin: true,
       phone: "08-123 45 67",
       companyName: "Nordic Fastighetsmäklare",
     },
   });
-  console.log(`  Agent:    ${agent.email} (${agent.id})`);
+  console.log(`  Admin:   ${admin.email} (${admin.id})`);
 
-  // ── Extra dummy tenants (for richer landlord stats) ────
-  const dummyTenants = [];
-  const dummyTenantData = [
-    { email: "demo-tenant-2@hittayta.se", name: "Johan Lindberg" },
-    { email: "demo-tenant-3@hittayta.se", name: "Maria Eriksson" },
-    { email: "demo-tenant-4@hittayta.se", name: "Karl Nilsson" },
-    { email: "demo-tenant-5@hittayta.se", name: "Sara Johansson" },
+  // ── Extra dummy buyers (for richer seller stats) ─────────
+  const dummyBuyers = [];
+  const dummyBuyerData = [
+    { email: "demo-buyer-2@offmarket.nu", name: "Johan Lindberg" },
+    { email: "demo-buyer-3@offmarket.nu", name: "Maria Eriksson" },
+    { email: "demo-buyer-4@offmarket.nu", name: "Karl Nilsson" },
+    { email: "demo-buyer-5@offmarket.nu", name: "Sara Johansson" },
   ];
-  for (const dt of dummyTenantData) {
+  for (const dt of dummyBuyerData) {
     const u = await prisma.user.upsert({
       where: { email: dt.email },
       update: {},
-      create: { email: dt.email, name: dt.name, passwordHash, role: "tenant", phone: "" },
+      create: { email: dt.email, name: dt.name, passwordHash, role: "buyer", isBuyer: true, phone: "" },
     });
-    dummyTenants.push(u);
+    dummyBuyers.push(u);
   }
-  console.log(`  Dummy tenants: ${dummyTenants.length} skapade`);
+  console.log(`  Dummy buyers: ${dummyBuyers.length} skapade`);
 
-  // ── Listings (owned by landlord) ───────────────────────
+  // ── Listings (owned by seller) – residential only ───────
   const listingsData = [
     {
-      title: "Modern kontorslokal – Södermalm",
+      title: "Rymlig villa med trädgård – Södermalm",
       description:
-        "Ljus och fräsch kontorslokal i hjärtat av Södermalm. Öppen planlösning med plats för 15–20 arbetsplatser. Fiber, kök och mötesrum ingår. Nära tunnelbana och restauranger.",
+        "Ljus och fräsch villa i hjärtat av Södermalm. Öppen planlösning med 5 rum och kök. Nyrenoverat badrum och kök. Stor trädgård med uteplats. Nära tunnelbana och restauranger.",
       city: "Stockholm",
       address: "Götgatan 42",
-      type: "rent",
-      category: "kontor",
-      price: 28000,
+      type: "sale",
+      category: "villa",
+      propertyType: "villa",
+      price: 8_500_000,
       size: 180,
+      rooms: 5,
+      lotSize: 450,
+      condition: "renoverat",
+      status: "active",
+      acceptancePrice: 8_200_000,
       lat: 59.3173,
       lng: 18.0731,
-      imageUrl: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80",
-      tags: ["Fiber", "Centralt läge", "Nyrenoverad", "Hiss"],
+      imageUrl: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80",
+      tags: ["Nyrenoverad", "Centralt läge", "Trädgård", "Öppen planlösning", "Nära kollektivtrafik"],
       featured: true,
       viewCount: 142,
     },
     {
-      title: "Butik vid Avenyn – Göteborg",
+      title: "Exklusiv lägenhet vid Avenyn – Göteborg",
       description:
-        "Exklusivt butiksläge längs Kungsportsavenyn. Stort skyltfönster mot gatan, hög takhöjd och lagerytor i källaren. Perfekt för mode, inredning eller café.",
+        "Stor bostadsrätt med balkong och havsutsikt. 4 rum och kök, öppen planlösning. Nyrenoverad med fiber. Perfekt läge längs Kungsportsavenyn.",
       city: "Göteborg",
       address: "Kungsportsavenyn 18",
-      type: "rent",
-      category: "butik",
-      price: 45000,
+      type: "sale",
+      category: "lagenhet",
+      propertyType: "lagenhet",
+      price: 6_200_000,
       size: 120,
+      rooms: 4,
+      lotSize: undefined,
+      condition: "nyskick",
+      status: "active",
+      acceptancePrice: 5_900_000,
       lat: 57.7009,
       lng: 11.9746,
-      imageUrl: "https://images.unsplash.com/photo-1604719312566-8912e9227c6a?w=800&q=80",
-      tags: ["Centralt läge", "Hög takhöjd", "Parkering"],
+      imageUrl: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&q=80",
+      tags: ["Centralt läge", "Balkong", "Havsutsikt", "Nyrenoverad", "Fiber", "Nära centrum"],
       featured: true,
       viewCount: 98,
     },
     {
-      title: "Lagerlokal med lastbrygga – Malmö",
+      title: "Fritidshus med sjötomt – Skåne",
       description:
-        "Stor lagerlokal i Fosie industriområde. 6 meters takhöjd, lastbrygga, portöppning 4x4m. El 3-fas, uppvärmt. Bra kommunikationer nära E6.",
+        "Charmigt fritidshus vid sjön i Fosie. 3 rum, kök och stort altan. Egen brygga och badplats. Tryggt läge med skog runt hörnet.",
       city: "Malmö",
-      address: "Industrigatan 7",
-      type: "rent",
-      category: "lager",
-      price: 18000,
-      size: 450,
+      address: "Sjövägen 7",
+      type: "sale",
+      category: "fritidshus",
+      propertyType: "fritidshus",
+      price: 2_800_000,
+      size: 85,
+      rooms: 3,
+      lotSize: 1200,
+      condition: "bra_skick",
+      status: "active",
+      acceptancePrice: 2_650_000,
       lat: 55.565,
       lng: 13.018,
-      imageUrl: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=800&q=80",
-      tags: ["Lastbrygga", "Parkering", "Hög takhöjd"],
+      imageUrl: "https://images.unsplash.com/photo-1449158743715-0a90ebb6d2d8?w=800&q=80",
+      tags: ["Sjötomt", "Tryggt läge", "Balkong", "Nära centrum"],
       featured: false,
       viewCount: 67,
     },
     {
-      title: "Centralt kontor – Uppsala",
+      title: "Ljus lägenhet i Uppsala Science Park",
       description:
-        "Nybyggt kontor i Uppsala Science Park. Öppet landskap med 10 arbetsplatser, 2 mötesrum, pentry och dusch. Cykelgarage och laddstolpar.",
+        "Nybyggd lägenhet i Uppsala Science Park. 3 rum och kök, öppen planlösning. Fiber, balkong och cykelgarage. Laddstolpar i garage.",
       city: "Uppsala",
       address: "Dag Hammarskjölds väg 52",
-      type: "rent",
-      category: "kontor",
-      price: 22000,
-      size: 140,
+      type: "sale",
+      category: "lagenhet",
+      propertyType: "lagenhet",
+      price: 3_400_000,
+      size: 78,
+      rooms: 3,
+      lotSize: undefined,
+      condition: "nyskick",
+      status: "active",
+      acceptancePrice: 3_200_000,
       lat: 59.8479,
       lng: 17.632,
-      imageUrl: "https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=800&q=80",
-      tags: ["Nyrenoverad", "Fiber", "Parkering", "Hiss"],
+      imageUrl: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&q=80",
+      tags: ["Nyrenoverad", "Fiber", "Parkering", "Balkong", "Nära kollektivtrafik"],
       featured: false,
       viewCount: 53,
     },
     {
-      title: "Pop-up lokal – Möllevångstorget",
+      title: "Charmig villa vid Möllevångstorget",
       description:
-        "Kreativ lokal perfekt för pop-up butik, utställning eller event. Betonggolv, vita väggar, stor skyltyta mot torget. Korttidsuthyrning möjlig.",
+        "Vacker villa med originalkaraktär. 4 rum, kök och vardagsrum med öppen spis. Trädgård med uteplats. Kort väg till centrum.",
       city: "Malmö",
-      address: "Möllevångstorget 3",
-      type: "rent",
-      category: "butik",
-      price: 15000,
-      size: 65,
+      address: "Möllevångsgatan 3",
+      type: "sale",
+      category: "villa",
+      propertyType: "villa",
+      price: 4_900_000,
+      size: 145,
+      rooms: 4,
+      lotSize: 380,
+      condition: "renoverat",
+      status: "active",
+      acceptancePrice: 4_700_000,
       lat: 55.5906,
       lng: 13.006,
-      imageUrl: "https://images.unsplash.com/photo-1604328698692-f76ea9498e76?w=800&q=80",
-      tags: ["Centralt läge", "Hög takhöjd"],
+      imageUrl: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80",
+      tags: ["Centralt läge", "Trädgård", "Garage", "Nära centrum"],
       featured: false,
       viewCount: 31,
     },
     {
-      title: "Verkstad/atelier – Västra Hamnen",
+      title: "Fritidshus med pool – Västra Hamnen",
       description:
-        "Rå industrilokal i Västra Hamnen, perfekt som verkstad, atelier eller studio. Betonggolv, 5m takhöjd, stora portar. Vatten och el ingår.",
+        "Modernt fritidshus med pool och stort altan. 3 rum, kök och bastu. Sjöutsikt. Perfekt för sommar och helger.",
       city: "Malmö",
-      address: "Varvsgatan 12",
+      address: "Havsvägen 12",
       type: "sale",
-      category: "ovrigt",
-      price: 2800000,
-      size: 200,
+      category: "fritidshus",
+      propertyType: "fritidshus",
+      price: 3_200_000,
+      size: 95,
+      rooms: 3,
+      lotSize: 800,
+      condition: "nyskick",
+      status: "active",
+      acceptancePrice: 3_000_000,
       lat: 55.6137,
       lng: 12.983,
-      imageUrl: "https://images.unsplash.com/photo-1565793298595-6a879b1d9492?w=800&q=80",
-      tags: ["Hög takhöjd", "Parkering"],
+      imageUrl: "https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?w=800&q=80",
+      tags: ["Pool", "Havsutsikt", "Sjötomt", "Nyrenoverad"],
       featured: true,
       viewCount: 89,
+    },
+    {
+      title: "Tomt med bygglov – Stockholm",
+      description:
+        "Byggklar tomt i eftertraktat område. Bygglov för villa upp till 180 kvm. Nära skola och kollektivtrafik. Tryggt läge.",
+      city: "Stockholm",
+      address: "Skogsvägen 15",
+      type: "sale",
+      category: "tomt",
+      propertyType: "tomt",
+      price: 1_800_000,
+      size: 0,
+      rooms: undefined,
+      lotSize: 950,
+      condition: undefined,
+      status: "active",
+      acceptancePrice: 1_650_000,
+      lat: 59.3348,
+      lng: 18.0737,
+      imageUrl: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&q=80",
+      tags: ["Tryggt läge", "Nära kollektivtrafik", "Parkering"],
+      featured: false,
+      viewCount: 45,
+    },
+    {
+      title: "Rymlig villa med garage – Göteborg",
+      description:
+        "Stor villa med dubbelgarage och trädgård. 6 rum och kök, källare. Öppen planlösning i vardagsrum. Nyrenoverat 2022.",
+      city: "Göteborg",
+      address: "Villagatan 8",
+      type: "sale",
+      category: "villa",
+      propertyType: "villa",
+      price: 7_500_000,
+      size: 220,
+      rooms: 6,
+      lotSize: 600,
+      condition: "renoverat",
+      status: "active",
+      acceptancePrice: 7_200_000,
+      lat: 57.7089,
+      lng: 11.9746,
+      imageUrl: "https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?w=800&q=80",
+      tags: ["Garage", "Trädgård", "Nyrenoverad", "Öppen planlösning", "Parkering"],
+      featured: true,
+      viewCount: 112,
     },
   ];
 
   const createdListings = [];
   for (const data of listingsData) {
+    const { lotSize, rooms, condition, ...rest } = data;
     const listing = await prisma.listing.create({
       data: {
-        ...data,
-        ownerId: landlord.id,
-        contactName: landlord.name,
-        contactEmail: landlord.email,
-        contactPhone: landlord.phone || "",
+        ...rest,
+        lotSize: lotSize ?? null,
+        rooms: rooms ?? null,
+        condition: condition ?? null,
+        ownerId: seller.id,
+        contactName: seller.name,
+        contactEmail: seller.email,
+        contactPhone: seller.phone || "",
       },
     });
     createdListings.push(listing);
     console.log(`  Listing: ${listing.title} (${listing.id})`);
   }
 
-  // Agent listing (mäklare profil)
-  const agentListing = await prisma.listing.create({
+  // Admin listing (mäklare profil)
+  const adminListing = await prisma.listing.create({
     data: {
-      title: "Kontorslokal i centrum – Mäklarannons",
+      title: "Exklusiv lägenhet i centrum – Mäklarannons",
       description:
-        "Ljus kontorslokal i centralt läge. Tillgång till mötesrum, fiber och parkering. Kontakta Nordic Fastighetsmäklare för visning.",
+        "Ljus lägenhet i centralt läge med balkong. 3 rum och kök, fiber och parkering. Kontakta Nordic Fastighetsmäklare för visning.",
       city: "Stockholm",
       address: "Stureplan 4",
-      type: "rent",
-      category: "kontor",
-      price: 35000,
+      type: "sale",
+      category: "lagenhet",
+      propertyType: "lagenhet",
+      price: 5_500_000,
       size: 90,
+      rooms: 3,
+      lotSize: null,
+      condition: "renoverat",
+      status: "active",
+      acceptancePrice: 5_200_000,
       lat: 59.3348,
       lng: 18.0737,
-      imageUrl: "https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=800&q=80",
-      tags: ["Centralt läge", "Fiber", "Mötesrum"],
+      imageUrl: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80",
+      tags: ["Centralt läge", "Fiber", "Balkong", "Nära centrum"],
       featured: true,
       viewCount: 22,
-      ownerId: agent.id,
-      contactName: agent.name,
-      contactEmail: agent.email,
-      contactPhone: agent.phone || "",
+      ownerId: admin.id,
+      contactName: admin.name,
+      contactEmail: admin.email,
+      contactPhone: admin.phone || "",
     },
   });
-  createdListings.push(agentListing);
-  console.log(`  Agent listing: ${agentListing.title} (${agentListing.id})`);
+  createdListings.push(adminListing);
+  console.log(`  Admin listing: ${adminListing.title} (${adminListing.id})`);
 
   // ── Favorites ──────────────────────────────────────────
-  // Anna (main tenant) saves 3
+  // Anna (main buyer) saves 3
   for (const listing of [createdListings[0], createdListings[1], createdListings[4]]) {
     await prisma.favorite.upsert({
-      where: { userId_listingId: { userId: tenant.id, listingId: listing.id } },
+      where: { userId_listingId: { userId: buyer.id, listingId: listing.id } },
       update: {},
-      create: { userId: tenant.id, listingId: listing.id },
+      create: { userId: buyer.id, listingId: listing.id },
     });
   }
 
-  // Dummy tenants also save listings (gives landlord higher favorite counts)
+  // Dummy buyers also save listings (gives seller higher favorite counts)
   const dummyFavorites: [number, number][] = [
     [0, 0], [0, 1], [0, 2],       // Johan saves 3
     [1, 0], [1, 3], [1, 5],       // Maria saves 3
     [2, 1], [2, 4],               // Karl saves 2
     [3, 0], [3, 1], [3, 2], [3, 3], // Sara saves 4
   ];
-  for (const [ti, li] of dummyFavorites) {
+  for (const [bi, li] of dummyFavorites) {
     await prisma.favorite.upsert({
-      where: { userId_listingId: { userId: dummyTenants[ti].id, listingId: createdListings[li].id } },
+      where: { userId_listingId: { userId: dummyBuyers[bi].id, listingId: createdListings[li].id } },
       update: {},
       create: {
-        userId: dummyTenants[ti].id,
+        userId: dummyBuyers[bi].id,
         listingId: createdListings[li].id,
         createdAt: new Date(Date.now() - Math.random() * 7 * 86400 * 1000), // random within last 7 days
       },
     });
   }
-  console.log("  Favorites: 3 för Anna + 12 från dummy-tenants");
+  console.log("  Favorites: 3 för Anna + 12 från dummy-buyers");
 
   // ── Conversations + Messages ───────────────────────────
-  // Anna's conversations (main tenant)
+  // Anna's conversations (main buyer)
   const conv1 = await prisma.conversation.create({
     data: {
       listingId: createdListings[0].id,
-      landlordId: landlord.id,
-      tenantId: tenant.id,
+      sellerId: seller.id,
+      buyerId: buyer.id,
     },
   });
 
   const messages1 = [
-    { senderId: tenant.id, text: "Hej! Jag är intresserad av kontorslokalen på Södermalm. Finns det möjlighet att boka en visning denna vecka?" },
-    { senderId: landlord.id, text: "Hej Anna! Absolut, lokalen är ledig för visning. Passar torsdag kl 14:00 eller fredag kl 10:00?" },
-    { senderId: tenant.id, text: "Torsdag kl 14 passar perfekt! Är det okej om jag tar med en kollega?" },
-    { senderId: landlord.id, text: "Självklart! Vi ses på Götgatan 42, torsdag kl 14. Jag möter er i entrén." },
-    { senderId: tenant.id, text: "Tack, vi ses då! Har ni förresten fiber inkluderat i hyran?" },
-    { senderId: landlord.id, text: "Ja, 1 Gbit/s fiber ingår. Vi har även gemensamt kök och mötesrum som delas med grannkontoret." },
+    { senderId: buyer.id, text: "Hej! Jag är intresserad av villan på Södermalm. Finns det möjlighet att boka en visning denna vecka?" },
+    { senderId: seller.id, text: "Hej Anna! Absolut, villan är tillgänglig för visning. Passar torsdag kl 14:00 eller fredag kl 10:00?" },
+    { senderId: buyer.id, text: "Torsdag kl 14 passar perfekt! Är det okej om jag tar med min partner?" },
+    { senderId: seller.id, text: "Självklart! Vi ses på Götgatan 42, torsdag kl 14. Jag möter er i entrén." },
+    { senderId: buyer.id, text: "Tack, vi ses då! Har ni förresten fiber inkluderat i fastigheten?" },
+    { senderId: seller.id, text: "Ja, 1 Gbit/s fiber finns. Vi har även fiber till alla rum. Trädgården är vårdslöst underhållen." },
   ];
 
   for (let i = 0; i < messages1.length; i++) {
@@ -315,15 +410,15 @@ async function main() {
   const conv2 = await prisma.conversation.create({
     data: {
       listingId: createdListings[1].id,
-      landlordId: landlord.id,
-      tenantId: tenant.id,
+      sellerId: seller.id,
+      buyerId: buyer.id,
     },
   });
 
   const messages2 = [
-    { senderId: tenant.id, text: "Hej! Är butikslokalen på Avenyn fortfarande tillgänglig? Vi driver en klädbutik och söker nytt läge." },
-    { senderId: landlord.id, text: "Hej! Ja, den är tillgänglig från 1 april. Hyran är 45 000 kr/mån exkl. moms. Vill du komma och titta?" },
-    { senderId: tenant.id, text: "Ja gärna! Kan vi boka in nästa vecka? Och finns det möjlighet att förhandla hyran vid längre avtal?" },
+    { senderId: buyer.id, text: "Hej! Är lägenheten på Avenyn fortfarande tillgänglig? Vi söker ny bostad i Göteborg." },
+    { senderId: seller.id, text: "Hej! Ja, den är tillgänglig. Priset är 6 200 000 kr. Vill du komma och titta?" },
+    { senderId: buyer.id, text: "Ja gärna! Kan vi boka in nästa vecka? Och finns det möjlighet att förhandla vid seriöst köp?" },
   ];
 
   for (let i = 0; i < messages2.length; i++) {
@@ -345,89 +440,89 @@ async function main() {
 
   console.log("  Anna: 2 konversationer med meddelanden");
 
-  // ── Dummy tenant conversations (for richer landlord stats) ──
-  const dummyConversations: { tenantIdx: number; listingIdx: number; messages: { fromTenant: boolean; text: string }[]; hoursAgo: number }[] = [
+  // ── Dummy buyer conversations (for richer seller stats) ──
+  const dummyConversations: { buyerIdx: number; listingIdx: number; messages: { fromBuyer: boolean; text: string }[]; hoursAgo: number }[] = [
     {
-      tenantIdx: 0, listingIdx: 0,
+      buyerIdx: 0, listingIdx: 0,
       hoursAgo: 2,
       messages: [
-        { fromTenant: true, text: "Hej! Vi är ett startup med 8 anställda och letar kontor. Är lokalen fortfarande ledig?" },
-        { fromTenant: false, text: "Hej Johan! Ja, den är tillgänglig. Vill du boka en visning?" },
-        { fromTenant: true, text: "Absolut! Passar det imorgon förmiddag?" },
+        { fromBuyer: true, text: "Hej! Vi är ett par med två barn och letar villa. Är villan fortfarande till salu?" },
+        { fromBuyer: false, text: "Hej Johan! Ja, den är tillgänglig. Vill du boka en visning?" },
+        { fromBuyer: true, text: "Absolut! Passar det imorgon förmiddag?" },
       ],
     },
     {
-      tenantIdx: 0, listingIdx: 2,
+      buyerIdx: 0, listingIdx: 2,
       hoursAgo: 12,
       messages: [
-        { fromTenant: true, text: "Hej, jag undrar om lagerlokalen har 3-fas el? Vi behöver det för vår verksamhet." },
-        { fromTenant: false, text: "Hej! Ja, 3-fas el finns installerat. Lokalen har även uppvärmning och lastbrygga." },
+        { fromBuyer: true, text: "Hej, jag undrar om fritidshuset har egen brygga? Vi älskar att fiska." },
+        { fromBuyer: false, text: "Hej! Ja, det finns egen brygga och badplats. Sjön har bra fiskbestånd." },
       ],
     },
     {
-      tenantIdx: 1, listingIdx: 1,
+      buyerIdx: 1, listingIdx: 1,
       hoursAgo: 5,
       messages: [
-        { fromTenant: true, text: "Hej! Jag driver en inredningsbutik och är intresserad av lokalen på Avenyn. Hur stort är skyltfönstret?" },
-        { fromTenant: false, text: "Hej Maria! Skyltfönstret är ca 6 meter brett och vetter direkt mot Avenyn. Fantastisk exponering!" },
-        { fromTenant: true, text: "Låter perfekt! Kan jag komma och titta på fredag?" },
-        { fromTenant: false, text: "Fredag kl 11 funkar bra. Jag mailar dig adressen och portkod." },
+        { fromBuyer: true, text: "Hej! Jag är intresserad av lägenheten på Avenyn. Hur stor är balkongen?" },
+        { fromBuyer: false, text: "Hej Maria! Balkongen är ca 12 kvm och vetter mot havet. Fantastisk utsikt!" },
+        { fromBuyer: true, text: "Låter perfekt! Kan jag komma och titta på fredag?" },
+        { fromBuyer: false, text: "Fredag kl 11 funkar bra. Jag mailar dig adressen och portkod." },
       ],
     },
     {
-      tenantIdx: 1, listingIdx: 3,
+      buyerIdx: 1, listingIdx: 3,
       hoursAgo: 48,
       messages: [
-        { fromTenant: true, text: "Hej! Finns det parkeringsplatser till kontoret i Uppsala?" },
-        { fromTenant: false, text: "Hej! Ja, det finns 5 parkeringsplatser och cykelgarage. Laddstolpar för elbil finns också." },
-        { fromTenant: true, text: "Tack för info! Jag återkommer efter att ha diskuterat med min partner." },
+        { fromBuyer: true, text: "Hej! Finns det parkeringsplatser till lägenheten i Uppsala?" },
+        { fromBuyer: false, text: "Hej! Ja, det finns 1 parkeringsplats och cykelgarage. Laddstolpar för elbil finns också." },
+        { fromBuyer: true, text: "Tack för info! Jag återkommer efter att ha diskuterat med min partner." },
       ],
     },
     {
-      tenantIdx: 2, listingIdx: 0,
+      buyerIdx: 2, listingIdx: 0,
       hoursAgo: 24,
       messages: [
-        { fromTenant: true, text: "Hej! Är det möjligt att hyra lokalen på Södermalm för 6 månader istället för 12?" },
-        { fromTenant: false, text: "Hej Karl! Vi erbjuder normalt 12-månadersavtal, men vi kan diskutera flexibla lösningar. Vill du boka ett möte?" },
+        { fromBuyer: true, text: "Hej! Är det möjligt att förhandla priset på villan på Södermalm?" },
+        { fromBuyer: false, text: "Hej Karl! Vi är öppna för seriösa bud. Vill du boka ett möte för att diskutera?" },
       ],
     },
     {
-      tenantIdx: 2, listingIdx: 5,
+      buyerIdx: 2, listingIdx: 5,
       hoursAgo: 72,
       messages: [
-        { fromTenant: true, text: "Intresserad av verkstadslokalen. Finns det möjlighet att installera ventilation?" },
+        { fromBuyer: true, text: "Intresserad av fritidshuset med pool. Finns det möjlighet att se fastigheten i helgen?" },
       ],
     },
     {
-      tenantIdx: 3, listingIdx: 1,
+      buyerIdx: 3, listingIdx: 1,
       hoursAgo: 8,
       messages: [
-        { fromTenant: true, text: "Hej! Vi planerar att öppna ett café och butikslokalen på Avenyn verkar perfekt. Finns det vatten/avlopp för kök?" },
-        { fromTenant: false, text: "Hej Sara! Ja, det finns VA-anslutning i lokalen. Det finns även fettavskiljare installerad sedan tidigare." },
-        { fromTenant: true, text: "Fantastiskt! Vi vill gärna boka visning så snart som möjligt." },
+        { fromBuyer: true, text: "Hej! Vi planerar att flytta till Göteborg och lägenheten på Avenyn verkar perfekt. Finns avgift?" },
+        { fromBuyer: false, text: "Hej Sara! Ja, månadsavgiften är ca 4 200 kr. Det inkluderar värme, vatten och städning av trapphus." },
+        { fromBuyer: true, text: "Fantastiskt! Vi vill gärna boka visning så snart som möjligt." },
       ],
     },
     {
-      tenantIdx: 3, listingIdx: 4,
+      buyerIdx: 3, listingIdx: 4,
       hoursAgo: 36,
       messages: [
-        { fromTenant: true, text: "Hej! Kan man hyra pop-up lokalen för bara en månad? Vi vill testa ett koncept." },
-        { fromTenant: false, text: "Absolut! Vi erbjuder korttidsuthyrning från 1 månad. Hyran är densamma, 15 000 kr/mån." },
-        { fromTenant: true, text: "Perfekt, vi tar den! Kan vi flytta in 1 mars?" },
-        { fromTenant: false, text: "Det går bra! Jag skickar över avtalet via mail. Välkommen!" },
+        { fromBuyer: true, text: "Hej! Kan man få tillträde till villan vid Möllevången innan sommaren?" },
+        { fromBuyer: false, text: "Absolut! Tillträde kan ske vid överenskommelse. Säljaren är flexibel." },
+        { fromBuyer: true, text: "Perfekt, vi är intresserade! Kan vi boka visning nästa vecka?" },
+        { fromBuyer: false, text: "Det går bra! Jag skickar över tillgängliga tider via mail. Välkommen!" },
       ],
     },
   ];
 
   for (const dc of dummyConversations) {
-    const dTenant = dummyTenants[dc.tenantIdx];
+    const dBuyer = dummyBuyers[dc.buyerIdx];
     const dListing = createdListings[dc.listingIdx];
 
     const conv = await prisma.conversation.create({
       data: {
         listingId: dListing.id,
-        landlordId: landlord.id,
-        tenantId: dTenant.id,
+        sellerId: seller.id,
+        buyerId: dBuyer.id,
       },
     });
 
@@ -437,7 +532,7 @@ async function main() {
       await prisma.message.create({
         data: {
           conversationId: conv.id,
-          senderId: msg.fromTenant ? dTenant.id : landlord.id,
+          senderId: msg.fromBuyer ? dBuyer.id : seller.id,
           text: msg.text,
           read: i < dc.messages.length - 1, // last message unread
           createdAt: new Date(Date.now() - msgHoursAgo * 3600 * 1000),
@@ -459,9 +554,9 @@ async function main() {
   console.log(`\n✅ Seed klar!`);
   console.log(`   ${createdListings.length} annonser, ${totalConvs} konversationer, ${totalFavs} favoriter`);
   console.log(`   Visningar: ${listingsData.map((l) => l.viewCount).join(", ")}`);
-  console.log(`\n  Hyresvärd:  hyresvard@hittayta.se / ${PASSWORD}`);
-  console.log(`  Hyresgäst:  hyresgast@hittayta.se / ${PASSWORD}`);
-  console.log(`  Mäklare:    maklare@hittayta.se / ${PASSWORD}`);
+  console.log(`\n  Säljare:  saljare@offmarket.nu / ${PASSWORD}`);
+  console.log(`  Köpare:   kopare@offmarket.nu / ${PASSWORD}`);
+  console.log(`  Admin:    admin@offmarket.nu / ${PASSWORD}`);
 }
 
 main()

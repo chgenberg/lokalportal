@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import SaHyrDuUtClient from "./SaHyrDuUtClient";
 
 export const metadata: Metadata = {
-  title: "Så hyr du ut en lokal – Hittayta.se",
+  title: "Så fungerar det – Offmarket | Sälj och köp off-market bostäder",
   description:
-    "Steg-för-steg guide för att hyra ut kommersiella lokaler. Från planering och marknadsföring till kontrakt och tillträde.",
+    "Steg-för-steg guide för att sälja eller köpa bostäder off-market. Från annonsering och matchning till köpekontrakt och tillträde.",
 };
 
 export default function SaHyrDuUtPage() {

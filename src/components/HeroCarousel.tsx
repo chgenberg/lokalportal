@@ -5,17 +5,17 @@ import Image from "next/image";
 
 const IMAGES = [
   "https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=1920&q=80",
-  "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1920&q=80",
-  "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1920&q=80",
-  "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=1920&q=80",
-  "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=1920&q=80",
+  "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1920&q=80",
+  "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=1920&q=80",
+  "https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=1920&q=80",
+  "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1920&q=80",
 ];
 const ALT_TEXTS = [
-  "Stadsvy över kommersiella områden",
-  "Moderna kontorsytor med flexibla planlösningar",
-  "Butikslokal med stor fönsterfront",
-  "Lagerlokal med god logistik",
-  "Café med varmt ljus och atmosfär",
+  "Stadsvy med bostäder",
+  "Moderna bostäder med ljusa planlösningar",
+  "Villa med trädgård",
+  "Lägenhet med utsikt",
+  "Fritidshus vid vattnet",
 ];
 const INTERVAL = 6000;
 
@@ -52,7 +52,7 @@ export default function HeroCarousel() {
         >
           <Image
             src={src}
-            alt={ALT_TEXTS[i] ?? "Kommersiell lokal"}
+            alt={ALT_TEXTS[i] ?? "Bostad till salu"}
             fill
             priority={i === 0}
             className="object-cover"

@@ -17,11 +17,12 @@ export interface FilterState {
 }
 
 const NEAR_TO_OPTIONS = [
-  "Köpcentrum",
+  "Skola",
+  "Dagis",
   "Tågstation",
   "Busstation",
-  "Stadskärna",
-  "Industriområde",
+  "Centrum",
+  "Strand",
 ];
 
 interface FilterPanelProps {
@@ -91,18 +92,17 @@ export default function FilterPanel({ filters, onChange, onClear, onClose, total
               options={[
                 { value: "", label: "Alla typer" },
                 { value: "sale", label: "Till salu" },
-                { value: "rent", label: "Uthyres" },
               ]}
             />
             <div>
               <RangeSlider
                 min={0}
-                max={100000}
-                step={1000}
-                value={filters.priceRange}
-                onChange={(v) => onChange({ priceRange: v })}
-                formatLabel={(v) => `${v.toLocaleString("sv-SE")} kr`}
-                label="Hyra per månad"
+                max={20}
+                step={0.5}
+                value={filters.salePriceRange}
+                onChange={(v) => onChange({ salePriceRange: v })}
+                formatLabel={(v) => (v === 0 ? "0 kr" : `${v} Mkr`)}
+                label="Köpeskilling"
               />
             </div>
             <div>
@@ -199,7 +199,7 @@ export default function FilterPanel({ filters, onChange, onClear, onClose, total
           {/* Results count */}
           <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
             <p className="text-xs text-gray-400">
-              {loading ? "Söker..." : `${totalResults} lokaler hittades`}
+              {loading ? "Söker..." : `${totalResults} bostäder hittades`}
             </p>
             {onClose && (
               <button
@@ -235,7 +235,6 @@ export default function FilterPanel({ filters, onChange, onClear, onClose, total
               options={[
                 { value: "", label: "Alla typer" },
                 { value: "sale", label: "Till salu" },
-                { value: "rent", label: "Uthyres" },
               ]}
             />
             <div>
@@ -276,17 +275,6 @@ export default function FilterPanel({ filters, onChange, onClear, onClose, total
                 onChange={(v) => onChange({ salePriceRange: v })}
                 formatLabel={(v) => (v === 0 ? "0 kr" : `${v} Mkr`)}
                 label="Köpeskilling"
-              />
-            </div>
-            <div>
-              <RangeSlider
-                min={0}
-                max={100000}
-                step={1000}
-                value={filters.priceRange}
-                onChange={(v) => onChange({ priceRange: v })}
-                formatLabel={(v) => `${v.toLocaleString("sv-SE")} kr`}
-                label="Hyra per månad"
               />
             </div>
             <div>
@@ -349,7 +337,7 @@ export default function FilterPanel({ filters, onChange, onClear, onClose, total
           </div>
 
           <p className="mt-5 pt-4 border-t border-gray-100 text-xs text-gray-400">
-            {loading ? "Söker..." : `${totalResults} lokaler hittades`}
+            {loading ? "Söker..." : `${totalResults} bostäder hittades`}
           </p>
         </>
       )}

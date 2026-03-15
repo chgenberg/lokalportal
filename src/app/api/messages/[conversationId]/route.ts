@@ -22,7 +22,7 @@ export async function GET(
   try {
     const conversation = await prisma.conversation.findUnique({ where: { id: conversationId } });
     if (!conversation) return NextResponse.json({ error: "Konversation hittades inte" }, { status: 404 });
-    if (conversation.landlordId !== session.user.id && conversation.tenantId !== session.user.id) {
+    if (conversation.sellerId !== session.user.id && conversation.buyerId !== session.user.id) {
       return NextResponse.json({ error: "Ej behörig" }, { status: 403 });
     }
 
@@ -83,7 +83,7 @@ export async function POST(
 
   const conversation = await prisma.conversation.findUnique({ where: { id: conversationId } });
   if (!conversation) return NextResponse.json({ error: "Konversation hittades inte" }, { status: 404 });
-  if (conversation.landlordId !== session.user.id && conversation.tenantId !== session.user.id) {
+  if (conversation.sellerId !== session.user.id && conversation.buyerId !== session.user.id) {
     return NextResponse.json({ error: "Ej behörig" }, { status: 403 });
   }
 

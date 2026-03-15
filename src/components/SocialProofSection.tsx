@@ -5,19 +5,19 @@ import ScrollReveal from "./ScrollReveal";
 
 const testimonials = [
   {
-    quote: "Thomas och hans team hjälpte oss hitta kontor på rekordtid. Agenten skrev annonserna åt oss – sparade flera timmar.",
+    quote: "Thomas och hans team hjälpte oss hitta vår drömbostad på rekordtid. Agenten skrev annonserna åt oss – sparade flera timmar.",
     author: "Maria K.",
-    role: "Fastighetsförvaltare, Stockholm",
+    role: "Köpare, Stockholm",
   },
   {
-    quote: "Vi fick fler seriösa förfrågningar på HittaYta än på någon annan plats. Thomas svarade personligen på alla våra frågor.",
+    quote: "Vi fick fler seriösa förfrågningar på Offmarket än på någon annan plats. Thomas svarade personligen på alla våra frågor.",
     author: "Johan L.",
-    role: "Hyresvärd, Göteborg",
+    role: "Säljare, Göteborg",
   },
   {
-    quote: "Hittade ett kontor med 4 meters takhöjd – precis som Thomas lovade. Bra sökfilter och snabb kontakt med annonsören.",
+    quote: "Hittade en villa med trädgård – precis som vi drömde om. Bra sökfilter och snabb kontakt med säljaren.",
     author: "Anna S.",
-    role: "Företagare",
+    role: "Köpare",
   },
 ];
 

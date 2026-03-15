@@ -17,7 +17,7 @@ export default function ListingDetailPage() {
   const router = useRouter();
   const { data: session } = useSession();
   const id = params.id as string;
-  const [listing, setListing] = useState<Listing | null>(null);
+  const [listing, setListing] = useState<(Listing & { isPremiumContent?: boolean; matchCount?: number }) | null>(null);
   const [areaData, setAreaData] = useState<{ demographics: DemographicsData | null; nearby: NearbyData; priceContext: PriceContext | null; areaContext?: AreaContext | null } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -25,6 +25,22 @@ export default function ListingDetailPage() {
   const [contactLoading, setContactLoading] = useState(false);
   const [contactError, setContactError] = useState<string | null>(null);
   const [pdfDownloading, setPdfDownloading] = useState(false);
+
+  // Budget gate state
+  const [budgetAmount, setBudgetAmount] = useState("");
+  const [budgetStatus, setBudgetStatus] = useState<"idle" | "loading" | "matched" | "not_matched" | "error">("idle");
+  const [budgetMessage, setBudgetMessage] = useState("");
+
+  // Viewing booking state
+  const [viewingOpen, setViewingOpen] = useState(false);
+  const [viewingType, setViewingType] = useState<"digital" | "physical">("physical");
+  const [viewingDate, setViewingDate] = useState("");
+  const [viewingNotes, setViewingNotes] = useState("");
+  const [viewingLoading, setViewingLoading] = useState(false);
+  const [viewingSuccess, setViewingSuccess] = useState(false);
+
+  // Premium upgrade loading
+  const [upgradeLoading, setUpgradeLoading] = useState(false);
 
   useEffect(() => {
     const run = async () => {
@@ -63,12 +79,40 @@ export default function ListingDetailPage() {
     checkFavorited();
   }, [id]);
 
+  const handleBudgetSubmit = async () => {
+    if (!budgetAmount || !listing) return;
+    const amount = parseInt(budgetAmount.replace(/\s/g, ""), 10);
+    if (isNaN(amount) || amount <= 0) { setBudgetMessage("Ange ett giltigt belopp"); setBudgetStatus("error"); return; }
+    setBudgetStatus("loading");
+    try {
+      const res = await fetch("/api/budget-intent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ listingId: listing.id, amount }),
+      });
+      const data = await res.json();
+      if (res.ok && data.matched) {
+        setBudgetStatus("matched");
+        setBudgetMessage("Din budget matchar! Du kan nu kontakta säljaren.");
+      } else if (res.ok && !data.matched) {
+        setBudgetStatus("not_matched");
+        setBudgetMessage("Din budget matchar inte säljarens pris. Justera beloppet och försök igen.");
+      } else {
+        setBudgetStatus("error");
+        setBudgetMessage(data.error || "Kunde inte kontrollera budget.");
+      }
+    } catch {
+      setBudgetStatus("error");
+      setBudgetMessage("Något gick fel. Försök igen.");
+    }
+  };
+
   const handleContact = async () => {
     setContactError(null);
     try {
       const res = await fetch("/api/auth/session");
-      const session = await res.json();
-      if (!session?.user) { router.push(`/logga-in?callback=/annonser/${id}`); return; }
+      const sessionData = await res.json();
+      if (!sessionData?.user) { router.push(`/logga-in?callback=/annonser/${id}`); return; }
       setContactLoading(true);
       const convRes = await fetch("/api/messages/conversations", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ listingId: id }) });
       if (convRes.ok) {
@@ -78,11 +122,55 @@ export default function ListingDetailPage() {
       }
       const data = await convRes.json().catch(() => ({}));
       const message = data?.error ?? "Kunde inte starta konversation.";
-      setContactError(message);
+      if (data?.requiresBudget) {
+        setContactError("Du måste ange en budget som matchar säljarens pris innan du kan ta kontakt.");
+      } else {
+        setContactError(message);
+      }
     } catch {
       setContactError("Något gick fel. Försök igen eller logga in.");
     } finally {
       setContactLoading(false);
+    }
+  };
+
+  const handleBookViewing = async () => {
+    if (!viewingDate) { toast.error("Välj datum och tid"); return; }
+    setViewingLoading(true);
+    try {
+      const res = await fetch("/api/viewings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ listingId: id, type: viewingType, proposedTime: new Date(viewingDate).toISOString(), notes: viewingNotes || undefined }),
+      });
+      if (res.ok) {
+        setViewingSuccess(true);
+        toast.success("Visning bokad!");
+      } else {
+        const data = await res.json().catch(() => ({}));
+        toast.error(data.error || "Kunde inte boka visning");
+      }
+    } catch {
+      toast.error("Något gick fel");
+    } finally {
+      setViewingLoading(false);
+    }
+  };
+
+  const handlePremiumUpgrade = async () => {
+    setUpgradeLoading(true);
+    try {
+      const res = await fetch("/api/stripe/premium-checkout", { method: "POST" });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        toast.error(data.error || "Kunde inte starta betalning");
+      }
+    } catch {
+      toast.error("Något gick fel");
+    } finally {
+      setUpgradeLoading(false);
     }
   };
 
@@ -124,7 +212,7 @@ export default function ListingDetailPage() {
     );
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://hittayta.se";
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://offmarket.nu";
   const listingJsonLd = {
     "@context": "https://schema.org",
     "@type": "RealEstateListing",
@@ -160,6 +248,59 @@ export default function ListingDetailPage() {
         areaData={areaData ?? undefined}
         contactSlot={
           <>
+            {/* Premium content gate */}
+            {listing.isPremiumContent && (
+              <div className="p-4 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl mb-2">
+                <p className="text-sm font-semibold text-amber-800 mb-1">Premium-innehåll</p>
+                <p className="text-xs text-amber-700 mb-3">Uppgradera till Premium för att se fullständig information, alla bilder och kontaktuppgifter.</p>
+                <button
+                  type="button"
+                  onClick={handlePremiumUpgrade}
+                  disabled={upgradeLoading}
+                  className="w-full py-2.5 px-4 bg-amber-600 text-white text-sm font-semibold rounded-lg hover:bg-amber-700 transition-colors disabled:opacity-60"
+                >
+                  {upgradeLoading ? "Laddar..." : "Uppgradera till Premium"}
+                </button>
+              </div>
+            )}
+
+            {/* Budget gate */}
+            {listing.acceptancePrice && listing.ownerId !== session?.user?.id && budgetStatus !== "matched" && (
+              <div className="p-4 bg-navy/[0.03] border border-border/40 rounded-xl mb-2">
+                <p className="text-sm font-semibold text-navy mb-1">Budgetkontroll</p>
+                <p className="text-xs text-gray-500 mb-3">Ange din budget för att verifiera att den matchar säljarens förväntningar innan kontakt.</p>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={budgetAmount}
+                    onChange={(e) => { setBudgetAmount(e.target.value.replace(/[^\d\s]/g, "")); setBudgetStatus("idle"); setBudgetMessage(""); }}
+                    placeholder="T.ex. 3 500 000"
+                    className="flex-1 px-3 py-2.5 bg-white rounded-lg text-sm border border-border focus:border-navy outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleBudgetSubmit}
+                    disabled={budgetStatus === "loading"}
+                    className="px-4 py-2.5 bg-navy text-white text-sm font-medium rounded-lg hover:bg-navy/90 transition-colors disabled:opacity-60 shrink-0"
+                  >
+                    {budgetStatus === "loading" ? "..." : "Kontrollera"}
+                  </button>
+                </div>
+                {budgetMessage && (
+                  <p className={`text-xs mt-2 ${budgetStatus === "not_matched" ? "text-amber-600" : budgetStatus === "error" ? "text-red-600" : "text-green-600"}`}>
+                    {budgetMessage}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {budgetStatus === "matched" && (
+              <div className="p-3 bg-green-50 border border-green-200 rounded-xl">
+                <p className="text-sm text-green-700 font-medium">Din budget matchar! Du kan nu kontakta säljaren.</p>
+              </div>
+            )}
+
             {contactError && (
               <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2" role="alert">
                 {contactError}
@@ -168,13 +309,49 @@ export default function ListingDetailPage() {
             <div className="flex gap-2 items-center">
               <button
                 onClick={handleContact}
-                disabled={contactLoading}
+                disabled={contactLoading || (!!listing.acceptancePrice && listing.ownerId !== session?.user?.id && budgetStatus !== "matched")}
                 className="flex-1 py-3 px-4 bg-navy text-white text-center text-sm font-semibold rounded-xl disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
               >
-                {contactLoading ? "Vänta..." : "Kontakta hyresvärd"}
+                {contactLoading ? "Vänta..." : "Kontakta säljare"}
               </button>
               <FavoriteButton listingId={listing.id} initialFavorited={favorited} className="shrink-0 bg-white/80 text-navy rounded-xl p-2.5" />
             </div>
+
+            {/* Viewing booking */}
+            {listing.ownerId !== session?.user?.id && (
+              <div>
+                {!viewingOpen && !viewingSuccess && (
+                  <button
+                    type="button"
+                    onClick={() => setViewingOpen(true)}
+                    className="w-full py-3 px-4 border border-navy/20 text-navy text-center text-sm font-medium rounded-xl hover:bg-navy/[0.03] transition-colors"
+                  >
+                    Boka visning
+                  </button>
+                )}
+                {viewingOpen && !viewingSuccess && (
+                  <div className="p-4 bg-muted/30 border border-border/40 rounded-xl space-y-3">
+                    <p className="text-sm font-semibold text-navy">Boka visning</p>
+                    <div className="flex gap-2">
+                      <button type="button" onClick={() => setViewingType("physical")} className={`flex-1 py-2 text-xs font-medium rounded-lg border transition-colors ${viewingType === "physical" ? "bg-navy text-white border-navy" : "bg-white text-gray-600 border-border hover:border-navy/20"}`}>Fysisk visning</button>
+                      <button type="button" onClick={() => setViewingType("digital")} className={`flex-1 py-2 text-xs font-medium rounded-lg border transition-colors ${viewingType === "digital" ? "bg-navy text-white border-navy" : "bg-white text-gray-600 border-border hover:border-navy/20"}`}>Digital visning</button>
+                    </div>
+                    <input type="datetime-local" value={viewingDate} onChange={(e) => setViewingDate(e.target.value)} className="w-full px-3 py-2.5 bg-white rounded-lg text-sm border border-border focus:border-navy outline-none" />
+                    <textarea value={viewingNotes} onChange={(e) => setViewingNotes(e.target.value)} placeholder="Meddelande till säljaren (valfritt)" rows={2} className="w-full px-3 py-2.5 bg-white rounded-lg text-sm border border-border focus:border-navy outline-none resize-none" />
+                    <div className="flex gap-2">
+                      <button type="button" onClick={() => setViewingOpen(false)} className="flex-1 py-2.5 border border-border text-gray-600 text-sm rounded-lg hover:bg-muted/50 transition-colors">Avbryt</button>
+                      <button type="button" onClick={handleBookViewing} disabled={viewingLoading} className="flex-1 py-2.5 bg-navy text-white text-sm font-medium rounded-lg hover:bg-navy/90 transition-colors disabled:opacity-60">{viewingLoading ? "Bokar..." : "Boka"}</button>
+                    </div>
+                  </div>
+                )}
+                {viewingSuccess && (
+                  <div className="p-4 bg-green-50 border border-green-200 rounded-xl text-center">
+                    <p className="text-sm font-medium text-green-700">Visning bokad! Säljaren har fått en notifiering.</p>
+                  </div>
+                )}
+              </div>
+            )}
+
             <button
               type="button"
               onClick={async () => {
@@ -208,10 +385,12 @@ export default function ListingDetailPage() {
                 </>
               )}
             </button>
-            <a href={`mailto:${listing.contact?.email ?? ""}`} className="w-full py-3 px-4 border border-navy/20 text-navy text-center text-sm font-medium rounded-xl hover:bg-navy/[0.03] transition-colors">
-              Skicka e-post
-            </a>
-            {listing.contact?.phone ? (
+            {!listing.isPremiumContent && listing.contact?.email && (
+              <a href={`mailto:${listing.contact.email}`} className="w-full py-3 px-4 border border-navy/20 text-navy text-center text-sm font-medium rounded-xl hover:bg-navy/[0.03] transition-colors">
+                Skicka e-post
+              </a>
+            )}
+            {!listing.isPremiumContent && listing.contact?.phone ? (
               <a href={`tel:${listing.contact.phone.replace(/\s/g, "")}`} className="w-full py-3 px-4 border border-border/60 text-gray-500 text-center text-sm font-medium rounded-xl hover:bg-muted/50 transition-colors">
                 Ring
               </a>

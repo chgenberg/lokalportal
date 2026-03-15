@@ -16,7 +16,7 @@ interface StoredData {
     address: string;
     lat: number;
     lng: number;
-    type: "sale" | "rent";
+    type: "sale";
     category: string;
     price: number;
     size: number;
@@ -142,7 +142,7 @@ export default function PubliceraClient() {
           <div className="bg-navy p-6 sm:p-8 text-center">
             <h1 className="text-xl font-bold text-white mb-1">Publicera din annons</h1>
             <p className="text-[13px] text-white/60">
-              Nå tusentals potentiella hyresgäster på HittaYta.se
+              Nå tusentals potentiella köpare på Offmarket.nu
             </p>
           </div>
 

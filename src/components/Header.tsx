@@ -10,6 +10,10 @@ export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [notificationCount, setNotificationCount] = useState(0);
+  const [notifications, setNotifications] = useState<{ id: string; type: string; message: string; createdAt: string; read: boolean }[]>([]);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const notifRef = useRef<HTMLDivElement>(null);
   const [scrolled, setScrolled] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const { data: session } = useSession();
@@ -44,19 +48,48 @@ export default function Header() {
     if (!session?.user) return;
     const fetchUnread = async () => {
       try {
-        const res = await fetch("/api/messages/conversations?unreadOnly=true");
-        if (res.ok) {
-          const data = await res.json();
+        const [msgRes, notifRes] = await Promise.all([
+          fetch("/api/messages/conversations?unreadOnly=true"),
+          fetch("/api/notifications?unreadOnly=true&limit=10"),
+        ]);
+        if (msgRes.ok) {
+          const data = await msgRes.json();
           setUnreadCount(data.unreadCount || 0);
+        }
+        if (notifRes.ok) {
+          const data = await notifRes.json();
+          setNotificationCount(data.unreadCount || 0);
+          setNotifications(data.notifications || []);
         }
       } catch { /* silent */ }
     };
     fetchUnread();
-    const interval = setInterval(fetchUnread, 10000);
+    const interval = setInterval(fetchUnread, 15000);
     return () => clearInterval(interval);
   }, [session]);
 
-  const isLandlord = session?.user?.role === "landlord" || session?.user?.role === "agent";
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
+        setNotifOpen(false);
+      }
+    };
+    if (notifOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [notifOpen]);
+
+  const markAllNotificationsRead = async () => {
+    try {
+      await fetch("/api/notifications", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ markAllRead: true }) });
+      setNotificationCount(0);
+      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    } catch { /* silent */ }
+  };
+
+  const isSeller = session?.user?.isSeller;
+  const isAdmin = session?.user?.isAdmin;
 
   const navLinks = session?.user
     ? [
@@ -86,7 +119,7 @@ export default function Header() {
             <Link href="/" className="flex items-center gap-2 group shrink-0">
               <Image
                 src="/HYlogo.png"
-                alt="Hittayta.se"
+                alt="Offmarket"
                 width={200}
                 height={60}
                 className="h-10 sm:h-[52px] w-auto object-contain"
@@ -115,6 +148,51 @@ export default function Header() {
                   >
                     Annonsera
                   </Link>
+
+                  {/* Notification bell */}
+                  <div className="relative" ref={notifRef}>
+                    <button
+                      type="button"
+                      onClick={() => setNotifOpen(!notifOpen)}
+                      aria-label="Notifikationer"
+                      className="relative flex items-center justify-center w-9 h-9 rounded-full hover:bg-navy/[0.04] transition-colors"
+                    >
+                      <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+                      </svg>
+                      {notificationCount > 0 && (
+                        <span className="absolute -top-0.5 -right-0.5 w-[18px] h-[18px] bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+                          {notificationCount}
+                        </span>
+                      )}
+                    </button>
+                    {notifOpen && (
+                      <div className="absolute right-0 top-full mt-2 w-80 max-w-[calc(100vw-2rem)] bg-white rounded-2xl border border-border/60 shadow-xl py-1.5 animate-scale-in z-50">
+                        <div className="px-4 py-2.5 border-b border-border/60 flex items-center justify-between">
+                          <p className="text-sm font-semibold text-navy">Notifikationer</p>
+                          {notificationCount > 0 && (
+                            <button type="button" onClick={markAllNotificationsRead} className="text-[11px] text-navy/50 hover:text-navy transition-colors">
+                              Markera alla som lästa
+                            </button>
+                          )}
+                        </div>
+                        {notifications.length === 0 ? (
+                          <p className="px-4 py-6 text-sm text-gray-400 text-center">Inga notifikationer</p>
+                        ) : (
+                          <div className="max-h-80 overflow-y-auto">
+                            {notifications.map((n) => (
+                              <div key={n.id} className={`px-4 py-3 border-b border-border/20 last:border-0 ${!n.read ? "bg-navy/[0.02]" : ""}`}>
+                                <p className="text-[13px] text-gray-700">{n.message}</p>
+                                <p className="text-[11px] text-gray-400 mt-0.5">
+                                  {new Date(n.createdAt).toLocaleDateString("sv-SE", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
 
                   <div className="relative" ref={userMenuRef}>
                     <button
@@ -145,7 +223,7 @@ export default function Header() {
                         <div className="px-4 py-2.5 border-b border-border/60">
                           <p className="text-sm font-semibold text-navy">{session.user.name}</p>
                           <p className="text-[11px] text-gray-400 tracking-wide">
-                            {session?.user?.role === "agent" ? "Mäklare" : isLandlord ? "Hyresvärd / säljare" : "Hyresgäst / köpare"}
+                            {isSeller ? "Säljare" : "Köpare"}
                           </p>
                         </div>
                         <Link href="/dashboard" onClick={() => setUserMenuOpen(false)} className="block px-4 py-2.5 text-[13px] text-gray-500 hover:text-navy hover:bg-navy/[0.03] transition-all">
@@ -160,6 +238,11 @@ export default function Header() {
                         <Link href="/dashboard?tab=settings" onClick={() => setUserMenuOpen(false)} className="block px-4 py-2.5 text-[13px] text-gray-500 hover:text-navy hover:bg-navy/[0.03] transition-all">
                           Inställningar
                         </Link>
+                        {isAdmin && (
+                          <Link href="/admin" onClick={() => setUserMenuOpen(false)} className="block px-4 py-2.5 text-[13px] text-gray-500 hover:text-navy hover:bg-navy/[0.03] transition-all">
+                            Admin
+                          </Link>
+                        )}
                         <div className="border-t border-border/60 mt-1 pt-1">
                           <button
                             onClick={() => { setUserMenuOpen(false); signOut({ callbackUrl: window.location.origin + "/logga-in" }); }}

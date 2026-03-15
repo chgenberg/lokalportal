@@ -18,7 +18,7 @@ function DashboardContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const tab = searchParams.get("tab") || "overview";
-  const isLandlord = session?.user?.role === "landlord" || session?.user?.role === "agent";
+  const isSeller = session?.user?.isSeller;
 
   const [listings, setListings] = useState<Listing[]>([]);
   const [favorites, setFavorites] = useState<Listing[]>([]);
@@ -55,8 +55,10 @@ function DashboardContent() {
   const [editingListingId, setEditingListingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<{
     title: string; description: string; city: string; address: string;
-    type: "sale" | "rent"; category: string;
+    type: "sale"; category: string;
     price: string; size: string; tags: string[]; imageUrl: string;
+    rooms: string; lotSize: string; condition: string; energyClass: string;
+    yearBuilt: string; monthlyFee: string; acceptancePrice: string; status: string;
   } | null>(null);
   const [editError, setEditError] = useState("");
   const [editSaving, setEditSaving] = useState(false);
@@ -64,11 +66,12 @@ function DashboardContent() {
   const [listingsSort, setListingsSort] = useState<"date" | "inquiries" | "views" | "favorites">("date");
   const [renewingId, setRenewingId] = useState<string | null>(null);
   const [contactListingId, setContactListingId] = useState<string | null>(null);
-  const [profile, setProfile] = useState<{ name: string; email: string; phone: string; logoUrl?: string; companyName?: string } | null>(null);
+  const [profile, setProfile] = useState<{ name: string; email: string; phone: string; logoUrl?: string; companyName?: string; isBuyer?: boolean; isSeller?: boolean; isAdmin?: boolean; bankIdVerified?: boolean; subscriptionTier?: string } | null>(null);
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileSuccess, setProfileSuccess] = useState(false);
   const [logoUploading, setLogoUploading] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const [bankIdLoading, setBankIdLoading] = useState(false);
   const logoInputRef = useRef<HTMLInputElement>(null);
   const editImageInputRef = useRef<HTMLInputElement>(null);
 
@@ -95,11 +98,11 @@ function DashboardContent() {
       setLoading(true);
       try {
         const unreadPromise = fetch("/api/messages/conversations?unreadOnly=true");
-        const listingsPromise = isLandlord ? fetch("/api/listings?mine=true") : null;
-        const favPromise = !isLandlord ? fetch("/api/favorites") : null;
-        const statsPromise = isLandlord ? fetch("/api/listings/stats") : null;
-        const convsPromise = !isLandlord ? fetch("/api/messages/conversations") : null;
-        const explorePromise = !isLandlord ? fetch("/api/listings?limit=3") : null;
+        const listingsPromise = isSeller ? fetch("/api/listings?mine=true") : null;
+        const favPromise = !isSeller ? fetch("/api/favorites") : null;
+        const statsPromise = isSeller ? fetch("/api/listings/stats") : null;
+        const convsPromise = !isSeller ? fetch("/api/messages/conversations") : null;
+        const explorePromise = !isSeller ? fetch("/api/listings?limit=3") : null;
         const [listingsRes, unreadRes, favRes, statsRes, convsRes, exploreRes] = await Promise.all([
           listingsPromise ?? Promise.resolve(null),
           unreadPromise,
@@ -147,13 +150,18 @@ function DashboardContent() {
               phone: profileData.phone ?? "",
               logoUrl: profileData.logoUrl ?? "",
               companyName: profileData.companyName ?? "",
+              isBuyer: profileData.isBuyer,
+              isSeller: profileData.isSeller,
+              isAdmin: profileData.isAdmin,
+              bankIdVerified: profileData.bankIdVerified,
+              subscriptionTier: profileData.subscriptionTier,
             });
           } catch { /* */ }
         }
       } catch { /* */ } finally { setLoading(false); }
     };
     if (session?.user) fetchData();
-  }, [session, isLandlord]);
+  }, [session, isSeller]);
 
   const removeFavorite = async (listingId: string) => {
     try { await fetch("/api/favorites", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ listingId }) }); setFavorites((prev) => prev.filter((l) => l.id !== listingId)); } catch { /* */ }
@@ -182,12 +190,20 @@ function DashboardContent() {
         description: data.description ?? "",
         city: data.city ?? "",
         address: data.address ?? "",
-        type: data.type ?? "rent",
+        type: data.type ?? "sale",
         category: data.category ?? "",
         price: String(data.price ?? ""),
         size: String(data.size ?? ""),
         tags: Array.isArray(data.tags) ? data.tags : [],
         imageUrl: data.imageUrl ?? "",
+        rooms: data.rooms ? String(data.rooms) : "",
+        lotSize: data.lotSize ? String(data.lotSize) : "",
+        condition: data.condition ?? "",
+        energyClass: data.energyClass ?? "",
+        yearBuilt: data.yearBuilt ? String(data.yearBuilt) : "",
+        monthlyFee: data.monthlyFee ? String(data.monthlyFee) : "",
+        acceptancePrice: data.acceptancePrice ? String(data.acceptancePrice) : "",
+        status: data.status ?? "active",
       });
       setEditingListingId(listing.id);
     } catch { /* */ }
@@ -224,6 +240,11 @@ function DashboardContent() {
           ...editForm,
           price: parseInt(editForm.price, 10),
           size: parseInt(editForm.size, 10),
+          rooms: editForm.rooms ? parseInt(editForm.rooms, 10) : null,
+          lotSize: editForm.lotSize ? parseInt(editForm.lotSize, 10) : null,
+          yearBuilt: editForm.yearBuilt ? parseInt(editForm.yearBuilt, 10) : null,
+          monthlyFee: editForm.monthlyFee ? parseInt(editForm.monthlyFee, 10) : null,
+          acceptancePrice: editForm.acceptancePrice ? parseInt(editForm.acceptancePrice, 10) : null,
         }),
       });
       if (!res.ok) { const data = await res.json(); setEditError(data.error || "Kunde inte spara"); return; }
@@ -291,11 +312,11 @@ function DashboardContent() {
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-navy mb-1">Välkommen, {session?.user?.name}</h1>
-          <p className="text-sm text-gray-500">{isLandlord ? "Hantera dina lokaler och kommunicera med intresserade" : "Utforska lokaler och håll koll på dina favoriter"}</p>
+          <p className="text-sm text-gray-500">{isSeller ? "Hantera dina bostäder och kommunicera med intresserade köpare" : "Utforska bostäder och håll koll på dina favoriter"}</p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {isLandlord ? (
+          {isSeller ? (
             <>
               <StatCard label="Aktiva annonser" value={String(listings.length)} />
               <StatCard label="Olästa meddelanden" value={String(unreadCount)} accent={unreadCount > 0} />
@@ -310,7 +331,7 @@ function DashboardContent() {
               <Link href="/annonser" className="block h-full">
                 <div className="dashboard-card p-6 h-full">
                   <p className="text-2xl font-bold text-navy mb-1">&rarr;</p>
-                  <p className="font-semibold text-navy">Utforska lokaler</p>
+                  <p className="font-semibold text-navy">Utforska bostäder</p>
                   <p className="text-xs text-gray-500 mt-1">Sök bland alla annonser</p>
                 </div>
               </Link>
@@ -318,7 +339,7 @@ function DashboardContent() {
           )}
         </div>
 
-        {isLandlord && (
+        {isSeller && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {ov?.responseRate != null && (
               <div className="dashboard-card p-6">
@@ -339,7 +360,7 @@ function DashboardContent() {
           </div>
         )}
 
-        {isLandlord && ov?.recentActivity && ov.recentActivity.length > 0 && (
+        {isSeller && ov?.recentActivity && ov.recentActivity.length > 0 && (
           <div className="dashboard-card p-6">
             <h2 className="font-semibold text-navy mb-4">Senaste aktivitet</h2>
             <ul className="space-y-3">
@@ -363,11 +384,11 @@ function DashboardContent() {
           <div className="dashboard-card p-6 border-dashed border-2 border-border/60">
             <p className="text-2xl font-bold text-navy mb-1">+</p>
             <p className="font-semibold text-navy">Skapa ny annons</p>
-            <p className="text-xs text-gray-500 mt-1">Publicera en lokal med vår agent</p>
+            <p className="text-xs text-gray-500 mt-1">Publicera en bostad off-market</p>
           </div>
         </Link>
 
-        {!isLandlord && conversations.length > 0 && (
+        {!isSeller && conversations.length > 0 && (
           <div className="dashboard-card p-6">
             <h2 className="font-semibold text-navy mb-4">Senaste aktivitet</h2>
             <ul className="space-y-3">
@@ -386,7 +407,7 @@ function DashboardContent() {
           </div>
         )}
 
-        {!isLandlord && exploreListings.length > 0 && (
+        {!isSeller && exploreListings.length > 0 && (
           <div className="dashboard-card p-6">
             <h2 className="font-semibold text-navy mb-4">Utforska</h2>
             <p className="text-sm text-gray-500 mb-4">Senaste annonser – snabblänkar</p>
@@ -412,7 +433,7 @@ function DashboardContent() {
     );
   }
 
-  if (tab === "listings" && isLandlord) {
+  if (tab === "listings" && isSeller) {
     if (editingListingId && editForm) {
       return (
         <div className="space-y-6">
@@ -447,7 +468,7 @@ function DashboardContent() {
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Adress</label>
                 <input type="text" value={editForm.address} onChange={(e) => setEditForm((p) => (p ? { ...p, address: e.target.value } : p))} required className="w-full px-4 py-3 bg-muted rounded-xl text-sm border border-border focus:border-navy outline-none" />
               </div>
-              <CustomSelect label="Typ" value={editForm.type} onChange={(v) => setEditForm((p) => (p ? { ...p, type: v as "sale" | "rent" } : p))} options={[{ value: "rent", label: "Uthyres" }, { value: "sale", label: "Till salu" }]} />
+              <CustomSelect label="Typ" value={editForm.type} onChange={(v) => setEditForm((p) => (p ? { ...p, type: v as "sale" } : p))} options={[{ value: "sale", label: "Till salu" }]} />
               <div className="sm:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Kategori</label>
                 <div className="flex flex-wrap gap-2">
@@ -472,6 +493,52 @@ function DashboardContent() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Storlek (m²)</label>
                 <input type="number" value={editForm.size} onChange={(e) => setEditForm((p) => (p ? { ...p, size: e.target.value } : p))} required min="1" className="w-full px-4 py-3 bg-muted rounded-xl text-sm border border-border focus:border-navy outline-none" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Rum</label>
+                <input type="number" value={editForm.rooms} onChange={(e) => setEditForm((p) => (p ? { ...p, rooms: e.target.value } : p))} min="1" className="w-full px-4 py-3 bg-muted rounded-xl text-sm border border-border focus:border-navy outline-none" placeholder="3" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Tomtyta (m²)</label>
+                <input type="number" value={editForm.lotSize} onChange={(e) => setEditForm((p) => (p ? { ...p, lotSize: e.target.value } : p))} min="0" className="w-full px-4 py-3 bg-muted rounded-xl text-sm border border-border focus:border-navy outline-none" placeholder="800" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Skick</label>
+                <select value={editForm.condition} onChange={(e) => setEditForm((p) => (p ? { ...p, condition: e.target.value } : p))} className="w-full px-4 py-3 bg-muted rounded-xl text-sm border border-border focus:border-navy outline-none">
+                  <option value="">Välj skick</option>
+                  <option value="nyskick">Nyskick</option>
+                  <option value="renoverat">Renoverat</option>
+                  <option value="bra_skick">Bra skick</option>
+                  <option value="renoveringsbehov">Renoveringsbehov</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Energiklass</label>
+                <select value={editForm.energyClass} onChange={(e) => setEditForm((p) => (p ? { ...p, energyClass: e.target.value } : p))} className="w-full px-4 py-3 bg-muted rounded-xl text-sm border border-border focus:border-navy outline-none">
+                  <option value="">Välj energiklass</option>
+                  {["A", "B", "C", "D", "E", "F", "G"].map((c) => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Byggnadsår</label>
+                <input type="number" value={editForm.yearBuilt} onChange={(e) => setEditForm((p) => (p ? { ...p, yearBuilt: e.target.value } : p))} min="1800" max="2030" className="w-full px-4 py-3 bg-muted rounded-xl text-sm border border-border focus:border-navy outline-none" placeholder="1995" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Månadsavgift (kr)</label>
+                <input type="number" value={editForm.monthlyFee} onChange={(e) => setEditForm((p) => (p ? { ...p, monthlyFee: e.target.value } : p))} min="0" className="w-full px-4 py-3 bg-muted rounded-xl text-sm border border-border focus:border-navy outline-none" placeholder="4500" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Acceptpris (kr)</label>
+                <input type="number" value={editForm.acceptancePrice} onChange={(e) => setEditForm((p) => (p ? { ...p, acceptancePrice: e.target.value } : p))} min="0" className="w-full px-4 py-3 bg-muted rounded-xl text-sm border border-border focus:border-navy outline-none" placeholder="Minimipris för kontakt" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Status</label>
+                <select value={editForm.status} onChange={(e) => setEditForm((p) => (p ? { ...p, status: e.target.value } : p))} className="w-full px-4 py-3 bg-muted rounded-xl text-sm border border-border focus:border-navy outline-none">
+                  <option value="draft">Utkast</option>
+                  <option value="active">Aktiv</option>
+                  <option value="paused">Pausad</option>
+                  <option value="sold">Såld</option>
+                </select>
               </div>
               <div className="sm:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Beskrivning</label>
@@ -531,7 +598,7 @@ function DashboardContent() {
           <div className="dashboard-card p-6 sm:p-8 md:p-12 text-center">
             <p className="text-3xl font-bold text-gray-200 mb-4">0</p>
             <h3 className="font-semibold text-navy mb-2">Inga annonser ännu</h3>
-            <p className="text-sm text-gray-500 mb-6">Skapa din första annons för att nå potentiella hyresgäster</p>
+            <p className="text-sm text-gray-500 mb-6">Skapa din första annons för att nå potentiella köpare</p>
             <Link href="/skapa-annons" className="inline-block px-6 py-3 bg-navy text-white text-sm font-medium rounded-full hover:bg-navy-light transition-colors">Skapa annons</Link>
           </div>
         ) : (
@@ -616,7 +683,7 @@ function DashboardContent() {
     );
   }
 
-  if (tab === "favorites" && !isLandlord) {
+  if (tab === "favorites" && !isSeller) {
     return (
       <div className="space-y-6">
         <h1 className="text-2xl font-bold text-navy">Sparade favoriter</h1>
@@ -624,8 +691,8 @@ function DashboardContent() {
           <div className="dashboard-card p-6 sm:p-8 md:p-12 text-center">
             <p className="text-3xl font-bold text-gray-200 mb-4">0</p>
             <h3 className="font-semibold text-navy mb-2">Inga favoriter</h3>
-            <p className="text-sm text-gray-500 mb-6">Spara lokaler du är intresserad av</p>
-            <Link href="/annonser" className="inline-block px-6 py-3 bg-navy text-white text-sm font-medium rounded-full hover:bg-navy-light transition-colors">Utforska lokaler</Link>
+            <p className="text-sm text-gray-500 mb-6">Spara bostäder du är intresserad av</p>
+            <Link href="/annonser" className="inline-block px-6 py-3 bg-navy text-white text-sm font-medium rounded-full hover:bg-navy-light transition-colors">Utforska bostäder</Link>
           </div>
         ) : (
           <div className="space-y-4">
@@ -664,7 +731,7 @@ function DashboardContent() {
                           disabled={contactListingId === listing.id}
                           className="px-4 py-2 bg-navy text-white text-sm font-medium rounded-full hover:bg-navy-light transition-colors disabled:opacity-50"
                         >
-                          {contactListingId === listing.id ? "Vänta..." : "Kontakta hyresvärd"}
+                          {contactListingId === listing.id ? "Vänta..." : "Kontakta säljare"}
                         </button>
                         <button onClick={() => removeFavorite(listing.id)} className="px-3 py-2 text-xs text-gray-500 hover:text-navy border border-border/60 rounded-2xl hover:border-navy/20 transition-colors" aria-label="Ta bort favorit">Ta bort</button>
                       </div>
@@ -679,7 +746,7 @@ function DashboardContent() {
     );
   }
 
-  if (tab === "statistics" && isLandlord) {
+  if (tab === "statistics" && isSeller) {
     return <StatisticsTab overview={statsOverview} perListing={perListingStats} timeSeries={timeSeries} formatPrice={formatPrice} listings={listings} />;
   }
 
@@ -689,8 +756,20 @@ function DashboardContent() {
     return null;
   }
 
+  if (tab === "profiles") {
+    return <BuyerProfilesTab />;
+  }
+
+  if (tab === "matches") {
+    return <MatchesTab />;
+  }
+
+  if (tab === "services" && isSeller) {
+    return <ServiceOrdersTab />;
+  }
+
   if (tab === "settings") {
-    const isAgent = session?.user?.role === "agent";
+    const isAgent = false;
 
     const handleLogoUpload = async (file: File) => {
       if (!file.type.startsWith("image/") || file.size > 2 * 1024 * 1024) return;
@@ -717,7 +796,8 @@ function DashboardContent() {
           body: JSON.stringify({
             name: profile.name,
             phone: profile.phone,
-            ...(isAgent && { companyName: profile.companyName ?? "", logoUrl: profile.logoUrl ?? "" }),
+            companyName: profile.companyName ?? "",
+            logoUrl: profile.logoUrl ?? "",
           }),
         });
         if (!res.ok) return;
@@ -785,9 +865,87 @@ function DashboardContent() {
           {!profile && <p className="text-sm text-gray-500">Laddar...</p>}
           <div className="mt-4 pt-4 border-t border-border">
             <p className="text-xs text-gray-500">Roll</p>
-            <p className="text-sm font-medium text-navy mt-0.5">{session?.user?.role === "agent" ? "Mäklare" : isLandlord ? "Hyresvärd / säljare" : "Hyresgäst / köpare"}</p>
+            <p className="text-sm font-medium text-navy mt-0.5">{session?.user?.isAdmin ? "Administratör" : isSeller ? "Säljare" : "Köpare"}</p>
           </div>
         </div>
+        {/* BankID verification */}
+        <div className="dashboard-card p-6">
+          <h2 className="font-semibold text-navy mb-4">BankID-verifiering</h2>
+          {profile?.bankIdVerified ? (
+            <div className="flex items-center gap-2">
+              <svg className="w-5 h-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span className="text-sm font-medium text-green-700">Verifierad med BankID</span>
+            </div>
+          ) : (
+            <div>
+              <p className="text-xs text-gray-500 mb-3">Verifiera din identitet med BankID för att öka trovärdigheten hos köpare och säljare.</p>
+              <button
+                type="button"
+                onClick={async () => {
+                  setBankIdLoading(true);
+                  try {
+                    const initRes = await fetch("/api/bankid", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "initiate" }) });
+                    if (!initRes.ok) { toast.error("Kunde inte starta BankID-verifiering"); return; }
+                    const initData = await initRes.json();
+                    await new Promise((r) => setTimeout(r, 2000));
+                    const collectRes = await fetch("/api/bankid", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "collect", orderRef: initData.orderRef }) });
+                    if (collectRes.ok) {
+                      const collectData = await collectRes.json();
+                      if (collectData.status === "complete") {
+                        setProfile((p) => p ? { ...p, bankIdVerified: true } : p);
+                        toast.success("BankID-verifiering slutförd!");
+                      } else {
+                        toast.error("Verifieringen kunde inte slutföras. Försök igen.");
+                      }
+                    } else {
+                      toast.error("BankID-verifiering misslyckades");
+                    }
+                  } catch {
+                    toast.error("Något gick fel");
+                  } finally {
+                    setBankIdLoading(false);
+                  }
+                }}
+                disabled={bankIdLoading}
+                className="px-5 py-2.5 bg-navy text-white text-sm font-medium rounded-full hover:bg-navy/90 transition-colors disabled:opacity-60"
+              >
+                {bankIdLoading ? "Verifierar..." : "Verifiera med BankID"}
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Subscription */}
+        <div className="dashboard-card p-6">
+          <h2 className="font-semibold text-navy mb-2">Prenumeration</h2>
+          <div className="flex items-center gap-2 mb-3">
+            <span className={`px-3 py-1 text-xs font-semibold rounded-full ${profile?.subscriptionTier === "premium" ? "bg-amber-100 text-amber-800" : "bg-gray-100 text-gray-600"}`}>
+              {profile?.subscriptionTier === "premium" ? "Premium" : "Gratis"}
+            </span>
+          </div>
+          {profile?.subscriptionTier !== "premium" && (
+            <div>
+              <p className="text-xs text-gray-500 mb-3">Uppgradera till Premium för att se fullständiga kontaktuppgifter, alla bilder och exklusiv information.</p>
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    const res = await fetch("/api/stripe/premium-checkout", { method: "POST" });
+                    const data = await res.json();
+                    if (data.url) window.location.href = data.url;
+                    else toast.error(data.error || "Kunde inte starta betalning");
+                  } catch { toast.error("Något gick fel"); }
+                }}
+                className="px-5 py-2.5 bg-amber-600 text-white text-sm font-medium rounded-full hover:bg-amber-700 transition-colors"
+              >
+                Uppgradera till Premium
+              </button>
+            </div>
+          )}
+        </div>
+
         <div className="flex flex-wrap gap-3">
           <button onClick={() => signOut({ callbackUrl: window.location.origin + "/logga-in" })} className="px-6 py-3 bg-navy/5 text-navy text-sm font-medium rounded-full hover:bg-navy/10 transition-colors">Logga ut</button>
           <button
@@ -855,6 +1013,305 @@ function DashboardContent() {
   }
 
   return null;
+}
+
+/* ── Buyer Profiles Tab ──────────────────────────────── */
+
+function BuyerProfilesTab() {
+  const [profiles, setProfiles] = useState<{ id: string; name: string; active: boolean; areas: string[]; propertyTypes: string[]; minPrice?: number | null; maxPrice?: number | null; minSize?: number | null; maxSize?: number | null; minRooms?: number | null; maxRooms?: number | null; condition: string[]; features: string[]; notifyEmail: boolean; _count?: { matches?: number } }[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [form, setForm] = useState({ name: "", areas: "", propertyTypes: [] as string[], minPrice: "", maxPrice: "", minSize: "", maxSize: "", minRooms: "", maxRooms: "", condition: [] as string[], features: [] as string[], notifyEmail: true });
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch("/api/buyer-profiles");
+        if (res.ok) { const data = await res.json(); setProfiles(data.profiles || []); }
+      } catch { /* */ } finally { setLoading(false); }
+    })();
+  }, []);
+
+  const resetForm = () => { setForm({ name: "", areas: "", propertyTypes: [], minPrice: "", maxPrice: "", minSize: "", maxSize: "", minRooms: "", maxRooms: "", condition: [], features: [], notifyEmail: true }); setEditingId(null); setShowForm(false); };
+
+  const startEdit = (p: typeof profiles[0]) => {
+    setForm({ name: p.name, areas: p.areas.join(", "), propertyTypes: p.propertyTypes, minPrice: p.minPrice ? String(p.minPrice) : "", maxPrice: p.maxPrice ? String(p.maxPrice) : "", minSize: p.minSize ? String(p.minSize) : "", maxSize: p.maxSize ? String(p.maxSize) : "", minRooms: p.minRooms ? String(p.minRooms) : "", maxRooms: p.maxRooms ? String(p.maxRooms) : "", condition: p.condition, features: p.features, notifyEmail: p.notifyEmail });
+    setEditingId(p.id);
+    setShowForm(true);
+  };
+
+  const handleSave = async () => {
+    if (!form.name.trim()) return;
+    setSaving(true);
+    const body = { name: form.name.trim(), areas: form.areas.split(",").map((a) => a.trim()).filter(Boolean), propertyTypes: form.propertyTypes, minPrice: form.minPrice ? Number(form.minPrice) : null, maxPrice: form.maxPrice ? Number(form.maxPrice) : null, minSize: form.minSize ? Number(form.minSize) : null, maxSize: form.maxSize ? Number(form.maxSize) : null, minRooms: form.minRooms ? Number(form.minRooms) : null, maxRooms: form.maxRooms ? Number(form.maxRooms) : null, condition: form.condition, features: form.features, notifyEmail: form.notifyEmail };
+    try {
+      const url = editingId ? `/api/buyer-profiles/${editingId}` : "/api/buyer-profiles";
+      const method = editingId ? "PUT" : "POST";
+      const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      if (res.ok) {
+        const data = await res.json();
+        if (editingId) { setProfiles((prev) => prev.map((p) => p.id === editingId ? { ...p, ...data.profile } : p)); }
+        else { setProfiles((prev) => [data.profile, ...prev]); }
+        resetForm();
+      }
+    } catch { /* */ } finally { setSaving(false); }
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      const res = await fetch(`/api/buyer-profiles/${id}`, { method: "DELETE" });
+      if (res.ok) setProfiles((prev) => prev.filter((p) => p.id !== id));
+    } catch { /* */ }
+  };
+
+  const propertyTypeOptions = [{ v: "villa", l: "Villa" }, { v: "lagenhet", l: "Lägenhet" }, { v: "fritidshus", l: "Fritidshus" }, { v: "tomt", l: "Tomt" }];
+  const conditionOptions = [{ v: "nyskick", l: "Nyskick" }, { v: "renoverat", l: "Renoverat" }, { v: "bra_skick", l: "Bra skick" }, { v: "renoveringsbehov", l: "Renoveringsbehov" }];
+
+  if (loading) return <div className="space-y-4">{[...Array(2)].map((_, i) => <div key={i} className="dashboard-card p-6"><div className="h-6 bg-muted/70 rounded-2xl w-1/3 mb-4 animate-pulse" /></div>)}</div>;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-navy">Sökprofiler</h1>
+        {!showForm && <button type="button" onClick={() => { resetForm(); setShowForm(true); }} className="px-5 py-2.5 bg-navy text-white text-sm font-medium rounded-full hover:bg-navy-light transition-colors">Ny sökprofil</button>}
+      </div>
+
+      {showForm && (
+        <div className="dashboard-card p-6 space-y-4">
+          <h2 className="font-semibold text-navy">{editingId ? "Redigera sökprofil" : "Ny sökprofil"}</h2>
+          <div>
+            <label className="block text-xs font-medium text-gray-500 mb-1">Namn *</label>
+            <input type="text" value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} className="w-full px-4 py-3 bg-muted rounded-xl text-sm border border-border focus:border-navy outline-none" placeholder="T.ex. Drömvillan i Malmö" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-500 mb-1">Områden (kommaseparerat)</label>
+            <input type="text" value={form.areas} onChange={(e) => setForm((f) => ({ ...f, areas: e.target.value }))} className="w-full px-4 py-3 bg-muted rounded-xl text-sm border border-border focus:border-navy outline-none" placeholder="Stockholm, Göteborg, Malmö" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-500 mb-1.5">Bostadstyper</label>
+            <div className="flex flex-wrap gap-2">
+              {propertyTypeOptions.map((opt) => { const active = form.propertyTypes.includes(opt.v); return <button key={opt.v} type="button" onClick={() => setForm((f) => ({ ...f, propertyTypes: active ? f.propertyTypes.filter((t) => t !== opt.v) : [...f.propertyTypes, opt.v] }))} className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all border ${active ? "bg-navy text-white border-navy" : "bg-white text-gray-500 border-border hover:border-navy/20"}`}>{opt.l}</button>; })}
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div><label className="block text-xs font-medium text-gray-500 mb-1">Min pris</label><input type="number" value={form.minPrice} onChange={(e) => setForm((f) => ({ ...f, minPrice: e.target.value }))} className="w-full px-4 py-3 bg-muted rounded-xl text-sm border border-border focus:border-navy outline-none" placeholder="1000000" /></div>
+            <div><label className="block text-xs font-medium text-gray-500 mb-1">Max pris</label><input type="number" value={form.maxPrice} onChange={(e) => setForm((f) => ({ ...f, maxPrice: e.target.value }))} className="w-full px-4 py-3 bg-muted rounded-xl text-sm border border-border focus:border-navy outline-none" placeholder="5000000" /></div>
+            <div><label className="block text-xs font-medium text-gray-500 mb-1">Min storlek (m²)</label><input type="number" value={form.minSize} onChange={(e) => setForm((f) => ({ ...f, minSize: e.target.value }))} className="w-full px-4 py-3 bg-muted rounded-xl text-sm border border-border focus:border-navy outline-none" /></div>
+            <div><label className="block text-xs font-medium text-gray-500 mb-1">Max storlek (m²)</label><input type="number" value={form.maxSize} onChange={(e) => setForm((f) => ({ ...f, maxSize: e.target.value }))} className="w-full px-4 py-3 bg-muted rounded-xl text-sm border border-border focus:border-navy outline-none" /></div>
+            <div><label className="block text-xs font-medium text-gray-500 mb-1">Min rum</label><input type="number" value={form.minRooms} onChange={(e) => setForm((f) => ({ ...f, minRooms: e.target.value }))} className="w-full px-4 py-3 bg-muted rounded-xl text-sm border border-border focus:border-navy outline-none" /></div>
+            <div><label className="block text-xs font-medium text-gray-500 mb-1">Max rum</label><input type="number" value={form.maxRooms} onChange={(e) => setForm((f) => ({ ...f, maxRooms: e.target.value }))} className="w-full px-4 py-3 bg-muted rounded-xl text-sm border border-border focus:border-navy outline-none" /></div>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-500 mb-1.5">Skick</label>
+            <div className="flex flex-wrap gap-2">
+              {conditionOptions.map((opt) => { const active = form.condition.includes(opt.v); return <button key={opt.v} type="button" onClick={() => setForm((f) => ({ ...f, condition: active ? f.condition.filter((c) => c !== opt.v) : [...f.condition, opt.v] }))} className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all border ${active ? "bg-navy text-white border-navy" : "bg-white text-gray-500 border-border hover:border-navy/20"}`}>{opt.l}</button>; })}
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <input type="checkbox" id="notifyEmail" checked={form.notifyEmail} onChange={(e) => setForm((f) => ({ ...f, notifyEmail: e.target.checked }))} className="w-4 h-4 rounded border-gray-300" />
+            <label htmlFor="notifyEmail" className="text-xs text-gray-600">E-postnotifieringar vid nya matchningar</label>
+          </div>
+          <div className="flex gap-3">
+            <button type="button" onClick={resetForm} className="px-6 py-3 border border-border rounded-xl text-sm font-medium text-gray-600 hover:bg-muted">Avbryt</button>
+            <button type="button" onClick={handleSave} disabled={saving || !form.name.trim()} className="px-6 py-3 bg-navy text-white text-sm font-semibold rounded-xl hover:bg-navy-light transition-colors disabled:opacity-50">{saving ? "Sparar..." : editingId ? "Spara ändringar" : "Skapa sökprofil"}</button>
+          </div>
+        </div>
+      )}
+
+      {profiles.length === 0 && !showForm ? (
+        <div className="dashboard-card p-6 sm:p-8 md:p-12 text-center">
+          <h3 className="font-semibold text-navy mb-2">Inga sökprofiler</h3>
+          <p className="text-sm text-gray-500 mb-6">Skapa en sökprofil för att få matchningar med nya bostäder.</p>
+          <button type="button" onClick={() => setShowForm(true)} className="inline-block px-6 py-3 bg-navy text-white text-sm font-medium rounded-full hover:bg-navy-light transition-colors">Skapa sökprofil</button>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {profiles.map((p) => (
+            <div key={p.id} className="dashboard-card p-6">
+              <div className="flex items-start justify-between">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-semibold text-navy">{p.name}</h3>
+                    <span className={`px-2 py-0.5 text-[10px] font-semibold rounded-full ${p.active ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>{p.active ? "Aktiv" : "Pausad"}</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2 mt-2 text-xs text-gray-500">
+                    {p.areas.length > 0 && <span>Områden: {p.areas.join(", ")}</span>}
+                    {p.propertyTypes.length > 0 && <span>• {p.propertyTypes.map((t) => categoryLabels[t] ?? t).join(", ")}</span>}
+                    {(p.minPrice || p.maxPrice) && <span>• {p.minPrice ? `${(p.minPrice/1000000).toFixed(1)}M` : "0"} – {p.maxPrice ? `${(p.maxPrice/1000000).toFixed(1)}M kr` : "∞"}</span>}
+                    {p._count?.matches != null && <span>• {p._count.matches} matchningar</span>}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button type="button" onClick={() => startEdit(p)} className="px-3 py-2 text-xs font-medium text-navy border border-border/60 rounded-xl hover:bg-muted/60 transition-colors">Redigera</button>
+                  <button type="button" onClick={() => handleDelete(p.id)} className="px-3 py-2 text-xs text-gray-500 hover:text-red-600 border border-border/60 rounded-xl hover:border-red-200 transition-colors">Ta bort</button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── Matches Tab ─────────────────────────────────────── */
+
+function MatchesTab() {
+  const [matches, setMatches] = useState<{ id: string; listingId: string; score: number; listing?: { title: string; city: string; price: number; size: number; imageUrl: string; propertyType: string } }[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch("/api/matching");
+        if (res.ok) { const data = await res.json(); setMatches(data.matches || []); }
+      } catch { /* */ } finally { setLoading(false); }
+    })();
+  }, []);
+
+  const dismissMatch = async (matchId: string) => {
+    try {
+      setMatches((prev) => prev.filter((m) => m.id !== matchId));
+    } catch { /* */ }
+  };
+
+  if (loading) return <div className="space-y-4">{[...Array(3)].map((_, i) => <div key={i} className="dashboard-card p-6"><div className="h-6 bg-muted/70 rounded-2xl w-1/3 mb-4 animate-pulse" /></div>)}</div>;
+
+  return (
+    <div className="space-y-6">
+      <h1 className="text-2xl font-bold text-navy">Matchningar</h1>
+      {matches.length === 0 ? (
+        <div className="dashboard-card p-6 sm:p-8 md:p-12 text-center">
+          <h3 className="font-semibold text-navy mb-2">Inga matchningar</h3>
+          <p className="text-sm text-gray-500 mb-6">Skapa en sökprofil för att börja få matchningar med bostäder som matchar dina kriterier.</p>
+          <Link href="/dashboard?tab=profiles" className="inline-block px-6 py-3 bg-navy text-white text-sm font-medium rounded-full hover:bg-navy-light transition-colors">Skapa sökprofil</Link>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {matches.map((m) => (
+            <div key={m.id} className="dashboard-card p-0 overflow-hidden">
+              <div className="flex flex-col sm:flex-row">
+                {m.listing?.imageUrl && (
+                  <Link href={`/annonser/${m.listingId}`} className="sm:w-40 shrink-0 relative h-32 sm:h-auto sm:min-h-[120px] block">
+                    <Image src={m.listing.imageUrl} alt={m.listing.title || ""} fill className="object-cover" sizes="160px" />
+                  </Link>
+                )}
+                <div className="flex-1 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className={`px-2.5 py-1 text-[10px] font-bold rounded-full ${m.score >= 80 ? "bg-green-100 text-green-700" : m.score >= 50 ? "bg-amber-100 text-amber-700" : "bg-gray-100 text-gray-600"}`}>{m.score}% match</span>
+                    </div>
+                    <Link href={`/annonser/${m.listingId}`} className="font-semibold text-navy hover:text-navy-light transition-colors block mt-1">{m.listing?.title || "Bostad"}</Link>
+                    <p className="text-sm text-gray-500 mt-0.5">{m.listing?.city}</p>
+                    <div className="flex items-center gap-4 mt-1 text-sm text-gray-500">
+                      {m.listing?.size && <span>{m.listing.size} m²</span>}
+                      {m.listing?.price && <span className="font-semibold text-navy">{m.listing.price.toLocaleString("sv-SE")} kr</span>}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Link href={`/annonser/${m.listingId}`} className="px-4 py-2 bg-navy text-white text-sm font-medium rounded-full hover:bg-navy-light transition-colors">Visa annons</Link>
+                    <button type="button" onClick={() => dismissMatch(m.id)} className="px-3 py-2 text-xs text-gray-500 hover:text-red-600 border border-border/60 rounded-xl hover:border-red-200 transition-colors">Avfärda</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── Service Orders Tab ──────────────────────────────── */
+
+function ServiceOrdersTab() {
+  const [orders, setOrders] = useState<{ id: string; serviceType: string; status: string; createdAt: string; listingId?: string }[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [ordering, setOrdering] = useState<string | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch("/api/service-orders");
+        if (res.ok) { const data = await res.json(); setOrders(data.orders || []); }
+      } catch { /* */ } finally { setLoading(false); }
+    })();
+  }, []);
+
+  const services = [
+    { type: "photography", label: "Professionell fotografering", desc: "Låt en professionell fotograf ta bilder av din bostad", price: "3 995 kr" },
+    { type: "valuation", label: "Värdering", desc: "Få en professionell värdering av din bostad", price: "4 995 kr" },
+    { type: "inspection", label: "Besiktning", desc: "Utförlig teknisk besiktning med protokoll", price: "8 995 kr" },
+    { type: "energy_declaration", label: "Energideklaration", desc: "Lagstadgad energideklaration", price: "4 495 kr" },
+    { type: "legal_advice", label: "Juridisk rådgivning", desc: "Konsultation med fastighetsadvokat", price: "2 995 kr" },
+    { type: "contract", label: "Kontraktsgranskning", desc: "Granskning och upprättande av köpekontrakt", price: "5 995 kr" },
+  ];
+
+  const statusLabels: Record<string, string> = { pending: "Mottagen", confirmed: "Bekräftad", completed: "Slutförd", cancelled: "Avbokad" };
+  const statusColors: Record<string, string> = { pending: "bg-amber-100 text-amber-700", confirmed: "bg-blue-100 text-blue-700", completed: "bg-green-100 text-green-700", cancelled: "bg-gray-100 text-gray-500" };
+
+  const handleOrder = async (serviceType: string) => {
+    setOrdering(serviceType);
+    try {
+      const res = await fetch("/api/service-orders", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ serviceType }) });
+      if (res.ok) {
+        const data = await res.json();
+        setOrders((prev) => [data.order, ...prev]);
+        toast.success("Beställning mottagen!");
+      } else {
+        toast.error("Kunde inte beställa tjänsten");
+      }
+    } catch {
+      toast.error("Något gick fel");
+    } finally {
+      setOrdering(null);
+    }
+  };
+
+  if (loading) return <div className="space-y-4">{[...Array(3)].map((_, i) => <div key={i} className="dashboard-card p-6"><div className="h-6 bg-muted/70 rounded-2xl w-1/3 mb-4 animate-pulse" /></div>)}</div>;
+
+  return (
+    <div className="space-y-6">
+      <h1 className="text-2xl font-bold text-navy">Tjänster</h1>
+      <p className="text-sm text-gray-500">Beställ professionella tjänster för din bostadsförsäljning.</p>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {services.map((s) => (
+          <div key={s.type} className="dashboard-card p-6 flex flex-col">
+            <h3 className="font-semibold text-navy mb-1">{s.label}</h3>
+            <p className="text-xs text-gray-500 mb-3 flex-1">{s.desc}</p>
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-bold text-navy">{s.price}</span>
+              <button type="button" onClick={() => handleOrder(s.type)} disabled={ordering === s.type} className="px-4 py-2 bg-navy text-white text-xs font-medium rounded-full hover:bg-navy/90 transition-colors disabled:opacity-60">
+                {ordering === s.type ? "Beställer..." : "Beställ"}
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {orders.length > 0 && (
+        <div className="dashboard-card p-6">
+          <h2 className="font-semibold text-navy mb-4">Dina beställningar</h2>
+          <div className="space-y-3">
+            {orders.map((o) => (
+              <div key={o.id} className="flex items-center justify-between py-3 border-b border-border/30 last:border-0">
+                <div>
+                  <p className="text-sm font-medium text-navy">{services.find((s) => s.type === o.serviceType)?.label || o.serviceType}</p>
+                  <p className="text-xs text-gray-400">{new Date(o.createdAt).toLocaleDateString("sv-SE", { day: "numeric", month: "short", year: "numeric" })}</p>
+                </div>
+                <span className={`px-2.5 py-1 text-[10px] font-semibold rounded-full ${statusColors[o.status] || "bg-gray-100 text-gray-600"}`}>
+                  {statusLabels[o.status] || o.status}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 /* ── SVG Chart Components ─────────────────────────────── */
@@ -978,28 +1435,16 @@ function BarChart({ items, maxValue }: { items: { label: string; value: number; 
 /* ── Statistics Tab ───────────────────────────────────── */
 
 const categoryColors: Record<string, string> = {
-  kontor: "#1a2744",
-  butik: "#3b82f6",
-  lager: "#f59e0b",
-  restaurang: "#ef4444",
-  verkstad: "#6b7280",
-  showroom: "#ec4899",
-  popup: "#14b8a6",
-  atelje: "#a855f7",
-  gym: "#f97316",
-  ovrigt: "#8b5cf6",
+  villa: "#1a2744",
+  lagenhet: "#3b82f6",
+  fritidshus: "#f59e0b",
+  tomt: "#10b981",
 };
 const categoryNames: Record<string, string> = {
-  kontor: "Kontor",
-  butik: "Butik",
-  lager: "Lager",
-  restaurang: "Restaurang/Café",
-  verkstad: "Verkstad/Industri",
-  showroom: "Showroom",
-  popup: "Pop-up",
-  atelje: "Ateljé/Studio",
-  gym: "Gym/Träningslokal",
-  ovrigt: "Övrigt",
+  villa: "Villa",
+  lagenhet: "Lägenhet",
+  fritidshus: "Fritidshus",
+  tomt: "Tomt",
 };
 
 function StatisticsTab({

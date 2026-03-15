@@ -4,33 +4,33 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
-const LANDLORD_STEPS = [
+const SELLER_STEPS = [
   {
     id: 1,
     label: "Steg 1",
-    title: "Publicera din lokal",
+    title: "Publicera din bostad",
     description:
-      "Din lokal visas för tusentals sökande genom våra externa samarbeten för att säkerställa maximal exponering. Skapa en professionell annons med hjälp av vår agent på bara några minuter.",
+      "Din bostad visas för kvalificerade köpare genom våra externa samarbeten för att säkerställa maximal exponering. Skapa en professionell annons med hjälp av vår agent på bara några minuter.",
     image:
-      "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80",
-    imageAlt: "Modernt kontor med stora fönster",
+      "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80",
+    imageAlt: "Modernt hem med stora fönster",
   },
   {
     id: 2,
     label: "Steg 2",
-    title: "Hitta den perfekta hyresgästen",
+    title: "Hitta den perfekta köparen",
     description:
-      "Mottag kontaktförfrågningar eller kontakta matchande hyresgäster i appen. Vi verifierar dem och kan hjälpa dig välja den bästa hyresgästen för dig.",
+      "Mottag kontaktförfrågningar eller kontakta matchande köpare i appen. Vi verifierar dem och kan hjälpa dig välja den bästa köparen för dig.",
     image:
       "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=800&q=80",
-    imageAlt: "Affärsmöte mellan hyresvärd och hyresgäst",
+    imageAlt: "Möte mellan säljare och köpare",
   },
   {
     id: 3,
     label: "Steg 3",
-    title: "Förhandla och skriv kontrakt",
+    title: "Förhandla och skriv köpekontrakt",
     description:
-      "Förhandla villkoren direkt på plattformen. Vi guidar dig genom processen och ser till att avtalet skyddar båda parter – från hyra och löptid till ansvarsfördelning.",
+      "Förhandla villkoren direkt på plattformen. Vi guidar dig genom processen och ser till att avtalet skyddar båda parter – från köpeskilling och tillträde till ansvarsfördelning.",
     image:
       "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=800&q=80",
     imageAlt: "Kontraktsskrivning och förhandling",
@@ -40,30 +40,30 @@ const LANDLORD_STEPS = [
     label: "Steg 4",
     title: "Tillträde och överlämning",
     description:
-      "När allt är klart genomför ni en gemensam besiktning och överlämning. Dokumentera skick, lämna nycklar och ge hyresgästen allt de behöver för en smidig start.",
+      "När allt är klart genomför ni en gemensam besiktning och överlämning. Dokumentera skick, lämna nycklar och ge köparen allt de behöver för en smidig flytt.",
     image:
       "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80",
     imageAlt: "Nyckelöverlämning vid tillträde",
   },
 ];
 
-const TENANT_STEPS = [
+const BUYER_STEPS = [
   {
     id: 1,
     label: "Steg 1",
-    title: "Sök och hitta rätt lokal",
+    title: "Sök och hitta rätt bostad",
     description:
-      "Bläddra bland hundratals lokaler filtrerade på stad, typ och storlek. Använd vår karta för att hitta det perfekta läget för din verksamhet.",
+      "Bläddra bland hundratals bostäder filtrerade på stad, typ och storlek. Använd vår karta för att hitta det perfekta läget för ditt nya hem.",
     image:
       "https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=800&q=80",
-    imageAlt: "Person söker lokal på dator",
+    imageAlt: "Person söker bostad på dator",
   },
   {
     id: 2,
     label: "Steg 2",
-    title: "Kontakta hyresvärden",
+    title: "Kontakta säljaren",
     description:
-      "Skicka en intresseanmälan direkt via plattformen. Beskriv din verksamhet och dina behov så att hyresvärden kan bedöma om ni matchar.",
+      "Skicka en intresseanmälan direkt via plattformen. Beskriv din situation och dina behov så att säljaren kan bedöma om ni matchar.",
     image:
       "https://images.unsplash.com/photo-1553877522-43269d4ea984?w=800&q=80",
     imageAlt: "Kommunikation via plattformen",
@@ -73,44 +73,44 @@ const TENANT_STEPS = [
     label: "Steg 3",
     title: "Besök och utvärdera",
     description:
-      "Boka en visning och se lokalen på plats. Kontrollera att den uppfyller dina krav gällande yta, läge, tillgänglighet och teknisk standard.",
+      "Boka en visning och se bostaden på plats. Kontrollera att den uppfyller dina krav gällande storlek, läge, tillgänglighet och skick.",
     image:
       "https://images.unsplash.com/photo-1604328698692-f76ea9498e76?w=800&q=80",
-    imageAlt: "Visning av lokal",
+    imageAlt: "Visning av bostad",
   },
   {
     id: 4,
     label: "Steg 4",
-    title: "Flytta in och kom igång",
+    title: "Flytta in i ditt nya hem",
     description:
-      "När kontraktet är påskrivet är det dags att flytta in. En smidig överlämning gör att du kan fokusera på det viktigaste – din verksamhet.",
+      "När köpekontraktet är påskrivet är det dags att flytta in. En smidig överlämning gör att du kan fokusera på det viktigaste – ditt nya liv i bostaden.",
     image:
       "https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=800&q=80",
-    imageAlt: "Inflyttning i ny lokal",
+    imageAlt: "Inflyttning i ny bostad",
   },
 ];
 
 const FEATURES = [
   {
-    title: "Annonsering av lokaler",
+    title: "Annonsering av bostäder",
     description:
-      "Nordens största annonsplats för uthyrning av kommersiella lokaler. För hyresgivare och hyressökande.",
+      "Nordens plattform för off-market bostäder. För säljare och köpare som vill handla utanför den öppna marknaden.",
   },
   {
     title: "Agent-baserade annonser",
     description:
-      "Skapa professionella annonser på minuter med hjälp av vår agent. Beskriv din lokal och få en färdig annons direkt.",
+      "Skapa professionella annonser på minuter med hjälp av vår agent. Beskriv din bostad och få en färdig annons direkt.",
   },
   {
     title: "Garanterad trygghet",
     description:
-      "Garanterad hyra, förförhandlad kontakt och ett team av experter för en modern och trygg hyresupplevelse.",
+      "Verifierade användare, förförhandlade kontrakt och ett team av experter för en modern och trygg köpupplevelse.",
   },
 ];
 
 export default function SaHyrDuUtClient() {
-  const [activeTab, setActiveTab] = useState<"landlord" | "tenant">("landlord");
-  const steps = activeTab === "landlord" ? LANDLORD_STEPS : TENANT_STEPS;
+  const [activeTab, setActiveTab] = useState<"seller" | "buyer">("seller");
+  const steps = activeTab === "seller" ? SELLER_STEPS : BUYER_STEPS;
 
   return (
     <div className="min-h-screen bg-white">
@@ -121,10 +121,10 @@ export default function SaHyrDuUtClient() {
             Så fungerar det
           </p>
           <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-navy tracking-tight mb-3 sm:mb-5">
-            HYR MED HITTAYTA
+            SÄLJ OCH KÖP MED OFFMARKET
           </h1>
           <p className="text-gray-500 text-sm sm:text-lg md:text-xl max-w-xl mx-auto">
-            Hantera din uthyrning på rätt sätt – tryggt och enkelt.
+            Hantera din bostadsaffär på rätt sätt – tryggt och enkelt.
           </p>
         </div>
       </section>
@@ -157,32 +157,32 @@ export default function SaHyrDuUtClient() {
               Så fungerar det
             </h2>
             <p className="text-gray-500 text-sm sm:text-base md:text-lg max-w-lg mx-auto mb-5 sm:mb-8">
-              Tryggt och enkelt att hyra ut eller hitta en lokal
+              Tryggt och enkelt att sälja eller köpa en bostad off-market
             </p>
 
             {/* Tab toggle */}
             <div className="inline-flex items-center bg-muted/60 rounded-full p-1">
               <button
                 type="button"
-                onClick={() => setActiveTab("landlord")}
+                onClick={() => setActiveTab("seller")}
                 className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-medium transition-all ${
-                  activeTab === "landlord"
+                  activeTab === "seller"
                     ? "bg-navy text-white shadow-sm"
                     : "text-gray-500 hover:text-navy"
                 }`}
               >
-                Hyr ut
+                Sälj
               </button>
               <button
                 type="button"
-                onClick={() => setActiveTab("tenant")}
+                onClick={() => setActiveTab("buyer")}
                 className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-medium transition-all ${
-                  activeTab === "tenant"
+                  activeTab === "buyer"
                     ? "bg-navy text-white shadow-sm"
                     : "text-gray-500 hover:text-navy"
                 }`}
               >
-                Hitta lokal
+                Köp
               </button>
             </div>
           </div>
@@ -237,7 +237,7 @@ export default function SaHyrDuUtClient() {
             Redo att komma igång?
           </h3>
           <p className="text-white/60 text-sm sm:text-base md:text-lg mb-5 sm:mb-8 max-w-lg mx-auto">
-            Skapa en annons på Hittayta.se och nå tusentals sökande. Kom igång
+            Skapa en annons på Offmarket och nå kvalificerade köpare. Kom igång
             på några minuter.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
@@ -251,7 +251,7 @@ export default function SaHyrDuUtClient() {
               href="/annonser"
               className="inline-flex items-center justify-center px-6 sm:px-7 py-3 sm:py-3.5 bg-white/10 text-white text-sm sm:text-base font-medium rounded-full hover:bg-white/20 transition-colors"
             >
-              Utforska lokaler
+              Utforska bostäder
             </Link>
           </div>
         </div>

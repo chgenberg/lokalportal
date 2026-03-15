@@ -14,26 +14,26 @@ const dmSans = DM_Sans({
   weight: ["300", "400", "500", "600", "700", "800"],
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://hittayta.se";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://offmarket.nu";
 
 export const metadata: Metadata = {
-  title: "Hittayta.se – Hitta rätt lokal snabbare",
+  title: "Offmarket.nu – Off-market bostäder till salu",
   description:
-    "Sveriges ledande marknadsplats för kommersiella lokaler. Hitta butiker, kontor, lager och andra lokaler till salu eller uthyrning.",
+    "Sveriges marknadsplats för off-market bostäder. Hitta villor, lägenheter, fritidshus och tomter till salu – innan de når den öppna marknaden.",
   openGraph: {
-    title: "Hittayta.se – Hitta rätt lokal snabbare",
-    description: "Sveriges ledande marknadsplats för kommersiella lokaler. Hitta butiker, kontor, lager och mer.",
+    title: "Offmarket.nu – Off-market bostäder till salu",
+    description: "Sveriges marknadsplats för off-market bostäder. Villor, lägenheter, fritidshus och tomter till salu.",
     url: siteUrl,
-    siteName: "Hittayta.se",
+    siteName: "Offmarket.nu",
     locale: "sv_SE",
     type: "website",
-    images: [{ url: "/logohittayta.jpeg", width: 1200, height: 630, alt: "HittaYta.se – Hitta rätt lokal snabbare" }],
+    images: [{ url: "/logo-offmarket.png", width: 1200, height: 630, alt: "Offmarket.nu – Off-market bostäder till salu" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Hittayta.se – Hitta rätt lokal snabbare",
-    description: "Sveriges ledande marknadsplats för kommersiella lokaler.",
-    images: [{ url: "/logohittayta.jpeg" }],
+    title: "Offmarket.nu – Off-market bostäder till salu",
+    description: "Sveriges marknadsplats för off-market bostäder.",
+    images: [{ url: "/logo-offmarket.png" }],
   },
   metadataBase: new URL(siteUrl),
 };
@@ -48,13 +48,13 @@ export const viewport: Viewport = {
 const organizationJsonLd = {
   "@context": "https://schema.org",
   "@type": "Organization",
-  name: "Hittayta.se",
+  name: "Offmarket.nu",
   url: siteUrl,
-  description: "Sveriges ledande marknadsplats för kommersiella lokaler.",
+  description: "Sveriges marknadsplats för off-market bostäder till salu.",
   contactPoint: {
     "@type": "ContactPoint",
     contactType: "customer service",
-    email: "info@hittayta.se",
+    email: "info@offmarket.nu",
   },
 };
 

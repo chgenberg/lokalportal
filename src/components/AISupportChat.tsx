@@ -8,8 +8,8 @@ import type { BookingData } from "./BookingCalendar";
 const FAQ_QUESTIONS = [
   "Vad kostar det att annonsera?",
   "Hur fungerar annonspaketen?",
-  "Vilka lokaler kan jag hitta?",
-  "Hur kontaktar jag en hyresvärd?",
+  "Vilka bostäder kan jag hitta?",
+  "Hur kontaktar jag en säljare?",
 ];
 
 type Message = { role: "user" | "assistant"; content: string };
@@ -110,7 +110,7 @@ export default function AISupportChat() {
           <div className="flex-shrink-0 bg-navy text-white px-5 py-4">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-semibold text-base">Hittayta.se</h3>
+                <h3 className="font-semibold text-base">Offmarket.nu</h3>
                 <p className="text-[12px] text-white/70">Vi svarar direkt!</p>
               </div>
               <button
@@ -128,7 +128,7 @@ export default function AISupportChat() {
           <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3 bg-muted/20">
             {messages.length === 0 && (
               <div className="text-center py-6">
-                <p className="text-[13px] text-gray-500 mb-4">Hej! Ställ frågor om kommersiella lokaler och Hittayta.se.</p>
+                <p className="text-[13px] text-gray-500 mb-4">Hej! Ställ frågor om kommersiella lokaler och Offmarket.nu.</p>
                 <div className="flex flex-wrap gap-2 justify-center">
                   {FAQ_QUESTIONS.map((q) => (
                     <button

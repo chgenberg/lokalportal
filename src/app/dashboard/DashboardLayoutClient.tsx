@@ -97,18 +97,24 @@ export default function DashboardLayoutClient({ children }: { children: React.Re
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { data: session } = useSession();
-  const isLandlord = session?.user?.role === "landlord" || session?.user?.role === "agent";
+  const isSeller = session?.user?.isSeller;
+  const isBuyer = session?.user?.isBuyer || !isSeller;
+  const isAdmin = session?.user?.isAdmin;
   const currentTab = searchParams.get("tab");
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const navItems = [
     { href: "/dashboard", label: "Översikt", icon: IconHome, show: true },
     { href: "/dashboard/meddelanden", label: "Meddelanden", icon: IconChat, show: true },
-    { href: "/dashboard?tab=listings", label: "Mina annonser", icon: IconBuilding, show: isLandlord },
-    { href: "/dashboard?tab=favorites", label: "Favoriter", icon: IconHeart, show: !isLandlord },
-    { href: "/dashboard?tab=statistics", label: "Statistik", icon: IconChart, show: isLandlord },
+    { href: "/dashboard?tab=listings", label: "Mina annonser", icon: IconBuilding, show: isSeller },
+    { href: "/dashboard?tab=favorites", label: "Favoriter", icon: IconHeart, show: isBuyer },
+    { href: "/dashboard?tab=profiles", label: "Sökprofiler", icon: IconHeart, show: isBuyer },
+    { href: "/dashboard?tab=matches", label: "Matchningar", icon: IconChart, show: isBuyer },
+    { href: "/dashboard?tab=services", label: "Tjänster", icon: IconPlus, show: isSeller },
+    { href: "/dashboard?tab=statistics", label: "Statistik", icon: IconChart, show: isSeller },
     { href: "/skapa-annons", label: "Ny annons", icon: IconPlus, show: true },
     { href: "/dashboard?tab=settings", label: "Inställningar", icon: IconSettings, show: true },
+    { href: "/admin", label: "Admin", icon: IconSettings, show: !!isAdmin },
   ];
 
   const getIsActive = (item: (typeof navItems)[0]) => {
@@ -140,7 +146,7 @@ export default function DashboardLayoutClient({ children }: { children: React.Re
             </div>
             <div className="min-w-0">
               <p className="font-semibold text-navy text-sm truncate">{session.user.name}</p>
-              <p className="text-[11px] text-gray-400 truncate">{session?.user?.role === "agent" ? "Mäklare" : isLandlord ? "Hyresvärd / säljare" : "Hyresgäst / köpare"}</p>
+              <p className="text-[11px] text-gray-400 truncate">{isSeller ? "Säljare" : "Köpare"}</p>
             </div>
           </div>
         </div>

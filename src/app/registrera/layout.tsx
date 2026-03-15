@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Registrera konto – Hittayta.se",
+  title: "Registrera konto – Offmarket.nu",
   description:
-    "Skapa ett konto på Hittayta.se för att annonsera lokaler eller spara favoriter. Registrering är gratis.",
+    "Skapa ett konto på Offmarket.nu för att annonsera bostäder eller spara favoriter. Registrering är gratis.",
   robots: { index: false, follow: false },
 };
 

@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
     console.info("Kontaktformulär mottaget");
 
     const apiKey = process.env.RESEND_API_KEY?.trim();
-    const toEmail = process.env.CONTACT_EMAIL_TO?.trim() || "info@hittayta.se";
+    const toEmail = process.env.CONTACT_EMAIL_TO?.trim() || "info@offmarket.nu";
 
     if (apiKey) {
       const resend = new Resend(apiKey);

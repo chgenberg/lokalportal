@@ -32,10 +32,17 @@ const PENDING_LISTING_KEY = "hy_pending_listing";
 
 interface InputForm {
   address: string;
-  type: "sale" | "rent" | "";
+  type: "sale" | "";
   categories: string[];
   price: string;
   size: string;
+  rooms: string;
+  lotSize: string;
+  condition: string;
+  energyClass: string;
+  yearBuilt: string;
+  monthlyFee: string;
+  acceptancePrice: string;
   highlights: string;
   lat?: number;
   lng?: number;
@@ -56,7 +63,7 @@ interface GeneratedListing {
   address: string;
   lat: number;
   lng: number;
-  type: "sale" | "rent";
+  type: "sale";
   category: string; // comma-separated
   price: number;
   size: number;
@@ -76,6 +83,13 @@ const initialInput: InputForm = {
   categories: [],
   price: "",
   size: "",
+  rooms: "",
+  lotSize: "",
+  condition: "",
+  energyClass: "",
+  yearBuilt: "",
+  monthlyFee: "",
+  acceptancePrice: "",
   highlights: "",
   outdoorImageUrl: "",
   indoorImageUrl: "",
@@ -408,7 +422,7 @@ export default function SkapaAnnonsClient() {
       return;
     }
     if (!input.type) {
-      setGenerateError("Välj typ (uthyres eller till salu)");
+      setGenerateError("Välj typ (till salu)");
       return;
     }
     if (input.categories.length === 0) {
@@ -604,10 +618,12 @@ export default function SkapaAnnonsClient() {
       description: generated.description,
       city: generated.city,
       address: generated.address,
-      type: generated.type,
+      type: generated.type as "sale",
       category: generated.category,
+      propertyType: generated.category,
       price: generated.price,
       size: generated.size,
+      status: "active" as const,
       imageUrl: generated.imageUrl,
       imageUrls: generated.imageUrls,
       featured: false,
@@ -672,7 +688,7 @@ export default function SkapaAnnonsClient() {
             Skapa annons
           </h1>
           <p className="text-[13px] text-gray-500 mt-2 leading-relaxed">
-            Fyll i uppgifterna nedan så genererar vår agent en professionell annonstext. Ladda ner som PDF eller publicera direkt på HittaYta.se.
+            Fyll i uppgifterna nedan så genererar vår agent en professionell annonstext. Ladda ner som PDF eller publicera direkt på Offmarket.nu.
           </p>
         </div>
 
@@ -799,8 +815,8 @@ export default function SkapaAnnonsClient() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-[11px] font-semibold text-gray-400 mb-1.5 tracking-[0.1em] uppercase">Typ</label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {(["rent", "sale"] as const).map((t) => (
+                  <div className="grid grid-cols-1 gap-2">
+                    {(["sale"] as const).map((t) => (
                       <button
                         key={t}
                         type="button"
@@ -845,14 +861,14 @@ export default function SkapaAnnonsClient() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-[11px] font-semibold text-gray-400 mb-1.5 tracking-[0.1em] uppercase">
-                    Pris {input.type === "sale" ? "(kr)" : "(kr/mån)"}
+                    Pris (kr)
                   </label>
                   <input
                     type="text"
                     inputMode="numeric"
                     value={formatPriceInput(input.price)}
                     onChange={(e) => updateInput({ price: parsePriceInput(e.target.value) })}
-                    placeholder={input.type === "sale" ? "3 500 000" : "25 000"}
+                    placeholder="3 500 000"
                     className="w-full px-4 py-3 bg-muted/50 rounded-xl text-sm border border-border/60 focus:border-navy/30 focus:bg-white outline-none transition-all"
                   />
                 </div>
@@ -867,6 +883,51 @@ export default function SkapaAnnonsClient() {
                     className="w-full px-4 py-3 bg-muted/50 rounded-xl text-sm border border-border/60 focus:border-navy/30 focus:bg-white outline-none transition-all"
                   />
                 </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-[11px] font-semibold text-gray-400 mb-1.5 tracking-[0.1em] uppercase">Rum</label>
+                  <input type="number" value={input.rooms} onChange={(e) => updateInput({ rooms: e.target.value })} placeholder="3" min="1" className="w-full px-4 py-3 bg-muted/50 rounded-xl text-sm border border-border/60 focus:border-navy/30 focus:bg-white outline-none transition-all" />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-semibold text-gray-400 mb-1.5 tracking-[0.1em] uppercase">Tomtyta (m²)</label>
+                  <input type="number" value={input.lotSize} onChange={(e) => updateInput({ lotSize: e.target.value })} placeholder="800" min="0" className="w-full px-4 py-3 bg-muted/50 rounded-xl text-sm border border-border/60 focus:border-navy/30 focus:bg-white outline-none transition-all" />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-semibold text-gray-400 mb-1.5 tracking-[0.1em] uppercase">Byggnadsår</label>
+                  <input type="number" value={input.yearBuilt} onChange={(e) => updateInput({ yearBuilt: e.target.value })} placeholder="1995" min="1800" max="2030" className="w-full px-4 py-3 bg-muted/50 rounded-xl text-sm border border-border/60 focus:border-navy/30 focus:bg-white outline-none transition-all" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-[11px] font-semibold text-gray-400 mb-1.5 tracking-[0.1em] uppercase">Skick</label>
+                  <select value={input.condition} onChange={(e) => updateInput({ condition: e.target.value })} className="w-full px-4 py-3 bg-muted/50 rounded-xl text-sm border border-border/60 focus:border-navy/30 focus:bg-white outline-none transition-all">
+                    <option value="">Välj skick</option>
+                    <option value="nyskick">Nyskick</option>
+                    <option value="renoverat">Renoverat</option>
+                    <option value="bra_skick">Bra skick</option>
+                    <option value="renoveringsbehov">Renoveringsbehov</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[11px] font-semibold text-gray-400 mb-1.5 tracking-[0.1em] uppercase">Energiklass</label>
+                  <select value={input.energyClass} onChange={(e) => updateInput({ energyClass: e.target.value })} className="w-full px-4 py-3 bg-muted/50 rounded-xl text-sm border border-border/60 focus:border-navy/30 focus:bg-white outline-none transition-all">
+                    <option value="">Välj energiklass</option>
+                    {["A", "B", "C", "D", "E", "F", "G"].map((c) => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[11px] font-semibold text-gray-400 mb-1.5 tracking-[0.1em] uppercase">Månadsavgift (kr)</label>
+                  <input type="number" value={input.monthlyFee} onChange={(e) => updateInput({ monthlyFee: e.target.value })} placeholder="4500" min="0" className="w-full px-4 py-3 bg-muted/50 rounded-xl text-sm border border-border/60 focus:border-navy/30 focus:bg-white outline-none transition-all" />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-gray-400 mb-1.5 tracking-[0.1em] uppercase">Acceptpris (valfritt)</label>
+                <input type="number" value={input.acceptancePrice} onChange={(e) => updateInput({ acceptancePrice: e.target.value })} placeholder="Minimipris för kontakt från köpare" min="0" className="w-full px-4 py-3 bg-muted/50 rounded-xl text-sm border border-border/60 focus:border-navy/30 focus:bg-white outline-none transition-all" />
+                <p className="text-[11px] text-gray-400 mt-1">Om du anger ett acceptpris måste köpare ange en budget som matchar innan de kan kontakta dig.</p>
               </div>
 
               <div>
@@ -1080,10 +1141,12 @@ export default function SkapaAnnonsClient() {
                   description: generated.description,
                   city: generated.city,
                   address: generated.address,
-                  type: generated.type,
+                  type: "sale" as const,
                   category: generated.category,
+                  propertyType: generated.category,
                   price: generated.price,
                   size: generated.size,
+                  status: "active",
                   imageUrl: generated.imageUrl,
                   imageUrls: generated.imageUrls,
                   videoUrl: generated.videoUrl,
@@ -1288,7 +1351,7 @@ export default function SkapaAnnonsClient() {
             </div>
             <h2 className="text-xl font-bold text-navy mb-2">Tack!</h2>
             <p className="text-[13px] text-gray-500 mb-8 max-w-md mx-auto">
-              Vill du publicera annonsen live på HittaYta.se och nå tusentals potentiella hyresgäster?
+              Vill du publicera annonsen live på Offmarket.nu och nå tusentals potentiella köpare?
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <button

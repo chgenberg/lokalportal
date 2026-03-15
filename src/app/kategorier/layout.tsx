@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Kategorier – Hittayta.se",
+  title: "Kategorier – Offmarket.nu",
   description:
-    "Utforska lokalkategorier: butikslokaler, kontor, lager och övriga kommersiella lokaler.",
+    "Utforska bostadskategorier: villor, lägenheter, fritidshus och tomter. Hitta off-market bostäder i Sverige.",
   openGraph: {
-    title: "Kategorier – Hittayta.se",
-    description: "Utforska lokalkategorier för kommersiella lokaler i Sverige.",
+    title: "Kategorier – Offmarket.nu",
+    description: "Utforska bostadskategorier för off-market bostäder i Sverige.",
   },
 };
 

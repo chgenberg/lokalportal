@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Karta – Hittayta.se",
+  title: "Karta – Offmarket.nu",
   description:
-    "Utforska kommersiella lokaler på kartan. Filtrera på typ, pris och plats för att hitta rätt lokal.",
+    "Utforska off-market bostäder på kartan. Filtrera på typ, pris och plats för att hitta rätt bostad.",
 };
 
 export default function KartaLayout({

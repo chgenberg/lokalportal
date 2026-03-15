@@ -3,21 +3,21 @@
 import { useState, useEffect, useRef } from "react";
 
 const FACTS = [
-  "Visste du att kontorslokaler i Sverige har en genomsnittlig vakansgrad på 7–10 %?",
+  "Visste du att kontorsbostäder i Sverige har en genomsnittlig vakansgrad på 7–10 %?",
   "En bra annons med bilder får i snitt 3× fler visningsförfrågningar.",
-  "Första intrycket av en lokal avgörs inom 7 sekunder – precis som med människor.",
-  "Lokaler nära kollektivtrafik värderas i snitt 15–20 % högre.",
-  "Över 60 % av alla lokalsökningar börjar online.",
+  "Första intrycket av en bostad avgörs inom 7 sekunder – precis som med människor.",
+  "Bostäder nära kollektivtrafik värderas i snitt 15–20 % högre.",
+  "Över 60 % av alla bostadssökningar börjar online.",
   "En professionell planritning ökar intresset med upp till 30 %.",
-  "Genomsnittlig tid för att hyra ut en kommersiell lokal i Sverige är 3–6 månader.",
-  "Ljusinsläpp är den mest efterfrågade egenskapen bland hyresgäster.",
+  "Genomsnittlig tid för att hyra ut en kommersiell bostad i Sverige är 3–6 månader.",
+  "Ljusinsläpp är den mest efterfrågade egenskapen bland köpare.",
   "Flexibla kontorslösningar har ökat med 40 % sedan 2020.",
   "Energicertifikat kan påverka hyresnivån med upp till 10 %.",
-  "De flesta hyresgäster besöker 4–6 lokaler innan de bestämmer sig.",
-  "En välskriven beskrivning kan halvera tiden det tar att hitta rätt hyresgäst.",
+  "De flesta köpare besöker 4–6 bostäder innan de bestämmer sig.",
+  "En välskriven beskrivning kan halvera tiden det tar att hitta rätt köpare.",
   "Parkeringsplatser är den näst mest sökta egenskapen efter yta.",
   "Hyresnivåer i Stockholms innerstad har stigit med 25 % de senaste 5 åren.",
-  "Lagerlokaler har blivit den snabbast växande segmentet inom kommersiella fastigheter.",
+  "Lagerbostäder har blivit den snabbast växande segmentet inom kommersiella fastigheter.",
 ];
 
 const DURATION_MS = 60_000; // 60 seconds total

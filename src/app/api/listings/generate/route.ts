@@ -22,8 +22,8 @@ export async function POST(request: NextRequest) {
       { status: 429, headers: retryAfter ? { "Retry-After": String(retryAfter) } : undefined }
     );
   }
-  if (session.user.role !== "landlord" && session.user.role !== "agent")
-    return NextResponse.json({ error: "Endast hyresvärdar och mäklare kan använda generering" }, { status: 403 });
+  if (session.user.role !== "seller" && session.user.role !== "admin")
+    return NextResponse.json({ error: "Endast säljare kan använda generering" }, { status: 403 });
 
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey?.trim()) return NextResponse.json({ error: "OpenAI är inte konfigurerad" }, { status: 503 });
@@ -49,8 +49,8 @@ export async function POST(request: NextRequest) {
     Number(bodyLat) <= 90 &&
     Number(bodyLng) >= -180 &&
     Number(bodyLng) <= 180;
-  if (!VALID_TYPES.includes(type as "sale" | "rent")) {
-    return NextResponse.json({ error: "Ogiltig typ. Använd sale eller rent." }, { status: 400 });
+  if (!VALID_TYPES.includes(type as "sale")) {
+    return NextResponse.json({ error: "Ogiltig typ. Använd sale." }, { status: 400 });
   }
   if (!VALID_CATEGORIES.includes(category as (typeof VALID_CATEGORIES)[number])) {
     return NextResponse.json({ error: "Ogiltig kategori." }, { status: 400 });

@@ -11,7 +11,7 @@ export default function RegisterClient() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callback") || "/dashboard";
   const [step, setStep] = useState<"role" | "details" | "loading">("role");
-  const [role, setRole] = useState<"landlord" | "tenant" | "agent" | "">("");
+  const [role, setRole] = useState<"seller" | "buyer" | "">("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -19,7 +19,7 @@ export default function RegisterClient() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
 
-  const handleRoleSelect = (selectedRole: "landlord" | "tenant" | "agent") => { setRole(selectedRole); setStep("details"); };
+  const handleRoleSelect = (selectedRole: "seller" | "buyer") => { setRole(selectedRole); setStep("details"); };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,45 +51,35 @@ export default function RegisterClient() {
   return (
     <AuthLayout
       title="Skapa konto"
-      subtitle={step === "role" ? "Välj din kontotyp" : `Registrerar som ${role === "landlord" ? "hyresvärd / säljare" : role === "agent" ? "mäklare" : "hyresgäst / köpare"}`}
+      subtitle={step === "role" ? "Välj din kontotyp" : `Registrerar som ${role === "seller" ? "säljare" : "köpare"}`}
     >
         {step === "role" ? (
           <div className="space-y-3">
-            <button onClick={() => handleRoleSelect("landlord")} className="w-full p-6 rounded-2xl border border-border/60 text-left group transition-all duration-300 hover:shadow-md hover:-translate-y-1">
+            <button onClick={() => handleRoleSelect("seller")} className="w-full p-6 rounded-2xl border border-border/60 text-left group transition-all duration-300 hover:shadow-md hover:-translate-y-1">
               <div className="flex items-start gap-4">
                 <div className="w-11 h-11 rounded-xl bg-navy/[0.04] flex items-center justify-center shrink-0 group-hover:bg-navy transition-all duration-300">
-                  <span className="text-[13px] font-bold text-navy group-hover:text-white transition-colors">H</span>
+                  <span className="text-[13px] font-bold text-navy group-hover:text-white transition-colors">S</span>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-navy mb-1 tracking-tight">Hyresvärd / säljare</h3>
-                  <p className="text-[12px] text-gray-400 leading-relaxed">Publicera annonser och kommunicera med hyresgäster</p>
+                  <h3 className="font-semibold text-navy mb-1 tracking-tight">Säljare</h3>
+                  <p className="text-[12px] text-gray-400 leading-relaxed">Lägg upp din bostad off-market och nå rätt köpare diskret</p>
                 </div>
               </div>
             </button>
 
-            <button onClick={() => handleRoleSelect("agent")} className="w-full p-6 rounded-2xl border border-border/60 text-left group transition-all duration-300 hover:shadow-md hover:-translate-y-1">
+            <button onClick={() => handleRoleSelect("buyer")} className="w-full p-6 rounded-2xl border border-border/60 text-left group transition-all duration-300 hover:shadow-md hover:-translate-y-1">
               <div className="flex items-start gap-4">
                 <div className="w-11 h-11 rounded-xl bg-navy/[0.04] flex items-center justify-center shrink-0 group-hover:bg-navy transition-all duration-300">
-                  <span className="text-[13px] font-bold text-navy group-hover:text-white transition-colors">M</span>
+                  <span className="text-[13px] font-bold text-navy group-hover:text-white transition-colors">K</span>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-navy mb-1 tracking-tight">Mäklare</h3>
-                  <p className="text-[12px] text-gray-400 leading-relaxed">Publicera annonser med din logotyp och profilera dina lokaler</p>
+                  <h3 className="font-semibold text-navy mb-1 tracking-tight">Köpare</h3>
+                  <p className="text-[12px] text-gray-400 leading-relaxed">Hitta bostäder innan de når öppen marknad och bevaka dina drömområden</p>
                 </div>
               </div>
             </button>
 
-            <button onClick={() => handleRoleSelect("tenant")} className="w-full p-6 rounded-2xl border border-border/60 text-left group transition-all duration-300 hover:shadow-md hover:-translate-y-1">
-              <div className="flex items-start gap-4">
-                <div className="w-11 h-11 rounded-xl bg-navy/[0.04] flex items-center justify-center shrink-0 group-hover:bg-navy transition-all duration-300">
-                  <span className="text-[13px] font-bold text-navy group-hover:text-white transition-colors">G</span>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-navy mb-1 tracking-tight">Hyresgäst / köpare</h3>
-                  <p className="text-[12px] text-gray-400 leading-relaxed">Sök lokaler, spara favoriter och kontakta hyresvärdar</p>
-                </div>
-              </div>
-            </button>
+            <p className="text-[11px] text-gray-400 text-center pt-2">Du kan alltid aktivera båda rollerna i ditt konto senare</p>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">

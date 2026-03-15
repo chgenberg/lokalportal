@@ -1,15 +1,33 @@
+export interface PrivacyLevel {
+  addressVisibility: "area" | "street" | "full";
+  showFloorPlan: boolean;
+  maxPublicImages: number;
+  documentsAfterContact: boolean;
+}
+
 export interface Listing {
   id: string;
   title: string;
   description: string;
   city: string;
   address: string;
-  type: "sale" | "rent";
-  category: string; // comma-separated: "butik", "kontor", "lager", "restaurang", "verkstad", "showroom", "popup", "atelje", "gym", "ovrigt"
+  type: "sale";
+  category: string;
+  propertyType: string; // "villa" | "lagenhet" | "fritidshus" | "tomt"
   price: number;
   size: number;
+  rooms?: number | null;
+  lotSize?: number | null;
+  condition?: string | null;
+  energyClass?: string | null;
+  yearBuilt?: number | null;
+  monthlyFee?: number | null;
+  acceptancePrice?: number | null;
+  status: string; // "draft" | "active" | "paused" | "sold" | "removed"
+  ownershipVerified?: boolean;
+  privacyLevel?: PrivacyLevel | null;
   imageUrl: string;
-  imageUrls?: string[]; // Up to 10 images; when present, takes precedence
+  imageUrls?: string[];
   videoUrl?: string | null;
   floorPlanImageUrl?: string | null;
   floorPlanDescription?: string | null;
@@ -28,23 +46,31 @@ export interface Listing {
   };
 }
 
+export type UserRole = "buyer" | "seller" | "admin" | "partner";
+
 export interface User {
   id: string;
   email: string;
   passwordHash: string;
   name: string;
-  role: "landlord" | "tenant" | "agent";
+  role: UserRole;
+  isBuyer: boolean;
+  isSeller: boolean;
+  isAdmin: boolean;
   phone?: string;
   logoUrl?: string | null;
   companyName?: string | null;
+  bankIdVerified?: boolean;
+  subscriptionTier?: "free" | "premium";
   createdAt: string;
 }
 
 export interface Conversation {
   id: string;
   listingId: string;
-  landlordId: string;
-  tenantId: string;
+  sellerId: string;
+  buyerId: string;
+  budgetMatched?: boolean;
   createdAt: string;
   lastMessageAt: string;
 }
@@ -62,20 +88,70 @@ export interface Message {
   fileMimeType?: string | null;
 }
 
+export interface BuyerProfile {
+  id: string;
+  userId: string;
+  name: string;
+  active: boolean;
+  areas: string[];
+  propertyTypes: string[];
+  minPrice?: number | null;
+  maxPrice?: number | null;
+  minSize?: number | null;
+  maxSize?: number | null;
+  minRooms?: number | null;
+  maxRooms?: number | null;
+  minLotSize?: number | null;
+  maxLotSize?: number | null;
+  condition: string[];
+  features: string[];
+  notifyEmail: boolean;
+  notifyPush: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export const categoryLabels: Record<string, string> = {
-  butik: "Butik",
-  kontor: "Kontor",
-  lager: "Lager",
-  restaurang: "Restaurang/Café",
-  verkstad: "Verkstad/Industri",
-  showroom: "Showroom",
-  popup: "Pop-up",
-  atelje: "Ateljé/Studio",
-  gym: "Gym/Träningslokal",
-  ovrigt: "Övrigt",
+  villa: "Villa",
+  lagenhet: "Lägenhet",
+  fritidshus: "Fritidshus",
+  tomt: "Tomt",
 };
 
 export const allCategories = Object.keys(categoryLabels);
+
+export const propertyTypeLabels: Record<string, string> = {
+  villa: "Villa",
+  lagenhet: "Lägenhet",
+  fritidshus: "Fritidshus",
+  tomt: "Tomt",
+};
+
+export const allPropertyTypes = Object.keys(propertyTypeLabels);
+
+export const conditionLabels: Record<string, string> = {
+  nyskick: "Nyskick",
+  renoverat: "Renoverat",
+  bra_skick: "Bra skick",
+  renoveringsbehov: "Renoveringsbehov",
+};
+
+export const allConditions = Object.keys(conditionLabels);
+
+export const featureLabels: Record<string, string> = {
+  pool: "Pool",
+  sjotomt: "Sjötomt",
+  garage: "Garage",
+  balkong: "Balkong",
+  trädgård: "Trädgård",
+  havsutsikt: "Havsutsikt",
+  öppen_spis: "Öppen spis",
+  bastu: "Bastu",
+  parkering: "Parkering",
+  fiber: "Fiber",
+};
+
+export const allFeatures = Object.keys(featureLabels);
 
 /** Get all images for a listing (imageUrls takes precedence over imageUrl) */
 export function getListingImages(listing: { imageUrl?: string; imageUrls?: string[] }): string[] {
@@ -100,36 +176,45 @@ export function formatCategories(cat: string): string {
 
 export const typeLabels: Record<string, string> = {
   sale: "Till salu",
-  rent: "Uthyres",
+};
+
+export const statusLabels: Record<string, string> = {
+  draft: "Utkast",
+  active: "Aktiv",
+  paused: "Pausad",
+  sold: "Såld",
+  removed: "Borttagen",
 };
 
 export const roleLabels: Record<string, string> = {
-  landlord: "Hyresvärd / säljare",
-  tenant: "Hyresgäst / köpare",
-  agent: "Mäklare",
+  seller: "Säljare",
+  buyer: "Köpare",
+  admin: "Administratör",
+  partner: "Servicepartner",
 };
 
 export const availableTags = [
   "Nyrenoverad",
   "Centralt läge",
-  "Hög takhöjd",
   "Parkering",
   "Fiber",
-  "Klimatanläggning",
-  "Lastbrygga",
-  "Skyltfönster",
   "Öppen planlösning",
-  "Mötesrum",
   "Nära kollektivtrafik",
-  "Gångavstånd till restauranger",
   "Tryggt läge",
   "Nära centrum",
+  "Sjötomt",
+  "Havsutsikt",
+  "Balkong",
+  "Trädgård",
+  "Garage",
+  "Pool",
 ] as const;
 
 export interface SearchFilters {
   city: string;
   type: string;
   category: string;
+  propertyType?: string;
 }
 
 /** Structured nearby amenities from Overpass API */

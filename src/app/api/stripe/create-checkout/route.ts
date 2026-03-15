@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
             recurring: { interval: "month" },
             product_data: {
               name: `Annons: ${listing.title.slice(0, 60)}`,
-              description: `Månadsprenumeration för annons på HittaYta.se`,
+              description: `Månadsprenumeration för annons på Offmarket.nu`,
             },
           },
           quantity: 1,

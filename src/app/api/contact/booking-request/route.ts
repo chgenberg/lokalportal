@@ -43,14 +43,14 @@ export async function POST(req: NextRequest) {
     const companyStr = company != null ? String(company).trim().slice(0, MAX_COMPANY) : "";
     const messageStr = message != null ? String(message).trim().slice(0, MAX_MESSAGE) : "";
 
-    const toEmail = process.env.CONTACT_EMAIL_TO?.trim() || "info@hittayta.se";
+    const toEmail = process.env.CONTACT_EMAIL_TO?.trim() || "info@offmarket.nu";
     const apiKey = process.env.RESEND_API_KEY?.trim();
 
     if (apiKey) {
       const resend = new Resend(apiKey);
       const fromEmail = process.env.RESEND_FROM_EMAIL?.trim() || "onboarding@resend.dev";
 
-      const teamText = `Ny uppringningsbokning från Hittayta.se
+      const teamText = `Ny uppringningsbokning från Offmarket.nu
 
 Datum: ${date}
 Tid: ${time}
@@ -73,15 +73,15 @@ ${messageStr ? `\nMeddelande:\n${messageStr}` : ""}`;
 
 Tack för din bokning. Vi ringer dig ${date} kl ${time}.
 
-Har du frågor? Svara på detta mejl eller kontakta oss på info@hittayta.se.
+Har du frågor? Svara på detta mejl eller kontakta oss på info@offmarket.nu.
 
 Med vänliga hälsningar,
-Hittayta.se`;
+Offmarket.nu`;
 
       await resend.emails.send({
         from: fromEmail,
         to: emailStr,
-        subject: "Bekräftelse: Vi ringer dig – Hittayta.se",
+        subject: "Bekräftelse: Vi ringer dig – Offmarket.nu",
         text: confirmText,
       });
     } else {

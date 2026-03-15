@@ -7,15 +7,11 @@ import type { NearbyData, DemographicsData, PriceContext, AreaContext } from "@/
 type Step = "email" | "input" | "loading" | "result";
 
 const CATEGORIES = [
-  { value: "butik", label: "Butik" },
-  { value: "kontor", label: "Kontor" },
-  { value: "lager", label: "Lager" },
-  { value: "restaurang", label: "Restaurang" },
-  { value: "verkstad", label: "Verkstad" },
-  { value: "showroom", label: "Showroom" },
-  { value: "popup", label: "Pop-up" },
-  { value: "atelje", label: "Ateljé" },
-  { value: "gym", label: "Gym/Studio" },
+  { value: "villa", label: "Villa" },
+  { value: "lägenhet", label: "Lägenhet" },
+  { value: "fritidshus", label: "Fritidshus" },
+  { value: "tomt", label: "Tomt" },
+  { value: "radhus", label: "Radhus" },
   { value: "ovrigt", label: "Övrigt" },
 ];
 
@@ -48,7 +44,7 @@ export default function HyreskalkylatorClient() {
   const [emailError, setEmailError] = useState("");
 
   const [address, setAddress] = useState("");
-  const [category, setCategory] = useState("kontor");
+  const [category, setCategory] = useState("lägenhet");
   const [size, setSize] = useState("");
   const [inputError, setInputError] = useState("");
 
@@ -136,10 +132,10 @@ export default function HyreskalkylatorClient() {
             Gratis verktyg
           </p>
           <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold text-navy tracking-tight mb-3 sm:mb-5">
-            Hyreskalkylator
+            Prisuppskattning
           </h1>
           <p className="text-gray-500 text-sm sm:text-lg max-w-xl mx-auto">
-            Få en uppskattning av marknadsmässig hyra baserat på adress, kategori och storlek.
+            Få en uppskattning av marknadsmässigt pris baserat på adress, kategori och storlek.
           </p>
         </div>
       </section>
@@ -183,8 +179,8 @@ export default function HyreskalkylatorClient() {
           {step === "input" && (
             <form onSubmit={handleCalculate} className="bg-white rounded-2xl border border-border/60 p-6 sm:p-8 shadow-sm">
               <p className="text-[11px] font-semibold text-gray-400 tracking-[0.1em] uppercase mb-4">Steg 2 av 3</p>
-              <h2 className="text-lg font-bold text-navy mb-2">Beskriv lokalen</h2>
-              <p className="text-[13px] text-gray-500 mb-6">Ange adress, kategori och storlek för att få en hyresuppskattning.</p>
+              <h2 className="text-lg font-bold text-navy mb-2">Beskriv bostaden</h2>
+              <p className="text-[13px] text-gray-500 mb-6">Ange adress, kategori och storlek för att få en prisuppskattning.</p>
               <div className="space-y-4">
                 <div className="relative">
                   <label className="block text-[11px] font-semibold text-gray-400 mb-1.5 tracking-[0.1em] uppercase">Adress *</label>
@@ -226,7 +222,7 @@ export default function HyreskalkylatorClient() {
               </div>
               {(inputError || loadingError) && <p className="text-red-500 text-xs mt-3">{inputError || loadingError}</p>}
               <button type="submit" className="mt-6 w-full py-3.5 bg-navy text-white text-[13px] font-semibold rounded-xl tracking-wide hover:shadow-md hover:-translate-y-0.5 transition-all">
-                Beräkna hyra
+                Beräkna pris
               </button>
             </form>
           )}
@@ -246,16 +242,16 @@ export default function HyreskalkylatorClient() {
 
               {/* Main estimate */}
               <div className="bg-navy rounded-2xl p-6 sm:p-8 text-white">
-                <p className="text-[11px] font-semibold text-white/40 tracking-[0.15em] uppercase mb-2">Uppskattad hyra</p>
+                <p className="text-[11px] font-semibold text-white/40 tracking-[0.15em] uppercase mb-2">Uppskattat pris</p>
                 {result.estimatedRent > 0 ? (
                   <>
-                    <p className="text-3xl sm:text-4xl font-bold">{fmtNum(result.estimatedRent)} <span className="text-lg font-normal text-white/60">kr/mån</span></p>
-                    <p className="text-sm text-white/50 mt-1">{fmtNum(result.estimatedPerSqm)} kr/m²/mån</p>
+                    <p className="text-3xl sm:text-4xl font-bold">{fmtNum(result.estimatedRent)} <span className="text-lg font-normal text-white/60">kr</span></p>
+                    <p className="text-sm text-white/50 mt-1">{fmtNum(result.estimatedPerSqm)} kr/m²</p>
                   </>
                 ) : (
                   <p className="text-lg text-white/60">Inga jämförbara objekt hittades i {result.city}.</p>
                 )}
-                <p className="text-xs text-white/30 mt-3">Baserat på {result.comparables.count} liknande lokaler i {result.city}</p>
+                <p className="text-xs text-white/30 mt-3">Baserat på {result.comparables.count} liknande bostäder i {result.city}</p>
               </div>
 
               {/* AI Summary */}
@@ -324,8 +320,8 @@ export default function HyreskalkylatorClient() {
 
               {/* CTA */}
               <div className="bg-navy rounded-2xl p-6 sm:p-8 text-center">
-                <h3 className="text-lg font-bold text-white mb-2">Letar du efter en lokal?</h3>
-                <p className="text-sm text-white/50 mb-5">Se alla tillgängliga lokaler i {result.city} på HittaYta.se</p>
+                <h3 className="text-lg font-bold text-white mb-2">Letar du efter en bostad?</h3>
+                <p className="text-sm text-white/50 mb-5">Se alla tillgängliga bostäder i {result.city} på Offmarket.nu</p>
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
                   <Link href={`/annonser?city=${encodeURIComponent(result.city)}`} className="px-6 py-3 bg-gold text-navy text-sm font-semibold rounded-full hover:brightness-105 transition-all">
                     Se annonser i {result.city}

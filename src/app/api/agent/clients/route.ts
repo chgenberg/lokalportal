@@ -7,7 +7,7 @@ import prisma from "@/lib/db";
 export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session?.user) return NextResponse.json({ error: "Ej inloggad" }, { status: 401 });
-  if (session.user.role !== "agent") return NextResponse.json({ error: "Endast för mäklare" }, { status: 403 });
+  if (session.user.role !== "partner" && !session.user.isAdmin) return NextResponse.json({ error: "Endast för mäklare" }, { status: 403 });
 
   try {
     const clients = await prisma.agentClient.findMany({
@@ -54,7 +54,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user) return NextResponse.json({ error: "Ej inloggad" }, { status: 401 });
-  if (session.user.role !== "agent") return NextResponse.json({ error: "Endast för mäklare" }, { status: 403 });
+  if (session.user.role !== "partner" && !session.user.isAdmin) return NextResponse.json({ error: "Endast för mäklare" }, { status: 403 });
 
   const { limited, retryAfter } = checkRateLimit(`agent-client-add:${session.user.id}`, 20, 15 * 60 * 1000);
   if (limited) {
@@ -80,8 +80,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Ingen användare hittades med den e-postadressen" }, { status: 404 });
     }
 
-    if (client.role !== "landlord") {
-      return NextResponse.json({ error: "Användaren är inte en hyresvärd" }, { status: 400 });
+    if (client.role !== "seller") {
+      return NextResponse.json({ error: "Användaren är inte en säljare" }, { status: 400 });
     }
 
     if (client.id === session.user.id) {

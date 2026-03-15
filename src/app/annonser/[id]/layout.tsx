@@ -7,7 +7,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   const listing = await prisma.listing.findUnique({ where: { id } });
   if (!listing) {
-    return { title: "Annons hittades inte – Hittayta.se" };
+    return { title: "Annons hittades inte – Offmarket.nu" };
   }
   const price =
     listing.type === "sale"
@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       : [];
 
   return {
-    title: `${listing.title} – Hittayta.se`,
+    title: `${listing.title} – Offmarket.nu`,
     description: `${listing.address}, ${listing.city}. ${price}. ${listing.description.slice(0, 150)}...`,
     openGraph: {
       title: listing.title,

@@ -21,7 +21,7 @@ export default function KartaPage() {
         const data = await res.json();
         setListings(Array.isArray(data) ? data : data.listings || []);
       } else {
-        setError("Kunde inte ladda lokaler. Försök igen.");
+        setError("Kunde inte ladda bostäder. Försök igen.");
       }
     } catch {
       setError("Ett fel uppstod vid hämtning. Försök igen.");
@@ -41,7 +41,7 @@ export default function KartaPage() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-navy mb-1">Karta</h1>
-              <p className="text-sm text-gray-500">Utforska alla lediga lokaler på kartan</p>
+              <p className="text-sm text-gray-500">Utforska alla off-market bostäder på kartan</p>
             </div>
             <Link href="/annonser" className="px-4 py-2.5 bg-navy text-white text-sm font-medium rounded-lg hover:bg-navy-light transition-colors">
               Listvy
@@ -53,7 +53,7 @@ export default function KartaPage() {
       <div className="flex flex-col lg:flex-row min-h-0 h-[calc(100dvh-180px)]">
         <div className="lg:w-80 xl:w-96 overflow-y-auto border-r border-border bg-white shrink-0 max-h-[40vh] lg:max-h-none">
           <div className="p-4">
-            <p className="text-xs font-medium text-gray-500 mb-3">{listings.length} lokaler</p>
+            <p className="text-xs font-medium text-gray-500 mb-3">{listings.length} bostäder</p>
             {error && (
               <div role="alert" className="mb-4 p-3 rounded-xl bg-red-50 border border-red-100 text-sm text-red-800">
                 <p className="mb-2">{error}</p>
@@ -68,10 +68,10 @@ export default function KartaPage() {
                 : !error && listings.length === 0
                 ? (
                     <div className="p-6 rounded-xl bg-muted/50 border border-border/40 text-center">
-                      <p className="text-sm text-gray-500 mb-2">Inga lokaler hittades</p>
-                      <p className="text-xs text-gray-400 mb-4">Använd sökning och filter för att hitta lokaler.</p>
+                      <p className="text-sm text-gray-500 mb-2">Inga bostäder hittades</p>
+                      <p className="text-xs text-gray-400 mb-4">Använd sökning och filter för att hitta bostäder.</p>
                       <Link href="/annonser" className="inline-block px-4 py-2 bg-navy text-white text-sm font-medium rounded-lg hover:bg-navy/90 transition-colors">
-                        Sök lokaler
+                        Sök bostäder
                       </Link>
                     </div>
                   )

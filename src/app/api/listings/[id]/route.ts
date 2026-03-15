@@ -6,8 +6,8 @@ import prisma from "@/lib/db";
 import { logEvent } from "@/lib/events";
 
 const ID_REGEX = /^[a-zA-Z0-9_-]{1,50}$/;
-const VALID_TYPES = ["sale", "rent"] as const;
-const VALID_CATEGORIES = ["butik", "kontor", "lager", "restaurang", "verkstad", "showroom", "popup", "atelje", "gym", "ovrigt"] as const;
+const VALID_TYPES = ["sale"] as const;
+const VALID_CATEGORIES = ["villa", "lagenhet", "fritidshus", "tomt"] as const;
 const MAX_TITLE = 200;
 const MAX_DESC = 5000;
 const MAX_CITY = 100;
@@ -34,6 +34,8 @@ export async function GET(
       return NextResponse.json({ error: "Annonsen hittades inte" }, { status: 404 });
     }
     const isOwner = session?.user?.id === listing.ownerId;
+    const isAdmin = session?.user?.isAdmin;
+    const isPremium = session?.user?.subscriptionTier === "premium";
     if (!isOwner) {
       await prisma.listing.update({
         where: { id },
@@ -42,20 +44,60 @@ export async function GET(
       listing.viewCount = (listing.viewCount ?? 0) + 1;
       logEvent("view", id, session?.user?.id ?? null);
     }
+
     const { owner, ...rest } = listing;
     const areaDataRaw = (rest as { areaData?: unknown }).areaData as { nearby?: unknown; priceContext?: unknown; demographics?: unknown } | null | undefined;
+    const privacy = (listing.privacyLevel as { addressVisibility?: string; showFloorPlan?: boolean; maxPublicImages?: number; documentsAfterContact?: boolean } | null);
+
+    // Apply privacy and premium content gating for non-owners/non-admins
+    const canSeeFullContent = isOwner || isAdmin || isPremium;
+
+    let visibleAddress = listing.address;
+    let visibleImages = listing.imageUrls;
+    let visibleFloorPlan = listing.floorPlanImageUrl;
+
+    if (!canSeeFullContent && privacy) {
+      if (privacy.addressVisibility === "area") {
+        visibleAddress = listing.city;
+      } else if (privacy.addressVisibility === "street") {
+        visibleAddress = listing.address.split(/\d/)[0]?.trim() || listing.city;
+      }
+      if (privacy.maxPublicImages && privacy.maxPublicImages > 0) {
+        visibleImages = listing.imageUrls.slice(0, privacy.maxPublicImages);
+      }
+      if (!privacy.showFloorPlan) {
+        visibleFloorPlan = null;
+      }
+    } else if (!canSeeFullContent && !isOwner) {
+      // Default free tier: limited info
+      visibleImages = listing.imageUrls.slice(0, 2);
+      visibleFloorPlan = null;
+    }
+
+    // Match count for seller dashboard
+    let matchCount: number | undefined;
+    if (isOwner) {
+      matchCount = await prisma.match.count({
+        where: { listingId: id, dismissed: false },
+      });
+    }
+
     return NextResponse.json({
       ...rest,
+      address: visibleAddress,
+      imageUrls: visibleImages,
       videoUrl: listing.videoUrl ?? undefined,
-      floorPlanImageUrl: listing.floorPlanImageUrl ?? undefined,
+      floorPlanImageUrl: visibleFloorPlan ?? undefined,
       areaData: areaDataRaw ?? undefined,
       createdAt: listing.createdAt.toISOString(),
       owner: owner ? { role: owner.role, logoUrl: owner.logoUrl, companyName: owner.companyName, name: owner.name } : undefined,
-      contact: {
+      contact: canSeeFullContent || isOwner ? {
         name: listing.contactName,
         email: listing.contactEmail,
         phone: listing.contactPhone,
-      },
+      } : { name: "", email: "", phone: "" },
+      isPremiumContent: !canSeeFullContent && !isOwner,
+      matchCount,
     });
   } catch (err) {
     console.error("Listing GET error:", err);
@@ -93,7 +135,7 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { title, description, city, address, type, category, price, size, tags, imageUrl, imageUrls, videoUrl, floorPlanImageUrl } = body;
+    const { title, description, city, address, type, category, price, size, tags, imageUrl, imageUrls, videoUrl, floorPlanImageUrl, rooms, lotSize, condition, energyClass, yearBuilt, monthlyFee, acceptancePrice, privacyLevel, status: listingStatus, propertyType } = body;
 
     if (!title || !description || !city || !address || !type || !category || price == null || price === "" || size == null || size === "") {
       return NextResponse.json({ error: "Alla obligatoriska fält måste fyllas i" }, { status: 400 });
@@ -130,8 +172,18 @@ export async function PUT(
         address: String(address).trim().slice(0, MAX_ADDRESS),
         type,
         category,
+        ...(typeof propertyType === "string" && ["villa", "lagenhet", "fritidshus", "tomt"].includes(propertyType) && { propertyType }),
         price: Math.floor(priceNum),
         size: Math.floor(sizeNum),
+        ...(rooms !== undefined && { rooms: typeof rooms === "number" && rooms > 0 ? rooms : null }),
+        ...(lotSize !== undefined && { lotSize: typeof lotSize === "number" && lotSize > 0 ? lotSize : null }),
+        ...(condition !== undefined && { condition: typeof condition === "string" ? condition : null }),
+        ...(energyClass !== undefined && { energyClass: typeof energyClass === "string" ? energyClass : null }),
+        ...(yearBuilt !== undefined && { yearBuilt: typeof yearBuilt === "number" && yearBuilt > 1800 ? yearBuilt : null }),
+        ...(monthlyFee !== undefined && { monthlyFee: typeof monthlyFee === "number" && monthlyFee >= 0 ? monthlyFee : null }),
+        ...(acceptancePrice !== undefined && { acceptancePrice: typeof acceptancePrice === "number" && acceptancePrice > 0 ? acceptancePrice : null }),
+        ...(privacyLevel !== undefined && { privacyLevel: privacyLevel && typeof privacyLevel === "object" ? privacyLevel : null }),
+        ...(listingStatus !== undefined && typeof listingStatus === "string" && ["draft", "active", "paused", "sold", "removed"].includes(listingStatus) && { status: listingStatus }),
         imageUrl: imageUrlStr,
         ...(urls && { imageUrls: urls }),
         videoUrl: videoUrlStr,

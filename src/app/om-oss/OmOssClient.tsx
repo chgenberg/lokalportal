@@ -70,7 +70,7 @@ function ThomasPortrait() {
             <div className="w-full h-full">
               <Image
                 src="/Thomas.png"
-                alt="Thomas Claesson – Grundare av Hittayta.se"
+                alt="Thomas Claesson – Grundare av Offmarket.nu"
                 width={200}
                 height={200}
                 className="w-full h-full object-cover transition-transform duration-700 ease-out"
@@ -130,7 +130,7 @@ export default function OmOssClient() {
             En man. En vision.<br />Väldigt många kvadratmeter.
           </h1>
           <p className="text-white/50 text-[15px] max-w-lg mx-auto leading-relaxed">
-            Bakom Hittayta.se står Thomas Claesson – mannen som kan lukta sig till en bra lokal på 500 meters avstånd.
+            Bakom Offmarket.nu står Thomas Claesson – mannen som kan lukta sig till en bra bostad på 500 meters avstånd.
           </p>
         </div>
       </div>
@@ -144,9 +144,9 @@ export default function OmOssClient() {
             <div className="text-center sm:text-left">
               <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-1">Grundare & Chefslokalletare</p>
               <h2 className="text-xl font-bold text-navy mb-1 tracking-tight">Thomas Claesson</h2>
-              <p className="text-[13px] text-gray-400 mb-4">&ldquo;Jag har aldrig träffat en lokal jag inte gillade. Okej, kanske den i Borås utan fönster. Men annars.&rdquo;</p>
+              <p className="text-[13px] text-gray-400 mb-4">&ldquo;Jag har aldrig träffat en bostad jag inte gillade. Okej, kanske den i Borås utan fönster. Men annars.&rdquo;</p>
               <p className="text-[15px] text-gray-600 leading-relaxed">
-                Thomas har jobbat med kommersiella lokaler i över 25 år. Det hela började 1998 när han av misstag hyrde ut sitt garage till en startup som behövde &ldquo;ett litet kontor med karaktär&rdquo;. Startupen gick under efter tre månader, men Thomas hade hittat sin livs passion: att matcha rätt lokal med rätt människa.
+                Thomas har jobbat med kommersiella bostäder i över 25 år. Det hela började 1998 när han av misstag hyrde ut sitt garage till en startup som behövde &ldquo;ett litet kontor med karaktär&rdquo;. Startupen gick under efter tre månader, men Thomas hade hittat sin livs passion: att matcha rätt bostad med rätt människa.
               </p>
             </div>
           </div>
@@ -165,28 +165,28 @@ export default function OmOssClient() {
           </div>
           <div className="relative p-8">
           <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-3">Thomas resa</p>
-          <h2 className="text-xl font-bold text-navy mb-6 tracking-tight">Från garageuthyrning till Sveriges smartaste lokalplattform</h2>
+          <h2 className="text-xl font-bold text-navy mb-6 tracking-tight">Från garageuthyrning till Sveriges smartaste bostadsplattform</h2>
           <div className="space-y-6">
             {[
               {
                 year: "1998",
                 title: "Det oavsiktliga geniet",
-                text: "Thomas hyr ut sitt garage i Mölndal. Hyresgästen klagar på att det luktar motorolja. Thomas svarar: \"Det är karaktär.\" En bransch-legend föds.",
+                text: "Thomas hyr ut sitt garage i Mölndal. Köparen klagar på att det luktar motorolja. Thomas svarar: \"Det är karaktär.\" En bransch-legend föds.",
               },
               {
                 year: "2003",
                 title: "500 lokaler och en insikt",
-                text: "Efter att ha förmedlat sin 500:e lokal inser Thomas att han kan uppskatta en lokals yta med blotta ögat, med max 2 m² felmarginal. Hans fru är mindre imponerad än han hade hoppats.",
+                text: "Efter att ha förmedlat sin 500:e bostad inser Thomas att han kan uppskatta en bostads yta med blotta ögat, med max 2 m² felmarginal. Hans fru är mindre imponerad än han hade hoppats.",
               },
               {
                 year: "2012",
                 title: "\"Det måste finnas ett bättre sätt\"",
-                text: "Thomas sitter i sin bil utanför en lokal i Västerås och scrollar genom PDF:er i sin mejl. Han bestämmer sig: lokalmarknaden behöver digitaliseras. Hans tonårsdotter förklarar vad en app är.",
+                text: "Thomas sitter i sin bil utanför en bostad i Västerås och scrollar genom PDF:er i sin mejl. Han bestämmer sig: bostadsmarknaden behöver digitaliseras. Hans tonårsdotter förklarar vad en app är.",
               },
               {
                 year: "2024",
-                title: "Hittayta.se lanseras",
-                text: "Efter år av research, prototyper och alldeles för mycket kaffe lanseras Hittayta.se – med agentgenererade annonser, kartvisning och Thomas personliga kvalitetsstämpel på varje funktion.",
+                title: "Offmarket.nu lanseras",
+                text: "Efter år av research, prototyper och alldeles för mycket kaffe lanseras Offmarket.nu – med agentgenererade annonser, kartvisning och Thomas personliga kvalitetsstämpel på varje funktion.",
               },
             ].map((item) => (
               <div key={item.year} className="flex gap-5">
@@ -208,10 +208,10 @@ export default function OmOssClient() {
           <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-3">Saker du inte visste om Thomas</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {[
-              { stat: "3 000+", label: "Lokaler personligen besökta", note: "Och han minns varje en." },
+              { stat: "3 000+", label: "Bostäder personligen besökta", note: "Och han minns varje en." },
               { stat: "±2 m²", label: "Felmarginal vid ögonmått", note: "Testat och verifierat av hans fru." },
               { stat: "Kvadrat", label: "Hundens namn", note: "En golden retriever. Gillar öppna planlösningar." },
-              { stat: "0", label: "Lokaler han ångrar", note: "Okej, kanske den i Borås." },
+              { stat: "0", label: "Bostäder han ångrar", note: "Okej, kanske den i Borås." },
             ].map((f) => (
               <div key={f.label} className="p-4 rounded-xl bg-muted/30 border border-border/30">
                 <p className="text-2xl font-bold text-navy tracking-tight">{f.stat}</p>
@@ -225,15 +225,15 @@ export default function OmOssClient() {
         {/* Mission */}
         <div className="bg-white rounded-2xl border border-border/40 p-8 shadow-sm mb-6">
           <p className="text-[11px] font-semibold text-gray-400 tracking-[0.15em] uppercase mb-3">Vår mission</p>
-          <h2 className="text-xl font-bold text-navy mb-4 tracking-tight">Att göra lokalmarknaden transparent, snabb och – ja – lite roligare</h2>
+          <h2 className="text-xl font-bold text-navy mb-4 tracking-tight">Att göra bostadsmarknaden transparent, snabb och – ja – lite roligare</h2>
           <p className="text-[15px] text-gray-600 leading-relaxed mb-4">
-            Bakom humorn finns ett genuint uppdrag. Lokalmarknaden har länge varit opak, långsam och onödigt krånglig. Vi bygger Hittayta.se för att ändra på det.
+            Bakom humorn finns ett genuint uppdrag. Bostadsmarknaden har länge varit opak, långsam och onödigt krånglig. Vi bygger Offmarket.nu för att ändra på det.
           </p>
           <p className="text-[15px] text-gray-600 leading-relaxed mb-4">
-            Varje annonsör verifieras med BankID. Varje annons kan skapas med vår agent på under fem minuter. Och varje hyresgäst kan söka, filtrera och kontakta direkt – utan mellanhänder, utan krångel.
+            Varje annonsör verifieras med BankID. Varje annons kan skapas med vår agent på under fem minuter. Och varje köpare kan söka, filtrera och kontakta direkt – utan mellanhänder, utan krångel.
           </p>
           <p className="text-[15px] text-gray-600 leading-relaxed">
-            Thomas brukar säga: <em>&ldquo;En bra lokal kan förändra ett företag. En dålig plattform ska inte stå i vägen.&rdquo;</em> Vi håller med honom. Mest för att han är chefen.
+            Thomas brukar säga: <em>&ldquo;En bra bostad kan förändra ett företag. En dålig plattform ska inte stå i vägen.&rdquo;</em> Vi håller med honom. Mest för att han är chefen.
           </p>
         </div>
 
@@ -254,16 +254,16 @@ export default function OmOssClient() {
         {/* Thomas-citat */}
         <div className="bg-navy/[0.03] rounded-2xl border border-navy/10 p-8 mb-6 text-center">
           <p className="text-[17px] text-navy/80 leading-relaxed italic max-w-lg mx-auto mb-4">
-            &ldquo;Folk frågar mig varför jag brinner för lokaler. Jag svarar: har du någonsin stått i en tom lokal med 4,5 meters takhöjd och sydvänt skyltfönster? Exakt. Det är poesi.&rdquo;
+            &ldquo;Folk frågar mig varför jag brinner för bostäder. Jag svarar: har du någonsin stått i en tom bostad med 4,5 meters takhöjd och sydvänt skyltfönster? Exakt. Det är poesi.&rdquo;
           </p>
           <p className="text-[13px] font-semibold text-navy">Thomas Claesson</p>
-          <p className="text-[12px] text-gray-400">Grundare, Hittayta.se</p>
+          <p className="text-[12px] text-gray-400">Grundare, Offmarket.nu</p>
         </div>
 
         {/* CTA */}
         <div className="bg-navy rounded-2xl p-8 text-center">
-          <h2 className="text-xl font-bold text-white mb-2 tracking-tight">Vill du prata lokaler med Thomas?</h2>
-          <p className="text-[13px] text-white/40 mb-6">Han svarar på allt. Utom frågor om den där lokalen i Borås.</p>
+          <h2 className="text-xl font-bold text-white mb-2 tracking-tight">Vill du prata bostäder med Thomas?</h2>
+          <p className="text-[13px] text-white/40 mb-6">Han svarar på allt. Utom frågor om den där bostaden i Borås.</p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link href="/kontakt" className="inline-block px-6 py-2.5 bg-white text-navy text-[13px] font-semibold rounded-xl transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
               Kontakta oss
